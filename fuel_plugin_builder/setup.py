@@ -13,7 +13,6 @@
 #    under the License.
 
 import os
-import re
 
 from setuptools import find_packages
 from setuptools import setup
@@ -28,13 +27,14 @@ def find_requires():
 
 
 setup(
-    name='fuel_plugin_builder',
+    name='fpb',
     version='0.1.0',
     description='Helps to create and build fuel plugins',
     long_description="""Helps to create and build fuel plugins""",
     classifiers=[
         "Programming Language :: Python",
-        "Topic :: System :: Software Distribution"],
+        "Topic :: System :: Software Distribution",
+        "License :: OSI Approved :: Apache Software License"],
     author='Mirantis Inc.',
     author_email='product@mirantis.com',
     url='http://mirantis.com',
@@ -43,7 +43,7 @@ setup(
     zip_safe=False,
     install_requires=find_requires(),
     include_package_data=True,
-    package_data={'': ['templates/*']},
+    package_data={'': ['templates/*', 'templates/.gitignore']},
     entry_points={
         'console_scripts': [
             'fpb = fuel_plugin_builder.cli:main']})
