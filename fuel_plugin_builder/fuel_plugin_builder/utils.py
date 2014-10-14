@@ -14,11 +14,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import os
 import logging
-
+import os
+import shutil
 import subprocess
+import tarfile
+
+from glob import glob
+
+from mako.template import Template
 
 from fuel_plugin_builder import errors
 
@@ -50,7 +54,6 @@ def which(cmd):
             return cmd
 
     for path in os.environ['PATH'].split(os.pathsep):
-        path = path.strip('"')
         exe_file = os.path.join(path, cmd)
         if is_executable(exe_file):
             return exe_file
@@ -75,7 +78,6 @@ def exec_cmd(cmd):
     for line in child.stdout:
         logger.debug(line.rstrip())
 
-
     child.wait()
     exit_code = child.returncode
 
@@ -85,3 +87,125 @@ def exec_cmd(cmd):
             'exit code: {1} '.format(exit_code, cmd))
 
     logger.debug(u'Command "{0}" successfully executed'.format(cmd))
+
+
+def create_dir(dir_path):
+    """Creates directory
+
+    :param dir_path: directory path
+    :raises: errors.DirectoryExistsError
+    """
+    logger.debug(u'Creating directory %s', dir_path)
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path)
+
+
+def exists(path):
+    """Checks if filel is exist
+
+    :param str path: path to the file
+    :returns: True if file is exist, Flase if is not
+    """
+    return os.path.lexists(path)
+
+
+def basename(path):
+    """Basename for path
+
+    :param str path: path to the file
+    :returns: str with filename
+    """
+    return os.path.basename(path)
+
+
+def render_to_file(src, dst, params):
+    """Render mako template and write it to specified file
+
+    :param src: path to template
+    :param dst: path where rendered template will be saved
+    """
+    logger.debug('Render template from {0} to {1} with params: {2}'.format(
+        src, dst, params))
+    with open(src, 'r') as f:
+        template_file = f.read()
+
+    with open(dst, 'w') as f:
+        rendered_file = Template(template_file).render(**params)
+        f.write(rendered_file)
+
+
+def copy_file_permissions(src, dst):
+    """Copies file permissions
+
+    :param str src: source file
+    :param str dst: destination
+    """
+    shutil.copymode(src, dst)
+
+
+def remove(path):
+    """Remove file or directory
+
+    :param path: a file or directory to remove
+    """
+    logger.debug(u'Removing "%s"', path)
+
+    if not os.path.lexists(path):
+        return
+
+    if os.path.isdir(path) and not os.path.islink(path):
+        shutil.rmtree(path)
+    else:
+        os.remove(path)
+
+
+def copy(src, dst):
+    """Copy a given file or directory from one place to another.
+
+    :param src: copy from
+    :param dst: copy to
+    """
+    logger.debug(u'Copy from %s to %s', src, dst)
+
+    if os.path.isdir(src):
+        shutil.copytree(src, dst, symlinks=True)
+    else:
+        shutil.copy(src, dst)
+
+
+def copy_files_in_dir(src, dst):
+    """Copies file in directory
+
+    :param str src: source files
+    :param str dst: destination directory
+    """
+    logger.debug(u'Copy files in directory %s %s', src, dst)
+    for f in glob(src):
+        dst_path = os.path.join(dst, os.path.basename(f))
+        copy(f, dst_path)
+
+
+def move_files_in_dir(src, dst):
+    """Move files or directories
+
+    :param str src: source files or directories
+    :param str dst: destination directory
+    """
+    logger.debug(u'Move files to directory %s %s', src, dst)
+    for f in glob(src):
+        dst_path = os.path.join(dst, os.path.basename(f))
+        shutil.move(f, dst_path)
+
+
+def make_tar_gz(dir_path, tar_path, files_prefix):
+    """Compress the file in tar.gz archive
+
+    :param str dir_path: directory for archiving
+    :param str tar_path: the name and path to the file
+    :param str files_prefix: the directory in the tar files where all
+                             of the files are allocated
+    """
+    logger.debug(u'Archive directory %s to file %s', dir_path, tar_path)
+    tar = tarfile.open(tar_path, 'w:gz')
+    tar.add(dir_path, arcname=files_prefix)
+    tar.close()

@@ -14,16 +14,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import sys
 import argparse
+import logging
+import sys
 
 from fuel_plugin_builder import actions
-from fuel_plugin_builder import messages
 from fuel_plugin_builder import errors
+from fuel_plugin_builder import messages
 
 from fuel_plugin_builder.logger import configure_logger
-logger = configure_logger()
 
+logger = logging.getLogger(__name__)
 
 
 def handle_exception(exc):
@@ -51,6 +52,9 @@ def parse_args():
     group.add_argument(
         '--build', help='build a plugin',
         nargs=1, metavar='path_to_directory')
+    parser.add_argument(
+        '--debug', help='enable debug mode',
+        action="store_true")
 
     return parser.parse_args()
 
@@ -78,6 +82,8 @@ def main():
     """Entry point
     """
     try:
-        perform_action(parse_args())
+        args = parse_args()
+        configure_logger(debug=args.debug)
+        perform_action(args)
     except Exception as exc:
         handle_exception(exc)
