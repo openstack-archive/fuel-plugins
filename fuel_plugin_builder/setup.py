@@ -43,7 +43,7 @@ setup(
     zip_safe=False,
     install_requires=find_requires(),
     include_package_data=True,
-    package_data={'': ['templates/*']},
+    package_data={'': ['templates/*', 'templates/.gitignore']},
     entry_points={
         'console_scripts': [
             'fpb = fuel_plugin_builder.cli:main']})

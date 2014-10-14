@@ -16,6 +16,9 @@
 
 import os
 import logging
+import yaml
+import glob
+import tarfile
 
 from fuel_plugin_builder import utils
 from fuel_plugin_builder import errors
@@ -35,19 +38,63 @@ class BuildPlugin(BaseAction):
 
         self.centos_repo_path = os.path.join(plugin_path, 'repos/centos')
         self.ubuntu_repo_path = os.path.join(plugin_path, 'repos/ubuntu')
+        self.meta = yaml.load(open(os.path.join(plugin_path, 'metadata.yaml')))
+        self.build_dir = os.path.join(plugin_path, '.build')
 
     def run(self):
+        self.build_repos()
+        self.make_tarball()
+
+    def make_tarball(self):
+        full_name = '{0}-{1}'.format(self.meta['name'],
+                                    self.meta['version'])
+        tar_name = '{0}.tar'.format(full_name)
+        tar_path = os.path.join(
+            self.plugin_path,
+            tar_name)
+
+        if utils.exists(tar_path):
+            utils.exec_cmd('rm -f {0}'.format(tar_path))
+
+        tar = tarfile.open(tar_path, 'w')
+        tar.add(self.build_dir, arcname=full_name)
+        tar.close()
+
+    def build_repos(self):
+        # TODO(eli): it really needs to be refactored
+        # it was written right before the demo on the fly
         if utils.which(self.pre_build_hook_path):
             utils.exec_cmd(self.pre_build_hook_path)
 
+        utils.create_dir(self.build_dir)
+        utils.exec_cmd('rm -rf {0}'.format(os.path.join(self.build_dir, '*')))
         utils.exec_cmd(
-            'createrepo -o {0} {1}'.format(
-                os.path.join(self.centos_repo_path, 'x86_64'),
-                os.path.join(self.centos_repo_path, 'x86_64', 'Packages')))
-        utils.exec_cmd(
-            'dpkg-scanpackages {0} | gzip -c9 > {1}'.format(
-                self.ubuntu_repo_path,
-                os.path.join(self.ubuntu_repo_path, 'Packages.gz')))
+            'cp -r {0} {1}'.format(
+                os.path.join(self.plugin_path, '*'),
+                self.build_dir))
+
+        releases_paths = {}
+        for release in self.meta['releases']:
+            releases_paths.setdefault(release['os'], [])
+            releases_paths[release['os']].append(
+                os.path.join(self.build_dir, release['repository_path']))
+
+        for repo_path in releases_paths.get('centos', []):
+            repo_packages = os.path.join(repo_path, 'Packages')
+            utils.create_dir(repo_packages)
+            rpms = os.path.join(repo_path, '*.rpm')
+            if glob.glob(rpms):
+                utils.exec_cmd('cp {0} {1}'.format(
+                    os.path.join(repo_path, '*.rpm'),
+                    repo_packages))
+            utils.exec_cmd('createrepo -o {0} {1}'.format(repo_path,
+                                                          repo_packages))
+
+        for repo_path in releases_paths.get('ubuntu', []):
+            utils.exec_cmd(
+                'dpkg-scanpackages {0} | gzip -c9 > {1}'.format(
+                    repo_path,
+                    os.path.join(repo_path, 'Packages.gz')))
 
     def check(self):
         not_found = filter(lambda r: not utils.which(r), self.requires)

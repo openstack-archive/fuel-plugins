@@ -17,9 +17,13 @@ class FuelPluginException(Exception):
     pass
 
 
-class FuelCannotFindCommandError(Exception):
+class FuelCannotFindCommandError(FuelPluginException):
     pass
 
 
-class ExecutedErrorNonZeroExitCode(Exception):
+class ExecutedErrorNonZeroExitCode(FuelPluginException):
+    pass
+
+
+class PluginDirectoryExistsError(FuelPluginException):
     pass

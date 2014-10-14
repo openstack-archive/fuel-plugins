@@ -17,8 +17,11 @@
 
 import os
 import logging
+import shutil
 
 import subprocess
+
+from mako.template import Template
 
 from fuel_plugin_builder import errors
 
@@ -85,3 +88,65 @@ def exec_cmd(cmd):
             'exit code: {1} '.format(exit_code, cmd))
 
     logger.debug(u'Command "{0}" successfully executed'.format(cmd))
+
+
+def create_dir(dir_path):
+    """Creates directory
+
+    :param dir_path: directory path
+    :raises: errors.DirectoryExistsError
+    """
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path)
+
+
+def exists(path):
+    """Checks if filel is exist
+
+    :param str path: path to the file
+    :returns: True if file is exist, Flase if is not
+    """
+    return os.path.lexists(path)
+
+
+def basename(path):
+    """Basename for path
+
+    :param str path: path to the file
+    :returns: str with filename
+    """
+    return os.path.basename(path)
+
+
+def render_to_file(src, dst, params):
+    """Render mako template and write it to specified file
+
+    :param src: path to template
+    :param dst: path where rendered template will be saved
+    """
+    logger.debug('Render template from {0} to {1} with params: {2}'.format(
+        src, dst, params))
+    with open(src, 'r') as f:
+        template_cfg = f.read()
+
+    with open(dst, 'w') as f:
+        rendered_cfg = Template(template_cfg).render(**params)
+        f.write(rendered_cfg)
+
+
+def copy_file(src, dst):
+    """Copies file
+
+    :param str src: source file
+    :param str dst: destination file
+    """
+    shutil.copy(src, dst)
+
+
+def copy_file_permissions(src, dst):
+    """Copies file permissions
+
+    :param str src: source file
+    :param str dst: destination
+    """
+    shutil.copymode(src, dst)
