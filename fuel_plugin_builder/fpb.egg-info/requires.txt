@@ -1,0 +1,4 @@
+argparse==1.2.1
+six==1.5.2
+Mako==0.9.1
+PyYAML==3.10

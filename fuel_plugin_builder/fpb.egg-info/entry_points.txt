@@ -1,0 +1,3 @@
+[console_scripts]
+fpb = fuel_plugin_builder.cli:main
+

@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: fpb
+Version: 0.1.0
+Summary: Helps to create and build fuel plugins
+Home-page: http://mirantis.com
+Author: Mirantis Inc.
+Author-email: product@mirantis.com
+License: UNKNOWN
+Description: Helps to create and build fuel plugins
+Keywords: fuel plugins plugin
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Topic :: System :: Software Distribution
+Classifier: License :: OSI Approved :: Apache Software License

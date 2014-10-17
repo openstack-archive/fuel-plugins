@@ -1,4 +1,4 @@
-fuel-plugins
+glusterfs
 ============
 
-Fuel plugins
+Plugin description
