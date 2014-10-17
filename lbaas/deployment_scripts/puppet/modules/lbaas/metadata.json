@@ -1,0 +1,14 @@
+{
+  "name": "sbog-lbaas",
+  "version": "0.1.0",
+  "author": "sbog",
+  "summary": "Module to manage lbaas",
+  "license": "Apache 2.0",
+  "source": "",
+  "project_page": "sbogatkin@mirantis.com",
+  "issues_url": "sbogatkin@mirantis.com",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ]
+}
+
