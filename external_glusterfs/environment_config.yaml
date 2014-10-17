@@ -1,0 +1,7 @@
+attributes:
+  endpoint:
+    value: ''
+    label: 'GlusterFS endpoint'
+    description: 'IP address of GlusterFS endpoint'
+    weight: 25
+    type: "text"
