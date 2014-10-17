@@ -1,0 +1,7 @@
+attributes:
+  endpoint:
+    value: 'GlusterFS endpoint'
+    label: 'Text field'
+    description: 'Provide GlusterFS cluster endpoint'
+    weight: 25
+    type: "text"
