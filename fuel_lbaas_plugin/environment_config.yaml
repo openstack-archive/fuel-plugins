@@ -1,0 +1,6 @@
+attributes:
+  # LBaaS show lbaas for neutron only
+  metadata:
+    restrictions:
+      - condition: cluster:net_provider == 'neutron'
+        action: hide
