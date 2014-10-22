@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-set -eu
+set -eux
 
 
 function usage {
@@ -49,6 +49,8 @@ function process_options {
 
 # Settings
 ROOT=$(dirname `readlink -f $0`)
+FPB_VENV_PATH=${FPB_VENV_PATH:-"${ROOT}/fpb_venv"}
+BUILT_PLUGINS_PATH=${BUILT_PLUGINS_PATH:-"${ROOT}/built_plugins"}
 
 # Initialize global variables
 plugins_build=0
@@ -95,14 +97,14 @@ function run_tests {
 
 
 function run_cleanup {
-  find . -type f -name "*.pyc" -delete
+  find . -type f -name "${ROOT}/*.pyc" -delete
 }
 
 
 function run_fpb {
   local result=0
 
-  pushd $ROOT/fuel_plugin_builder >> /dev/null
+  pushd "${ROOT}/fuel_plugin_builder" >> /dev/null
   tox || result=1
   popd >> /dev/null
 
@@ -112,8 +114,33 @@ function run_fpb {
 
 # Build all of the plugins with current version of plugins builder
 function run_build {
-  # TODO(eli): add plugins building process plugin
-  # when there are any plugins
+  virtualenv $FPB_VENV_PATH
+
+  # virtualenv has unbound variables
+  # disable it during virtualenv usage
+  set +u
+
+  source $FPB_VENV_PATH/bin/activate || return 1
+  fpb_path="${ROOT}/fuel_plugin_builder/"
+  pushd $fpb_path
+  python setup.py install
+  popd
+
+  mkdir -p $BUILT_PLUGINS_PATH
+  rm -f $BUILT_PLUGINS_PATH/*.fp
+
+  # Find plugins
+  for dir in $ROOT/*/metadata.yaml;
+  do
+    plugin_dir=$(dirname "${dir}");
+    pushd "${plugin_dir}"
+    fpb --build "${plugin_dir}" --debug || return 1
+    cp *.fp $BUILT_PLUGINS_PATH/
+    popd
+  done
+
+  deactivate
+  set -u
   return 0
 }
 
