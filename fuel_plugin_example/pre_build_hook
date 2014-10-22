@@ -1,0 +1,13 @@
+#!/bin/bash
+set -x
+
+ROOT=$(dirname `readlink -f $0`)
+
+UBUNTU_REPO_PATH=$ROOT/repositories/ubuntu
+CENTOS_REPO_PATH=$ROOT/repositories/centos
+
+rm -f $UBUNTU_REPO_PATH/*.deb
+rm -f $CENTOS_REPO_PATH/*.rpm
+
+fpm -t deb -p $UBUNTU_REPO_PATH -n fuel-simple-service -v 1.0.0 -s dir fuel-simple-service.py=/usr/bin/fuel-simple-service.py
+fpm -t rpm -p $CENTOS_REPO_PATH -n fuel-simple-service -v 1.0.0 -s dir fuel-simple-service.py=/usr/bin/fuel-simple-service.py
