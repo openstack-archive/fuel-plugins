@@ -24,27 +24,37 @@ class TestCli(BaseTestCase):
 
     @mock.patch('fuel_plugin_builder.cli.actions')
     def test_perform_action_create(self, actions_mock):
-        args = mock.MagicMock()
-        args.create = ['plugin_path']
+        args = mock.MagicMock(create='plugin_path')
         creatre_obj = mock.MagicMock()
         actions_mock.CreatePlugin.return_value = creatre_obj
 
         perform_action(args)
 
         actions_mock.CreatePlugin.assert_called_once_with('plugin_path')
-        creatre_obj.check.assert_called_once_with()
         creatre_obj.run.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.cli.actions')
     def test_perform_action_build(self, actions_mock):
-        args = mock.MagicMock()
-        args.create = None
-        args.build = ['plugin_path']
+        args = mock.MagicMock(
+            create=None,
+            build='plugin_path')
         build_obj = mock.MagicMock()
         actions_mock.BuildPlugin.return_value = build_obj
 
         perform_action(args)
 
         actions_mock.BuildPlugin.assert_called_once_with('plugin_path')
-        build_obj.check.assert_called_once_with()
         build_obj.run.assert_called_once_with()
+
+    @mock.patch('fuel_plugin_builder.cli.ValidatorManager')
+    def test_perform_check(self, validator_mock):
+        args = mock.MagicMock(
+            create=None,
+            build=None,
+            check='plugin_path')
+        build_obj = mock.MagicMock()
+        validator_mock.BuildPlugin.return_value = build_obj
+
+        perform_action(args)
+
+        validator_mock.assert_called_once_with('plugin_path')

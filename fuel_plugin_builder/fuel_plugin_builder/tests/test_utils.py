@@ -205,3 +205,38 @@ class TestUtils(BaseTestCase):
             move_mock.call_args_list,
             [mock.call('file1', '/tmp/file1'),
              mock.call('file2', '/tmp/file2')])
+
+    @mock.patch('__builtin__.open')
+    @mock.patch('fuel_plugin_builder.utils.yaml')
+    def test_parse_yaml(self, yaml_mock, open_mock):
+        path = '/tmp/path'
+        file_mock = mock.MagicMock()
+        open_mock.return_value = file_mock
+        utils.parse_yaml(path)
+        open_mock.assert_called_once_with(path)
+        yaml_mock.load.assert_called_once_with(file_mock)
+
+    @mock.patch('fuel_plugin_builder.utils.render_to_file')
+    @mock.patch('fuel_plugin_builder.utils.remove')
+    @mock.patch('fuel_plugin_builder.utils.os.walk')
+    def test_render_files_in_dir(self, walk_mock, remove_mock, render_mock):
+        dir_path = '/tmp/some_plugin'
+        walk_mock.return_value = [
+            [dir_path, '', ['file1.txt.mako', 'file2.txt']],
+            [dir_path, '', ['file3', 'file4.mako']]]
+        params = {'param1': 'value1', 'param2': 'value2'}
+
+        utils.render_files_in_dir(dir_path, params)
+        self.assertEqual(
+            [mock.call('/tmp/some_plugin/file1.txt.mako',
+                       '/tmp/some_plugin/file1.txt',
+                       params),
+             mock.call('/tmp/some_plugin/file4.mako',
+                       '/tmp/some_plugin/file4',
+                       params)],
+            render_mock.call_args_list)
+
+        self.assertEqual(
+            [mock.call('/tmp/some_plugin/file1.txt.mako'),
+             mock.call('/tmp/some_plugin/file4.mako')],
+            remove_mock.call_args_list)

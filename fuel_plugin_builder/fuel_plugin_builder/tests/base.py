@@ -69,3 +69,12 @@ class BaseTestCase(TestCase):
         fileobj = FakeFile(text)
         setattr(fileobj, 'name', filename)
         return mock.MagicMock(return_value=fileobj)
+
+    def mock_methods(self, obj, methods):
+        """Mocks methods for object
+
+        :param obj: object for mocking
+        :param methods: list of methods for mocking
+        """
+        for method in methods:
+            setattr(obj, method, mock.MagicMock())

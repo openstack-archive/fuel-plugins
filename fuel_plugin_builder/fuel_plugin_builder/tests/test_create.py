@@ -29,10 +29,6 @@ class TestCreate(BaseTestCase):
         self.template_dir = '/temp_dir'
         self.creator = CreatePlugin(self.plugin_path)
         self.creator.template_dir = self.template_dir
-        self.creator.plugin_structure = [
-            {'action': 'render', 'path': 'file1', 'from': 'temp_file1'},
-            {'action': 'copy', 'path': 'file2', 'from': 'temp_file2'},
-            {'action': 'mkdir', 'path': 'tmp'}]
 
     @mock.patch('fuel_plugin_builder.actions.create.utils.exists',
                 return_value=False)
@@ -46,27 +42,14 @@ class TestCreate(BaseTestCase):
         self.assertRaisesRegexp(
             errors.PluginDirectoryExistsError,
             'Plugins directory {0} already exists, '
-            'choose anothe name'.format(self.plugin_path),
+            'choose another name'.format(self.plugin_path),
             self.creator.check)
         exists_mock.assert_called_once_with(self.plugin_path)
 
+    @mock.patch.object(CreatePlugin, 'check')
     @mock.patch('fuel_plugin_builder.actions.create.utils')
-    def test_run(self, utils_mock):
+    def test_run(self, utils_mock, _):
         self.creator.run()
-        utils_mock.render_to_file.assert_called_once_with(
-            '/temp_dir/temp_file1',
-            '/tmp/fuel_plugin/file1',
+        utils_mock.render_files_in_dir(
+            self.template_dir,
             self.creator.render_ctx)
-
-        utils_mock.copy_file_permissions.assert_called_once_with(
-            '/temp_dir/temp_file1',
-            '/tmp/fuel_plugin/file1')
-
-        self.assertEqual(
-            utils_mock.create_dir.call_args_list,
-            [mock.call('/tmp/fuel_plugin'),
-             mock.call('/tmp/fuel_plugin/tmp')])
-
-        utils_mock.copy.assert_called_once_with(
-            '/temp_dir/temp_file2',
-            '/tmp/fuel_plugin/file2')
