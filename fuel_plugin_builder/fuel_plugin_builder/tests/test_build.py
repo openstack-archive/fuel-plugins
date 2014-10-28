@@ -103,7 +103,7 @@ class TestBuild(BaseTestCase):
         utils_mock.move_files_in_dir.assert_called_once_with(
             '/repo/path/*.rpm', '/repo/path/Packages')
         utils_mock.exec_cmd.assert_called_once_with(
-            'createrepo -o /repo/path /repo/path/Packages')
+            'createrepo -o /repo/path /repo/path')
 
     @mock.patch('fuel_plugin_builder.actions.build.utils.which',
                 return_value=True)

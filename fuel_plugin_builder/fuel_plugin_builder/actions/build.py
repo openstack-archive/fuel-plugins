@@ -90,7 +90,7 @@ class BuildPlugin(BaseAction):
                 join_path(repo_path, '*.rpm'),
                 repo_packages)
             utils.exec_cmd('createrepo -o {0} {1}'.format(
-                repo_path, repo_packages))
+                repo_path, repo_path))
 
     def check(self):
         not_found = filter(lambda r: not utils.which(r), self.requires)
