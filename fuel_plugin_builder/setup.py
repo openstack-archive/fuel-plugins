@@ -19,15 +19,15 @@ from setuptools import setup
 
 
 def find_requires():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    prj_root = os.path.dirname(os.path.realpath(__file__))
     requirements = []
-    with open(u'{0}/requirements.txt'.format(dir_path), 'r') as reqs:
+    with open(u'{0}/requirements.txt'.format(prj_root), 'r') as reqs:
         requirements = reqs.readlines()
     return requirements
 
 
 setup(
-    name='fpb',
+    name='fuel-plugin-builder',
     version='0.1.0',
     description='Helps to create and build fuel plugins',
     long_description="""Helps to create and build fuel plugins""",
@@ -43,7 +43,7 @@ setup(
     zip_safe=False,
     install_requires=find_requires(),
     include_package_data=True,
-    package_data={'': ['templates/*', 'templates/.gitignore']},
     entry_points={
         'console_scripts': [
-            'fpb = fuel_plugin_builder.cli:main']})
+            'fpb = fuel_plugin_builder.cli:main',
+            'fuel-plugin-builder = fuel_plugin_builder.cli:main']})
