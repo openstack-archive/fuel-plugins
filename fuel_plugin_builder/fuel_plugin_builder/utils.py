@@ -19,6 +19,7 @@ import os
 import shutil
 import subprocess
 import tarfile
+import yaml
 
 from glob import glob
 
@@ -134,6 +135,24 @@ def render_to_file(src, dst, params):
         f.write(rendered_file)
 
 
+def render_files_in_dir(dir_path, params):
+    """Renders all *.mako files and removes templates
+
+    :param str dir_path: path to the directory
+    :param dict params: parameters for rendering
+    """
+    for root, _, files in os.walk(dir_path):
+        for file_path in files:
+            name, extension = os.path.splitext(file_path)
+            if not extension == '.mako':
+                continue
+
+            src_path = os.path.join(root, file_path)
+            dst_path = os.path.join(root, name)
+            render_to_file(src_path, dst_path, params)
+            remove(src_path)
+
+
 def copy_file_permissions(src, dst):
     """Copies file permissions
 
@@ -209,3 +228,12 @@ def make_tar_gz(dir_path, tar_path, files_prefix):
     tar = tarfile.open(tar_path, 'w:gz')
     tar.add(dir_path, arcname=files_prefix)
     tar.close()
+
+
+def parse_yaml(path):
+    """Parses yaml file
+
+    :param str path: path to the file
+    :returns: dict or list
+    """
+    return yaml.load(open(path))

@@ -21,6 +21,7 @@ import sys
 from fuel_plugin_builder import actions
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import messages
+from fuel_plugin_builder.validators import ValidatorManager
 
 from fuel_plugin_builder.logger import configure_logger
 
@@ -48,10 +49,14 @@ def parse_args():
 
     group.add_argument(
         '--create', help='create a plugin skeleton',
-        nargs=1, metavar='plugin_name')
+        type=str, metavar='plugin_name')
     group.add_argument(
         '--build', help='build a plugin',
-        nargs=1, metavar='path_to_directory')
+        type=str, metavar='path_to_directory')
+    group.add_argument(
+        '--check', help='ceck that plugin is valid',
+        type=str, metavar='path_to_directory')
+
     parser.add_argument(
         '--debug', help='enable debug mode',
         action="store_true")
@@ -66,16 +71,11 @@ def perform_action(args):
     """
 
     if args.create:
-        plugin_name = args.create[0]
-        logger.debug('Start plugin creation "%s"', args.create)
-        action = actions.CreatePlugin(plugin_name)
+        actions.CreatePlugin(args.create).run()
     elif args.build:
-        plugin_path = args.build[0]
-        logger.debug('Start plugin building "%s"', args.build)
-        action = actions.BuildPlugin(plugin_path)
-
-    action.check()
-    action.run()
+        actions.BuildPlugin(args.build).run()
+    elif args.check:
+        ValidatorManager(args.check).get_validator().validate()
 
 
 def main():

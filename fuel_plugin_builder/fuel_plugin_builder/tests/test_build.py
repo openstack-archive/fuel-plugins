@@ -28,8 +28,8 @@ class TestBuild(BaseTestCase):
         self.plugin_path = '/tmp/{0}'.format(self.plugins_name)
 
         with mock.patch(
-                '__builtin__.open',
-                self.mock_open("line 1\n line2\n line3")):
+                'fuel_plugin_builder.actions.build.utils.parse_yaml',
+                return_value="line 1\n line2\n line3"):
             self.builder = BuildPlugin(self.plugin_path)
 
         self.releases = [
@@ -42,12 +42,23 @@ class TestBuild(BaseTestCase):
             'version': '2.0.1',
             'releases': self.releases}
 
-    @mock.patch('fuel_plugin_builder.actions.build.BuildPlugin.build_repos')
-    @mock.patch('fuel_plugin_builder.actions.build.BuildPlugin.make_package')
-    def test_run(self, builde_repo_mock, make_package_mock):
+    def test_run(self):
+        mocked_methods = [
+            'run_pre_build_hook',
+            'check',
+            'build_repos',
+            'make_package']
+
+        self.mock_methods(self.builder, mocked_methods)
         self.builder.run()
-        builde_repo_mock.assert_called_once_with()
-        make_package_mock.assert_called_once_with()
+
+        self.builder.run_pre_build_hook.assert_called_once_with()
+        self.builder.check.assert_called_once_with()
+        self.builder.build_repos.assert_called_once_with()
+        self.builder.make_package()
+
+    def test_run_pre_build_hook(self):
+        pass
 
     @mock.patch('fuel_plugin_builder.actions.build.utils')
     def test_make_package(self, utils_mock):
@@ -71,15 +82,10 @@ class TestBuild(BaseTestCase):
                          utils_mock,
                          build_centos_mock,
                          build_ubuntu_mock):
-        utils_mock.which.return_value = True
         self.builder.build_repos()
 
         utils_mock.remove.assert_called_once_with(self.builder.build_dir)
         utils_mock.create_dir.assert_called_once_with(self.builder.build_dir)
-        utils_mock.which.assert_called_once_with(
-            self.builder.pre_build_hook_path)
-        utils_mock.exec_cmd.assert_called_once_with(
-            self.builder.pre_build_hook_path)
         utils_mock.copy_files_in_dir.assert_called_once_with(
             '/tmp/fuel_plugin/*',
             self.builder.build_dir)
@@ -105,16 +111,38 @@ class TestBuild(BaseTestCase):
         utils_mock.exec_cmd.assert_called_once_with(
             'createrepo -o /repo/path /repo/path')
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils.which',
-                return_value=True)
-    def test_check(self, _):
+    @mock.patch(
+        'fuel_plugin_builder.actions.build.BuildPlugin._check_requirements')
+    @mock.patch(
+        'fuel_plugin_builder.actions.build.BuildPlugin._check_structure')
+    def test_check(self, check_structure_mock, check_requirements_mock):
         self.builder.check()
+        check_structure_mock.assert_called_once_with()
+        check_requirements_mock.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.actions.build.utils.which',
                 return_value=False)
-    def test_check_raises_error(self, _):
+    def test_check_requirements_raises_error(self, _):
         self.assertRaisesRegexp(
             errors.FuelCannotFindCommandError,
             'Cannot find commands "rpm, createrepo, dpkg-scanpackages", '
             'install required commands and try again',
-            self.builder.check)
+            self.builder._check_requirements)
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils.which',
+                return_value=True)
+    def test_check_requirements(self, _):
+        self.builder._check_requirements()
+
+    @mock.patch('fuel_plugin_builder.actions.build.ValidatorManager')
+    def test_check_structure(self, manager_class_mock):
+        validator_manager_obj = mock.MagicMock()
+        manager_class_mock.return_value = validator_manager_obj
+        validator_mock = mock.MagicMock()
+        validator_manager_obj.get_validator.return_value = validator_mock
+
+        self.builder._check_structure()
+
+        manager_class_mock.assert_called_once_with(self.plugin_path)
+        validator_manager_obj.get_validator.assert_called_once_with()
+        validator_mock.validate.assert_called_once_with()
