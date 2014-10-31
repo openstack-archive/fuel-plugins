@@ -20,12 +20,5 @@ releases:
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/centos
 
-# Plugin types are required to determine what this plugins
-# extends and how to install them
-types:
-  - nailgun
-  - repository
-  - deployment_scripts
-
 # Version of plugin package
 package_version: '1'
