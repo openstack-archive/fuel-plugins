@@ -32,9 +32,12 @@ setup(
     description='Helps to create and build fuel plugins',
     long_description="""Helps to create and build fuel plugins""",
     classifiers=[
+        "Development Status :: 4 - Beta",
         "Programming Language :: Python",
         "Topic :: System :: Software Distribution",
-        "License :: OSI Approved :: Apache Software License"],
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7"],
     author='Mirantis Inc.',
     author_email='product@mirantis.com',
     url='http://mirantis.com',
