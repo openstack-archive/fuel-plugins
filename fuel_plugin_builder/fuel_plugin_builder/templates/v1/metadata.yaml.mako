@@ -21,4 +21,4 @@ releases:
     repository_path: repositories/centos
 
 # Version of plugin package
-package_version: '1'
+package_version: '1.0.0'

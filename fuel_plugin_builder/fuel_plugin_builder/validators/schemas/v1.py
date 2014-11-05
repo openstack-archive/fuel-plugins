@@ -34,7 +34,7 @@ METADATA_SCHEMA = {
     'properties': {
         'name': {'type': 'string'},
         'version': {'type': 'string'},
-        'package_version': {'type': 'string'},
+        'package_version': {'enum': ['1.0.0']},
         'description': {'type': 'string'},
         'fuel_version': {'type': 'string'},
         'releases': {
