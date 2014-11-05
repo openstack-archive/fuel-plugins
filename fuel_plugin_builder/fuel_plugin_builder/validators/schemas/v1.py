@@ -36,7 +36,8 @@ METADATA_SCHEMA = {
         'version': {'type': 'string'},
         'package_version': {'type': 'string'},
         'description': {'type': 'string'},
-        'fuel_version': {'type': 'string'},
+        'fuel_version': {'type': 'array',
+                         'items': {'type': 'string'}},
         'releases': {
             'type': 'array',
             'items': PLUGIN_RELEASE_SCHEMA}}}
