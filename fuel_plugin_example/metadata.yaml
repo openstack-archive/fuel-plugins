@@ -1,5 +1,6 @@
 # Plugin name
 name: fuel_plugin_example
+title: Fuel plugin example
 # Plugin version
 version: '0.1.0'
 # Description
