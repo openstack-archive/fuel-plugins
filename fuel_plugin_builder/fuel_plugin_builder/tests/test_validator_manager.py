@@ -28,7 +28,7 @@ class TestValidatorManager(BaseTestCase):
 
         with mock.patch(
                 'fuel_plugin_builder.validators.manager.utils.parse_yaml',
-                return_value={'package_version': '1'}):
+                return_value={'package_version': '1.0.0'}):
             self.manager = ValidatorManager(self.plugin_path)
 
     def test_get_validator(self):

@@ -23,8 +23,8 @@ from fuel_plugin_builder.version_mapping import get_plugin_for_version
 class TestVersionMapping(BaseTestCase):
 
     def test_get_plugin_for_version(self):
-        result = get_plugin_for_version('1')
-        self.assertEqual(result['version'], '1')
+        result = get_plugin_for_version('1.0.0')
+        self.assertEqual(result['version'], '1.0.0')
         self.assertEqual(result['templates'], 'templates/v1/')
         self.assertEqual(result['validator'], ValidatorV1)
 

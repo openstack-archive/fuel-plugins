@@ -17,10 +17,10 @@
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.validators import ValidatorV1
 
-latest_vesion = '1'
+latest_vesion = '1.0.0'
 
 mapping = [
-    {'version': '1',
+    {'version': '1.0.0',
      'validator': ValidatorV1,
      'templates': 'templates/v1/'}]
 

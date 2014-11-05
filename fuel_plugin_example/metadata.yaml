@@ -28,4 +28,4 @@ types:
   - deployment_scripts
 
 # Version of plugin package
-package_version: '1'
+package_version: '1.0.0'
