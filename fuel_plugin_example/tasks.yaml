@@ -2,7 +2,6 @@
 - role: ['controller']
   stage: post_deployment
   type: shell
-  priority: 10
   parameters:
     cmd: ./deploy.sh
     timeout: 42
@@ -10,7 +9,6 @@
 - role: '*'
   stage: pre_deployment
   type: shell
-  priority: 10
   parameters:
     cmd: echo all > /tmp/plugin.all
     timeout: 42
