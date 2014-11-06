@@ -6,7 +6,7 @@ version: '0.1.0'
 # Description
 description: Enable to use plugin X for Neutron
 # Required fuel version
-fuel_version: '6.0'
+fuel_version: ['6.0']
 
 # The plugin is compatible with releases in the list
 releases:
