@@ -1,5 +1,7 @@
 # Plugin name
 name: ${plugin_name}
+# Human-readable name for your plugin
+title: Title for ${plugin_name} plugin
 # Plugin version
 version: ${plugin_version}
 # Description

@@ -30,9 +30,10 @@ METADATA_SCHEMA = {
     '$schema': 'http://json-schema.org/draft-04/schema#',
     'title': 'plugin',
     'type': 'object',
-    'required': ['name', 'version', 'releases', 'package_version'],
+    'required': ['name', 'title', 'version', 'releases', 'package_version'],
     'properties': {
         'name': {'type': 'string'},
+        'title': {'type': 'string'},
         'version': {'type': 'string'},
         'package_version': {'enum': ['1.0.0']},
         'description': {'type': 'string'},
