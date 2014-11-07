@@ -32,7 +32,7 @@ class CreatePlugin(BaseAction):
         self.plugin_path = plugin_path
         self.render_ctx = {
             'plugin_name': self.plugin_name,
-            'plugin_version': '0.1.0'}
+            'plugin_version': '1.0.0'}
         self.template_path = version_mapping.get_plugin_for_version(
             version_mapping.latest_vesion)['templates']
 
