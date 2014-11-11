@@ -35,3 +35,7 @@ class ValidationError(FuelPluginException):
 
 class WrongPackageVersionError(FuelPluginException):
     pass
+
+
+class ReleasesDirectoriesError(FuelPluginException):
+    pass
