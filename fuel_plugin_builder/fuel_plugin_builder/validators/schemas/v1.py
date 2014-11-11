@@ -32,7 +32,10 @@ METADATA_SCHEMA = {
     'type': 'object',
     'required': ['name', 'title', 'version', 'releases', 'package_version'],
     'properties': {
-        'name': {'type': 'string'},
+        'name': {
+            'type': 'string',
+            # Only lower case letters, numbers, '_', '-' symbols
+            'pattern': '^[a-z0-9_-]+$'},
         'title': {'type': 'string'},
         'version': {'type': 'string'},
         'package_version': {'enum': ['1.0.0']},
