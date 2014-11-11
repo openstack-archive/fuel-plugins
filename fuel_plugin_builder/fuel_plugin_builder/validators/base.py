@@ -37,7 +37,7 @@ class BaseValidator(object):
         try:
             jsonschema.validate(data, schema)
         except jsonschema.exceptions.ValidationError as exc:
-            value_path = ' -> '.join(exc.absolute_path)
+            value_path = ' -> '.join(map(str, exc.absolute_path))
             raise errors.ValidationError(
                 'Wrong value format "{0}", for file "{1}", {2}'.format(
                     value_path, path, exc.message))
