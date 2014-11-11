@@ -72,10 +72,13 @@ def perform_action(args):
 
     if args.create:
         actions.CreatePlugin(args.create).run()
+        print('Plugin is created')
     elif args.build:
         actions.BuildPlugin(args.build).run()
+        print('Plugin is built')
     elif args.check:
         ValidatorManager(args.check).get_validator().validate()
+        print('Plugin is valid')
 
 
 def main():
