@@ -18,6 +18,7 @@ import logging
 
 from os.path import join as join_path
 
+from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.base import BaseValidator
 from fuel_plugin_builder.validators.schemas import v1
@@ -35,6 +36,7 @@ class ValidatorV1(BaseValidator):
     def validate(self):
         self.check_schemas()
         self.check_tasks()
+        self.check_releases_paths()
 
     def check_schemas(self):
         logger.debug('Start schema checking "%s"', self.plugin_path)
@@ -56,3 +58,23 @@ class ValidatorV1(BaseValidator):
                 schema = v1.SHELL_PARAMETERS
 
             self.validate_schema(task['parameters'], schema, self.tasks_path)
+
+    def check_releases_paths(self):
+        meta = utils.parse_yaml(self.meta_path)
+        for release in meta['releases']:
+            scripts_path = join_path(
+                self.plugin_path,
+                release['deployment_scripts_path'])
+            repo_path = join_path(
+                self.plugin_path,
+                release['repository_path'])
+
+            wrong_paths = []
+            for path in [scripts_path, repo_path]:
+                if not utils.exists(path):
+                    wrong_paths.append(path)
+
+            if wrong_paths:
+                raise errors.ReleasesDirectoriesError(
+                    'Cannot find directories {0} for release "{1}"'.format(
+                        ', '.join(wrong_paths), release))

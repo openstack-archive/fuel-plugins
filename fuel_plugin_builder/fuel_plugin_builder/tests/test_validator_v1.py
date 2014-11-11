@@ -16,6 +16,7 @@
 
 import mock
 
+from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 from fuel_plugin_builder.validators import ValidatorV1
 
@@ -30,10 +31,13 @@ class TestValidatorV1(BaseTestCase):
 
     @mock.patch.object(ValidatorV1, 'check_schemas')
     @mock.patch.object(ValidatorV1, 'check_tasks')
-    def test_validate(self, check_tasks_mock, check_schemas_mock):
+    @mock.patch.object(ValidatorV1, 'check_releases_paths')
+    def test_validate(
+            self, check_tasks_mock, check_schemas_mock, check_paths_mock):
         self.validator.validate()
         check_tasks_mock.assert_called_once_with()
         check_schemas_mock.assert_called_once_with()
+        check_paths_mock.assert_called_once_with()
 
     @mock.patch.object(ValidatorV1, 'validate_file_by_schema')
     def test_check_schemas(self, validator_mock):
@@ -62,3 +66,31 @@ class TestValidatorV1(BaseTestCase):
              mock.call('param2', v1.SHELL_PARAMETERS,
                        self.validator.tasks_path)],
             validate_schema_mock.call_args_list)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')
+    def test_check_releases_paths(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'releases': [{
+                'deployment_scripts_path': '/tmp/deployment_scripts_path',
+                'repository_path': '/tmp/repository_path'}]}
+
+        utils_mock.exists.return_value = True
+        self.validator.check_releases_paths()
+        self.assertEqual(
+            utils_mock.exists.call_args_list,
+            [mock.call('/tmp/deployment_scripts_path'),
+             mock.call('/tmp/repository_path')])
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')
+    def test_check_releases_paths_error(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'releases': [{
+                'deployment_scripts_path': '/tmp/deployment_scripts_path',
+                'repository_path': '/tmp/repository_path'}]}
+
+        utils_mock.exists.return_value = False
+        with self.assertRaisesRegexp(
+                errors.ReleasesDirectoriesError,
+                'Cannot find directories /tmp/deployment_scripts_path'
+                ', /tmp/repository_path for release "'):
+            self.validator.check_releases_paths()
