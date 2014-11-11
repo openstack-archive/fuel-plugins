@@ -32,6 +32,8 @@ class ValidatorV1(BaseValidator):
         super(ValidatorV1, self).__init__(*args, **kwargs)
         self.meta_path = join_path(self.plugin_path, 'metadata.yaml')
         self.tasks_path = join_path(self.plugin_path, 'tasks.yaml')
+        self.env_conf_path = join_path(
+            self.plugin_path, 'environment_config.yaml')
 
     def validate(self):
         self.check_schemas()
@@ -42,6 +44,7 @@ class ValidatorV1(BaseValidator):
         logger.debug('Start schema checking "%s"', self.plugin_path)
         self.validate_file_by_schema(v1.METADATA_SCHEMA, self.meta_path)
         self.validate_file_by_schema(v1.TASKS_SCHEMA, self.tasks_path)
+        self.validate_file_by_schema(v1.ENV_CONFIG_SCHEMA, self.env_conf_path)
 
     def check_tasks(self):
         """Json schema doesn't have any conditions, so we have

@@ -48,7 +48,10 @@ class TestValidatorV1(BaseTestCase):
                 self.validator.meta_path),
              mock.call(
                  v1.TASKS_SCHEMA,
-                 self.validator.tasks_path)],
+                 self.validator.tasks_path),
+             mock.call(
+                 v1.ENV_CONFIG_SCHEMA,
+                 self.validator.env_conf_path)],
             validator_mock.call_args_list)
 
     @mock.patch.object(ValidatorV1, 'validate_schema')

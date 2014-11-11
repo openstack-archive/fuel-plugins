@@ -91,3 +91,19 @@ TASKS_SCHEMA = {
     '$schema': 'http://json-schema.org/draft-04/schema#',
     'type': 'array',
     'items': TASK_SCHEMA}
+
+
+ENV_CONFIG_SCHEMA = {
+    '$schema': 'http://json-schema.org/draft-04/schema#',
+    'type': 'object',
+    'properties': {
+        'attributes': {
+            'type': 'object',
+            'additionalProperties': {
+                'type': 'object',
+                'required': ['type', 'weight', 'value', 'label'],
+                'properties': {
+                    'type': {'type': 'string'},
+                    'weight': {'type': 'integer'},
+                    'value': {'type': 'string'},
+                    'label': {'type': 'string'}}}}}}
