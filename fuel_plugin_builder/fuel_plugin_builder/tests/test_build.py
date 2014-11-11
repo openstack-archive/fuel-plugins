@@ -101,7 +101,8 @@ class TestBuild(BaseTestCase):
         path = '/repo/path'
         self.builder.build_ubuntu_repos([path])
         utils_mock.exec_cmd.assert_called_once_with(
-            'dpkg-scanpackages /repo/path | gzip -c9 > /repo/path/Packages.gz')
+            'dpkg-scanpackages . | gzip -c9 > Packages.gz',
+            cwd=path)
 
     @mock.patch('fuel_plugin_builder.actions.build.utils')
     def test_build_centos_repos(self, utils_mock):

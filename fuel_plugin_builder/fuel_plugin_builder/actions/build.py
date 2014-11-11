@@ -81,9 +81,8 @@ class BuildPlugin(BaseAction):
     def build_ubuntu_repos(cls, releases_paths):
         for repo_path in releases_paths:
             utils.exec_cmd(
-                'dpkg-scanpackages {0} | gzip -c9 > {1}'.format(
-                    repo_path,
-                    join_path(repo_path, 'Packages.gz')))
+                'dpkg-scanpackages . | gzip -c9 > Packages.gz',
+                cwd=repo_path)
 
     @classmethod
     def build_centos_repos(cls, releases_paths):

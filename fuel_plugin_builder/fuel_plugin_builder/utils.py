@@ -62,18 +62,20 @@ def which(cmd):
     return None
 
 
-def exec_cmd(cmd):
+def exec_cmd(cmd, cwd=None):
     """Execute command with logging.
     Ouput of stdout and stderr will be written
     in log.
 
     :param cmd: shell command
+    :param cwd: string or None
     """
     logger.debug(u'Execute command "{0}"'.format(cmd))
     child = subprocess.Popen(
         cmd, stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        shell=True)
+        shell=True,
+        cwd=cwd)
 
     logger.debug(u'Stdout and stderr of command "{0}":'.format(cmd))
     for line in child.stdout:
