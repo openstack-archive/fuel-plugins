@@ -101,7 +101,6 @@ ENV_CONFIG_SCHEMA = {
             'type': 'object',
             'additionalProperties': {
                 'type': 'object',
-                'required': ['type', 'weight', 'value', 'label'],
                 'properties': {
                     'type': {'type': 'string'},
                     'weight': {'type': 'integer'},
