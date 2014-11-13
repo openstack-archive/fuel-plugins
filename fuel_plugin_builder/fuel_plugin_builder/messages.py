@@ -19,7 +19,14 @@ header = '=' * 50
 
 
 install_required_packages = """
-Was not able to find required packages, try to run:
+Was not able to find required packages.
+
+If you use Ubuntu, run:
 
     # sudo apt-get install createrepo rpm dpkg-dev
+
+If you use CentOS, run:
+
+    # yum install createrepo rpm dpkg-devel
+
 """
