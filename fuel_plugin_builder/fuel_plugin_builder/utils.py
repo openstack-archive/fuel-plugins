@@ -152,6 +152,7 @@ def render_files_in_dir(dir_path, params):
             src_path = os.path.join(root, file_path)
             dst_path = os.path.join(root, name)
             render_to_file(src_path, dst_path, params)
+            copy_file_permissions(src_path, dst_path)
             remove(src_path)
 
 
