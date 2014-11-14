@@ -216,10 +216,12 @@ class TestUtils(BaseTestCase):
         open_mock.assert_called_once_with(path)
         yaml_mock.load.assert_called_once_with(file_mock)
 
+    @mock.patch('fuel_plugin_builder.utils.copy_file_permissions')
     @mock.patch('fuel_plugin_builder.utils.render_to_file')
     @mock.patch('fuel_plugin_builder.utils.remove')
     @mock.patch('fuel_plugin_builder.utils.os.walk')
-    def test_render_files_in_dir(self, walk_mock, remove_mock, render_mock):
+    def test_render_files_in_dir(
+            self, walk_mock, remove_mock, render_mock, copy_permissions_mock):
         dir_path = '/tmp/some_plugin'
         walk_mock.return_value = [
             [dir_path, '', ['file1.txt.mako', 'file2.txt']],
@@ -227,6 +229,7 @@ class TestUtils(BaseTestCase):
         params = {'param1': 'value1', 'param2': 'value2'}
 
         utils.render_files_in_dir(dir_path, params)
+
         self.assertEqual(
             [mock.call('/tmp/some_plugin/file1.txt.mako',
                        '/tmp/some_plugin/file1.txt',
@@ -240,3 +243,10 @@ class TestUtils(BaseTestCase):
             [mock.call('/tmp/some_plugin/file1.txt.mako'),
              mock.call('/tmp/some_plugin/file4.mako')],
             remove_mock.call_args_list)
+
+        self.assertEqual(
+            [mock.call('/tmp/some_plugin/file1.txt.mako',
+                       '/tmp/some_plugin/file1.txt'),
+             mock.call('/tmp/some_plugin/file4.mako',
+                       '/tmp/some_plugin/file4')],
+            copy_permissions_mock.call_args_list)
