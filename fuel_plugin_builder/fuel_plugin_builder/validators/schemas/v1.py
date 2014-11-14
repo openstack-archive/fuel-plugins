@@ -104,5 +104,5 @@ ENV_CONFIG_SCHEMA = {
                 'properties': {
                     'type': {'type': 'string'},
                     'weight': {'type': 'integer'},
-                    'value': {'type': 'string'},
+                    'value': {'type': ['string', 'boolean']},
                     'label': {'type': 'string'}}}}}}
