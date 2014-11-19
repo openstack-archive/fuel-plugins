@@ -1,0 +1,1 @@
+if $cluster_mode == 'ha_compact' { include vpnaas::prepare }
