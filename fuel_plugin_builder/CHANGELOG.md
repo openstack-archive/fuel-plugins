@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.0.2 (UNRELEASED)
+
 ## 1.0.1 (2014-11-20)
 
 - Show instruction for CentOS if not all requirements are installed
