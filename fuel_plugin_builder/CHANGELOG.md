@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.1 (SET DATE)
+## 1.0.1 (2014-11-20)
 
 - Show instruction for CentOS if not all requirements are installed
 - Fixed bug, deploy.sh doesn't have execution permission
