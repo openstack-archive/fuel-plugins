@@ -49,8 +49,21 @@ class TestBaseValidator(BaseTestCase):
     def test_validate_schema_raises_error(self, validate_mock):
         with self.assertRaisesRegexp(
                 errors.ValidationError,
-                'Wrong value format "", for file "file_path", p1'):
+                'File "file_path", p1'):
             self.validator.validate_schema(self.data, self.schema, 'file_path')
+        validate_mock.assert_called_once_with(
+            self.data,
+            self.schema)
+
+    @mock.patch('fuel_plugin_builder.validators.base.jsonschema.validate',
+                side_effect=jsonschema.exceptions.ValidationError(
+                    'p1', 'p2', ['path0', 'path1']))
+    def test_validate_schema_raises_error_path_in_message(self, validate_mock):
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                'File "file_path", p1, value path "path0 -> path1"'):
+            self.validator.validate_schema(self.data, self.schema, 'file_path')
+
         validate_mock.assert_called_once_with(
             self.data,
             self.schema)
