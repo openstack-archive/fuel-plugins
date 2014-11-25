@@ -65,9 +65,11 @@ class TestValidatorV1(BaseTestCase):
 
         self.assertEqual(
             [mock.call('param1', v1.PUPPET_PARAMETERS,
-                       self.validator.tasks_path),
+                       self.validator.tasks_path,
+                       value_path=[0, 'parameters']),
              mock.call('param2', v1.SHELL_PARAMETERS,
-                       self.validator.tasks_path)],
+                       self.validator.tasks_path,
+                       value_path=[1, 'parameters'])],
             validate_schema_mock.call_args_list)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')

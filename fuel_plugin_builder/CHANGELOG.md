@@ -2,6 +2,10 @@
 
 ## 1.0.2 (UNRELEASED)
 
+- Show correct message, if 'timeout' field is not specified for task in tasks.yaml
+  https://bugs.launchpad.net/fuel/+bug/1396234
+- Print error messages to stderr instead of stdout
+
 ## 1.0.1 (2014-11-20)
 
 - Show instruction for CentOS if not all requirements are installed

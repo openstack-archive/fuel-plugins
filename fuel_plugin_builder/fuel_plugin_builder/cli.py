@@ -16,6 +16,7 @@
 
 import argparse
 import logging
+import six
 import sys
 
 from fuel_plugin_builder import actions
@@ -28,12 +29,25 @@ from fuel_plugin_builder.logger import configure_logger
 logger = logging.getLogger(__name__)
 
 
+def print_err(line):
+    sys.stderr.write(six.text_type(line))
+    sys.stderr.write('\n')
+
+
 def handle_exception(exc):
     logger.exception(exc)
 
     if isinstance(exc, errors.FuelCannotFindCommandError):
-        print(messages.header)
-        print(messages.install_required_packages)
+        print_err(messages.header)
+        print_err(messages.install_required_packages)
+
+    elif isinstance(exc, errors.ValidationError):
+        print_err('Validation failed')
+        print_err(exc)
+
+    else:
+        print_err('Unexpected error')
+        print_err(exc)
 
     sys.exit(-1)
 
