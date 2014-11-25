@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import jsonschema
 import mock
 
 from fuel_plugin_builder import errors
@@ -32,7 +31,15 @@ class TestBaseValidator(BaseTestCase):
         self.plugin_path = '/tmp/plugin_path'
         self.validator = NewValidator(self.plugin_path)
         self.data = {'data': 'data1'}
-        self.schema = {'schema': 'schema1'}
+        self.schema = self.make_schema(['data'], {'data': {'type': 'string'}})
+
+    @classmethod
+    def make_schema(cls, required, properties):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'object',
+            'required': required,
+            'properties': properties}
 
     @mock.patch('fuel_plugin_builder.validators.base.jsonschema')
     def test_validate_schema(self, schema_mock):
@@ -44,16 +51,27 @@ class TestBaseValidator(BaseTestCase):
             self.data,
             self.schema)
 
-    @mock.patch('fuel_plugin_builder.validators.base.jsonschema.validate',
-                side_effect=jsonschema.exceptions.ValidationError('p1', 'p2'))
-    def test_validate_schema_raises_error(self, validate_mock):
+    def test_validate_schema_raises_error(self):
+        schema = self.make_schema(['key'], {'key': {'type': 'string'}})
+        data = {}
+
         with self.assertRaisesRegexp(
                 errors.ValidationError,
-                'Wrong value format "", for file "file_path", p1'):
-            self.validator.validate_schema(self.data, self.schema, 'file_path')
-        validate_mock.assert_called_once_with(
-            self.data,
-            self.schema)
+                "File 'file_path', 'key' is a required property"):
+            self.validator.validate_schema(data, schema, 'file_path')
+
+    def test_validate_schema_raises_error_path_in_message(self):
+        schema = self.make_schema(
+            ['key'],
+            {'key': {'type': 'array', 'items': {'type': 'string'}}})
+        data = {'key': ['str', 'str', 0]}
+
+        expected_error = ("File 'file_path', 0 is not of type "
+                          "'string', value path 'key -> 2'")
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                expected_error):
+            self.validator.validate_schema(data, schema, 'file_path')
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     @mock.patch(

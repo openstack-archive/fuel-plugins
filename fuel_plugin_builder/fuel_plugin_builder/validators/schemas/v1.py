@@ -69,17 +69,21 @@ SHELL_PARAMETERS = {
         'cmd': {'type': 'string'}}}
 
 
+TASK_BASE_PARAMETERS = {
+    '$schema': 'http://json-schema.org/draft-04/schema#',
+    'type': 'object',
+    'required': ['timeout'],
+    'properties': {
+        'timeout': POSITIVE_INTEGER}}
+
+
 TASK_SCHEMA = {
     '$schema': 'http://json-schema.org/draft-04/schema#',
     'type': 'object',
     'required': ['parameters', 'type', 'stage', 'role'],
     'properties': {
         'type': {'enum': ['puppet', 'shell']},
-        'parameters': {
-            'type': 'object',
-            'oneOf': [
-                PUPPET_PARAMETERS,
-                SHELL_PARAMETERS]},
+        'parameters': TASK_BASE_PARAMETERS,
         'stage': {'enum': ['post_deployment', 'pre_deployment']},
         'role': {
             'oneOf': [
