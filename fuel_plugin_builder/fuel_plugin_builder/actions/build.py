@@ -28,7 +28,11 @@ logger = logging.getLogger(__name__)
 
 class BuildPlugin(BaseAction):
 
-    requires = ['rpm', 'createrepo', 'dpkg-scanpackages']
+    # Requirements to run build action
+    build_requires =[]
+
+    # Requirements to build package repos
+    build_repos_requires = ['rpm', 'createrepo', 'dpkg-scanpackages']
 
     def __init__(self, plugin_path):
         self.plugin_path = plugin_path
@@ -40,7 +44,11 @@ class BuildPlugin(BaseAction):
         logger.debug('Start plugin building "%s"', self.plugin_path)
         self.run_pre_build_hook()
         self.check()
-        self.build_repos()
+        self.build()
+        if [ item for item in self.meta['releases'] if
+              item.get('repository_path', None)]:
+            self._check_requirements(self.build_repos_requires)
+            self.build_repos()
         self.make_package()
 
     def run_pre_build_hook(self):
@@ -60,7 +68,7 @@ class BuildPlugin(BaseAction):
 
         utils.make_tar_gz(self.build_dir, tar_path, full_name)
 
-    def build_repos(self):
+    def build(self):
         utils.remove(self.build_dir)
         utils.create_dir(self.build_dir)
 
@@ -68,6 +76,7 @@ class BuildPlugin(BaseAction):
             join_path(self.plugin_path, '*'),
             self.build_dir)
 
+    def build_repos(self):
         releases_paths = {}
         for release in self.meta['releases']:
             releases_paths.setdefault(release['os'], [])
@@ -95,11 +104,11 @@ class BuildPlugin(BaseAction):
             utils.exec_cmd('createrepo -o {0} {0}'.format(repo_path))
 
     def check(self):
-        self._check_requirements()
+        self._check_requirements(self.build_requires)
         self._check_structure()
 
-    def _check_requirements(self):
-        not_found = filter(lambda r: not utils.which(r), self.requires)
+    def _check_requirements(self, requirements):
+        not_found = filter(lambda r: not utils.which(r), requirements)
 
         if not_found:
             raise errors.FuelCannotFindCommandError(
