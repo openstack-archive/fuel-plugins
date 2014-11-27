@@ -9,7 +9,7 @@ class cindergfs::params {
     $volume_service_name    = 'cinder-volume'
 
   } elsif($::osfamily == 'RedHat') {
-    $glusterfs_package_name = 'glusterfs'
+    $glusterfs_package_name = 'glusterfs-fuse'
     $package_name           = 'openstack-cinder'
     $volume_service_name    = 'openstack-cinder-volume'
 
