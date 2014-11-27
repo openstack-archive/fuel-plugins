@@ -32,19 +32,32 @@ class BaseValidator(object):
     def __init__(self, plugin_path):
         self.plugin_path = plugin_path
 
-    def validate_schema(self, data, schema, path):
-        logger.debug('Start schema validation for %s file, %s', path, schema)
+    def validate_schema(self, data, schema, file_path, value_path=None):
+        logger.debug(
+            'Start schema validation for %s file, %s', file_path, schema)
+
         try:
             jsonschema.validate(data, schema)
         except jsonschema.exceptions.ValidationError as exc:
-            value_path = ' -> '.join(map(six.text_type, exc.absolute_path))
             raise errors.ValidationError(
-                'Wrong value format "{0}", for file "{1}", {2}'.format(
-                    value_path, path, exc.message))
+                self._make_error_message(exc, file_path, value_path))
 
-    def validate_file_by_schema(self, schema, path):
-        data = utils.parse_yaml(path)
-        self.validate_schema(data, schema, path)
+    def _make_error_message(self, exc, file_path, value_path):
+        error_msg = "File '{0}', {1}".format(file_path, exc.message)
+
+        if value_path is None and exc.absolute_path:
+            value_path = exc.absolute_path
+
+        if value_path:
+            value_path = ' -> '.join(map(six.text_type, value_path))
+            error_msg = '{0}, {1}'.format(
+                error_msg, "value path '{0}'".format(value_path))
+
+        return error_msg
+
+    def validate_file_by_schema(self, schema, file_path):
+        data = utils.parse_yaml(file_path)
+        self.validate_schema(data, schema, file_path)
 
     @abc.abstractmethod
     def validate(self):

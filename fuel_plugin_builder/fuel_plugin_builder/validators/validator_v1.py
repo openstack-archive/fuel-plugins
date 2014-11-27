@@ -54,13 +54,17 @@ class ValidatorV1(BaseValidator):
         logger.debug('Start tasks checking "%s"', self.tasks_path)
         tasks = utils.parse_yaml(self.tasks_path)
 
-        for task in tasks:
+        for idx, task in enumerate(tasks):
             if task['type'] == 'puppet':
                 schema = v1.PUPPET_PARAMETERS
             elif task['type'] == 'shell':
                 schema = v1.SHELL_PARAMETERS
 
-            self.validate_schema(task['parameters'], schema, self.tasks_path)
+            self.validate_schema(
+                task['parameters'],
+                schema,
+                self.tasks_path,
+                value_path=[idx, 'parameters'])
 
     def check_releases_paths(self):
         meta = utils.parse_yaml(self.meta_path)
