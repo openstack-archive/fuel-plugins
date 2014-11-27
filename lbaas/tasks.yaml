@@ -1,5 +1,5 @@
-# Deployment is required for controllers
-- role: ['controller']
+# Deployment is required for cinder nodes
+- role: ['cinder']
   stage: post_deployment
   type: puppet
   parameters:
