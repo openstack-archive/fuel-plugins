@@ -97,16 +97,30 @@ TASKS_SCHEMA = {
     'items': TASK_SCHEMA}
 
 
-ENV_CONFIG_SCHEMA = {
+ATTR_ELEMENT_SCHEMA = {
+    '$schema': 'http://json-schema.org/draft-04/schema#',
+    'type': 'object',
+    'required': ['type', 'label', 'weight', 'value'],
+    'properties': {
+        'type': {'type': 'string'},
+        'weight': {'type': 'integer'},
+        'value': {'type': ['string', 'boolean']},
+        'label': {'type': 'string'},
+        'values': {'type': 'array', 'items':
+                   {'type': 'object',
+                    'required': ['data', 'label'],
+                    'properties': {
+                        'data': {'type': 'string'},
+                        'label': {'type': 'string'}}}}}}
+
+
+ATTR_META_SCHEMA = {
     '$schema': 'http://json-schema.org/draft-04/schema#',
     'type': 'object',
     'properties': {
-        'attributes': {
-            'type': 'object',
-            'additionalProperties': {
-                'type': 'object',
-                'properties': {
-                    'type': {'type': 'string'},
-                    'weight': {'type': 'integer'},
-                    'value': {'type': ['string', 'boolean']},
-                    'label': {'type': 'string'}}}}}}
+        'label': {'type': 'string'},
+        'weight': {'type': 'integer'},
+        'toggleable': {'type': 'boolean'},
+        'enabled': {'type': 'boolean'},
+        'restrictions': {
+            'type': 'array', 'items': {'type': ['string', 'object']}}}}
