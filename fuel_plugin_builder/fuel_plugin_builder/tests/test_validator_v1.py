@@ -39,8 +39,9 @@ class TestValidatorV1(BaseTestCase):
         check_schemas_mock.assert_called_once_with()
         check_paths_mock.assert_called_once_with()
 
+    @mock.patch.object(ValidatorV1, 'check_env_config_attrs')
     @mock.patch.object(ValidatorV1, 'validate_file_by_schema')
-    def test_check_schemas(self, validator_mock):
+    def test_check_schemas(self, validator_mock, check_env_conf_mock):
         self.validator.check_schemas()
         self.assertEqual(
             [mock.call(
@@ -48,11 +49,9 @@ class TestValidatorV1(BaseTestCase):
                 self.validator.meta_path),
              mock.call(
                  v1.TASKS_SCHEMA,
-                 self.validator.tasks_path),
-             mock.call(
-                 v1.ENV_CONFIG_SCHEMA,
-                 self.validator.env_conf_path)],
+                 self.validator.tasks_path)],
             validator_mock.call_args_list)
+        check_env_conf_mock.assert_called_once_with()
 
     @mock.patch.object(ValidatorV1, 'validate_schema')
     @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')
@@ -99,3 +98,45 @@ class TestValidatorV1(BaseTestCase):
                 'Cannot find directories /tmp/deployment_scripts_path'
                 ', /tmp/repository_path for release "'):
             self.validator.check_releases_paths()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    def test_check_env_config_attrs_do_not_fail_if_empty(
+            self, parse_yaml_mock):
+        parse_yaml_mock.return_value = None
+        self.validator.check_env_config_attrs()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    def test_check_env_config_attrs_fail_if_none(self, parse_yaml_mock):
+        parse_yaml_mock.return_value = {'attributes': None}
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/environment_config.yaml', None "
+                "is not of type 'object', value path 'attributes'"):
+            self.validator.check_env_config_attrs()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    def test_check_env_config_attrs_checks_metadata(self, parse_yaml_mock):
+        parse_yaml_mock.return_value = {
+            'attributes': {'metadata': []}}
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/environment_config.yaml', \[\] is "
+                "not of type 'object', value path 'attributes -> metadata'"):
+            self.validator.check_env_config_attrs()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    def test_check_env_config_attrs_checks_attrs(self, parse_yaml_mock):
+        parse_yaml_mock.return_value = {
+            'attributes': {
+                'key1': {
+                    'type': True,
+                    'label': 'text',
+                    'value': 'text',
+                    'weight': 1}}}
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/environment_config.yaml', True is not "
+                "of type 'string', value path 'attributes -> key1 -> type'"):
+            self.validator.check_env_config_attrs()
