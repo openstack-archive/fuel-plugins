@@ -18,6 +18,8 @@ import logging
 
 from os.path import join as join_path
 
+import six
+
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.base import BaseValidator
@@ -44,7 +46,35 @@ class ValidatorV1(BaseValidator):
         logger.debug('Start schema checking "%s"', self.plugin_path)
         self.validate_file_by_schema(v1.METADATA_SCHEMA, self.meta_path)
         self.validate_file_by_schema(v1.TASKS_SCHEMA, self.tasks_path)
-        self.validate_file_by_schema(v1.ENV_CONFIG_SCHEMA, self.env_conf_path)
+        self.check_env_config_attrs()
+
+    def check_env_config_attrs(self):
+        """Check attributes in environment config file.
+
+        'attributes' is not required field, but if it's
+        present it should contain UI elements OR metadata
+        structure.
+        """
+        config = utils.parse_yaml(self.env_conf_path)
+        if not config:
+            return
+
+        self.validate_schema(config, v1.ATTR_ROOT_SCHEMA, self.env_conf_path)
+
+        attrs = config.get('attributes', {})
+        for attr_id, attr in six.iteritems(attrs):
+            schema = v1.ATTR_ELEMENT_SCHEMA
+            # Metadata object is totally different
+            # from the others, we have to set different
+            # validator for it
+            if attr_id == 'metadata':
+                schema = v1.ATTR_META_SCHEMA
+
+            self.validate_schema(
+                attr,
+                schema,
+                self.env_conf_path,
+                value_path=['attributes', attr_id])
 
     def check_tasks(self):
         """Json schema doesn't have any conditions, so we have
@@ -54,15 +84,14 @@ class ValidatorV1(BaseValidator):
         logger.debug('Start tasks checking "%s"', self.tasks_path)
         tasks = utils.parse_yaml(self.tasks_path)
 
-        for idx, task in enumerate(tasks):
-            if task['type'] == 'puppet':
-                schema = v1.PUPPET_PARAMETERS
-            elif task['type'] == 'shell':
-                schema = v1.SHELL_PARAMETERS
+        schemas = {
+            'puppet': v1.PUPPET_PARAMETERS,
+            'shell': v1.SHELL_PARAMETERS}
 
+        for idx, task in enumerate(tasks):
             self.validate_schema(
                 task['parameters'],
-                schema,
+                schemas[task['type']],
                 self.tasks_path,
                 value_path=[idx, 'parameters'])
 
