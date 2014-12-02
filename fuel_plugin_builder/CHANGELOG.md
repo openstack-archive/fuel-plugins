@@ -2,9 +2,15 @@
 
 ## 1.0.2 (UNRELEASED)
 
-- Show correct message, if 'timeout' field is not specified for task in tasks.yaml
+- Show correct message, if 'timeout' field is not specified for
+  task in tasks.yaml
   https://bugs.launchpad.net/fuel/+bug/1396234
 - Print error messages to stderr instead of stdout
+- Fixed validation for environment_config.yaml file, "attributes"
+  field is optional
+  https://bugs.launchpad.net/fuel/+bug/1396491
+- Improved validation for environment_config.yaml file, added
+  required fields for attributes
 
 ## 1.0.1 (2014-11-20)
 

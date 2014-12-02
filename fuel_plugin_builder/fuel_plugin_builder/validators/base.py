@@ -45,8 +45,11 @@ class BaseValidator(object):
     def _make_error_message(self, exc, file_path, value_path):
         error_msg = "File '{0}', {1}".format(file_path, exc.message)
 
-        if value_path is None and exc.absolute_path:
-            value_path = exc.absolute_path
+        if value_path is None:
+            value_path = []
+
+        if exc.absolute_path:
+            value_path.extend(exc.absolute_path)
 
         if value_path:
             value_path = ' -> '.join(map(six.text_type, value_path))
