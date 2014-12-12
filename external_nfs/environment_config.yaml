@@ -1,0 +1,19 @@
+attributes:
+  endpoint:
+    value: ''
+    label: 'NFS endpoints'
+    description: 'comma separated HOST:SHARE values'
+    weight: 25
+    type: "text"
+  mount_options:
+    value: ''
+    label: 'NFS mount options'
+    description: 'optional NFS mount parameters'
+    weight: 25
+    type: "text"
+  sparsed_volumes:
+    type: "checkbox"
+    weight: 30
+    value: false
+    label: "NFS sparsed volumes"
+    description: ""
