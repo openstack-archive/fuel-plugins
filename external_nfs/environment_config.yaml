@@ -1,0 +1,7 @@
+attributes:
+  endpoint:
+    value: ''
+    label: 'NFS storage backend for Cinder Storage'
+    description: 'NFS storage backend for Cinder Storage'
+    weight: 25
+    type: "text"
