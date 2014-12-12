@@ -1,4 +1,7 @@
 *.egg-info
 *.pyc
+*.fp
 .tox
-
+.idea
+.venv
+.build
