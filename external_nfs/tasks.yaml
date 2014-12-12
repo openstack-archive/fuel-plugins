@@ -1,0 +1,15 @@
+# This task is required for cinder nodes
+- role: ['cinder']
+  stage: post_deployment
+  type: shell
+  parameters:
+    cmd: ./deploy.sh
+    timeout: 180
+
+- role: ['cinder']
+  stage: post_deployment
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/site.pp
+    puppet_modules: puppet/modules/
+    timeout: 360
