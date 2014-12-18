@@ -11,6 +11,8 @@
   https://bugs.launchpad.net/fuel/+bug/1396491
 - Improved validation for environment_config.yaml file, added
   required fields for attributes
+- Generate file with checksums for each file in the plugin
+  https://bugs.launchpad.net/fuel/+bug/1403960
 
 ## 1.0.1 (2014-11-20)
 
