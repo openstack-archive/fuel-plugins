@@ -47,6 +47,7 @@ class TestBuild(BaseTestCase):
             'run_pre_build_hook',
             'check',
             'build_repos',
+            'add_checksums_file',
             'make_package']
 
         self.mock_methods(self.builder, mocked_methods)
@@ -54,6 +55,7 @@ class TestBuild(BaseTestCase):
 
         self.builder.run_pre_build_hook.assert_called_once_with()
         self.builder.check.assert_called_once_with()
+        self.builder.add_checksums_file()
         self.builder.build_repos.assert_called_once_with()
         self.builder.make_package()
 
@@ -148,3 +150,10 @@ class TestBuild(BaseTestCase):
         manager_class_mock.assert_called_once_with(self.plugin_path)
         validator_manager_obj.get_validator.assert_called_once_with()
         validator_mock.validate.assert_called_once_with()
+
+    @mock.patch(
+        'fuel_plugin_builder.actions.build.utils.create_checksums_file')
+    def test_add_checksums_file(self, create_checksums_file_mock):
+        self.builder.add_checksums_file()
+        create_checksums_file_mock.assert_called_once_with(
+            self.builder.build_dir, self.builder.checksums_path)

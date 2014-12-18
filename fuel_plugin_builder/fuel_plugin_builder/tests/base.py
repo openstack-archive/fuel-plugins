@@ -39,6 +39,9 @@ class FakeFile(StringIO):
     def __exit__(self, *args):
         pass
 
+    def writelines(self, lines):
+        self.write(''.join(lines))
+
 
 class BaseTestCase(TestCase):
     """Base class for test cases

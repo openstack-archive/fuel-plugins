@@ -35,17 +35,22 @@ class BuildPlugin(BaseAction):
         self.pre_build_hook_path = join_path(plugin_path, 'pre_build_hook')
         self.meta = utils.parse_yaml(join_path(plugin_path, 'metadata.yaml'))
         self.build_dir = join_path(plugin_path, '.build')
+        self.checksums_path = join_path(self.build_dir, 'checksums.sha1')
 
     def run(self):
         logger.debug('Start plugin building "%s"', self.plugin_path)
         self.run_pre_build_hook()
         self.check()
         self.build_repos()
+        self.add_checksums_file()
         self.make_package()
 
     def run_pre_build_hook(self):
         if utils.which(self.pre_build_hook_path):
             utils.exec_cmd(self.pre_build_hook_path)
+
+    def add_checksums_file(self):
+        utils.create_checksums_file(self.build_dir, self.checksums_path)
 
     def make_package(self):
         full_name = '{0}-{1}'.format(self.meta['name'],

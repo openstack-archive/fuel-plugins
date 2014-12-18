@@ -22,6 +22,7 @@ from mock import patch
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
+from fuel_plugin_builder.tests.base import FakeFile
 from fuel_plugin_builder import utils
 
 
@@ -250,3 +251,51 @@ class TestUtils(BaseTestCase):
              mock.call('/tmp/some_plugin/file4.mako',
                        '/tmp/some_plugin/file4')],
             copy_permissions_mock.call_args_list)
+
+    def test_calculate_sha(self):
+        file_path = '/tmp/file'
+
+        with mock.patch('__builtin__.open',
+                        self.mock_open('fake file content')):
+
+            self.assertEqual(
+                utils.calculate_sha(file_path),
+                '5083c27641e7e4ae287d690cb3fafb4dd6e8f6ab')
+
+    @mock.patch('fuel_plugin_builder.utils.calculate_sha')
+    @mock.patch('fuel_plugin_builder.utils.os.walk')
+    def test_calculate_checksums(self, walk_mock, sha_mock):
+        dir_path = '/tmp/dir_path'
+        walk_mock.return_value = [
+            [dir_path, '', ['file1.txt', 'file2.txt']],
+            [dir_path, '', ['file3.txt']]]
+
+        sha_mock.side_effect = ['sha_1', 'sha_2', 'sha_3']
+
+        self.assertEqual(
+            utils.calculate_checksums(dir_path),
+            [{'file_path': 'file1.txt', 'checksum': 'sha_1'},
+             {'file_path': 'file2.txt', 'checksum': 'sha_2'},
+             {'file_path': 'file3.txt', 'checksum': 'sha_3'}])
+
+        self.assertEqual(
+            [mock.call('/tmp/dir_path/file1.txt'),
+             mock.call('/tmp/dir_path/file2.txt'),
+             mock.call('/tmp/dir_path/file3.txt')],
+            sha_mock.call_args_list)
+
+    @mock.patch('fuel_plugin_builder.utils.calculate_checksums')
+    def test_create_checksums_file(self, calculate_mock):
+        calculate_mock.return_value = [
+            {'checksum': 'checksum2', 'file_path': 'file2.txt'},
+            {'checksum': 'checksum', 'file_path': 'file1.txt'}]
+
+        fileobj = FakeFile('')
+        open_mock = mock.MagicMock(return_value=fileobj)
+
+        with mock.patch('__builtin__.open', open_mock):
+            utils.create_checksums_file('/tmp/dir', '/tmp/checksums')
+
+        self.assertEqual(
+            fileobj.getvalue(),
+            'checksum file1.txt\nchecksum2 file2.txt\n')
