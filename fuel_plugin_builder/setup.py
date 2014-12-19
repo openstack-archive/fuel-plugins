@@ -28,7 +28,7 @@ def find_requires():
 
 setup(
     name='fuel-plugin-builder',
-    version='1.0.2',
+    version='1.0.3.dev',
     description='Helps to create and build fuel plugins',
     long_description="""Helps to create and build fuel plugins""",
     classifiers=[

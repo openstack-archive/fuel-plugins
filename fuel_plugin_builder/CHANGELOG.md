@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.0.3 (UNRELEASED)
+
 ## 1.0.2 (2014-12-19)
 
 - Show correct message, if 'timeout' field is not specified for
