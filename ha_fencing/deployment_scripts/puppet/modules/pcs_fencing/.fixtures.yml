@@ -1,0 +1,9 @@
+fixtures:
+  repositories:
+    #corosync: 'https://github.com/puppetlabs/puppetlabs-corosync.git'
+    #stdlib: 'https://github.com/puppetlabs/puppetlabs-stdlib.git'
+      
+  symlinks:
+    pcs_fencing: "#{source_dir}"
+    corosync: "#{source_dir}/../corosync"
+    stdlib: "#{source_dir}/../stdlib"

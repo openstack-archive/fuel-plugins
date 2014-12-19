@@ -1,0 +1,117 @@
+#fence_policy: reboot
+fence_topology:
+  node-10.test.local:
+    '1':
+     - ipmi_reset
+    '2':
+     - psu_off
+     - psu_on
+  node-11.test.local:
+    '1':
+     - ipmi_reset
+    '2':
+     - psu_off
+     - psu_on
+  node-12.test.local:
+    '1':
+     - virsh_reset
+fence_primitives:
+  ipmi_reset:
+    agent_type: fence_ipmilan
+    operations:
+      monitor:
+        interval: 3600s
+        timeout: 120s
+      start:
+        interval: '0'
+        timeout: 120s
+        on-fail: restart
+      stop:
+        interval: '0'
+        timeout: 1800s
+        on-fail: restart
+    meta:
+      migration-threshold: '5'
+      failure-timeout: '180'
+    parameters:
+      ipaddr: 10.11.12.13
+      login: ipmi_user
+      passwd: ipmi_pass
+      privlvl: operator
+      auth: password
+      power_wait: '15'
+      delay: '300'
+      action: reboot
+      pcmk_reboot_action: reboot
+      pcmk_off_action: reboot
+      pcmk_host_list: node-10.test.local
+  psu_off:
+    agent_type: fence_apc_snmp
+    operations:
+      monitor:
+        interval: 3600s
+        timeout: 120s
+      start:
+        interval: '0'
+        timeout: 120s
+        on-fail: restart
+      stop:
+        interval: '0'
+        timeout: 1800s
+        on-fail: fence
+    meta:
+      migration-threshold: '5'
+      failure-timeout: '180'
+    parameters:
+      ipaddr: 10.11.12.14
+      login: tripplite
+      community: QWErty123
+      snmp_auth_prot: MD5
+      snmp_priv_prot: DES
+      port: '5'
+      snmp_sec_level: authPriv
+      passwd: QWErty123
+      power_timeout: '30'
+      shell_timeout: '10'
+      login_timeout: '10'
+      power_wait: '15'
+      delay: '300'
+      action: 'off'
+      pcmk_reboot_action: 'off'
+      pcmk_off_action: 'off'
+      pcmk_host_list: node-10.test.local
+  psu_on:
+    agent_type: fence_apc_snmp
+    operations:
+      monitor:
+        interval: 3600s
+        timeout: 120s
+      start:
+        interval: '0'
+        timeout: 120s
+        on-fail: restart
+      stop:
+        interval: '0'
+        timeout: 1800s
+        on-fail: fence
+    meta:
+      migration-threshold: '5'
+      failure-timeout: '180'
+    parameters:
+      ipaddr: 10.11.12.14
+      login: tripplite
+      community: QWErty123
+      snmp_auth_prot: MD5
+      snmp_priv_prot: DES
+      port: '5'
+      snmp_sec_level: authPriv
+      passwd: QWErty123
+      power_timeout: '30'
+      shell_timeout: '10'
+      login_timeout: '10'
+      power_wait: '15'
+      delay: '300'
+      action: 'on'
+      pcmk_reboot_action: 'on'
+      pcmk_off_action: 'on'
+      pcmk_host_list: node-10.test.local
