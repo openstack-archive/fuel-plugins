@@ -1,0 +1,5 @@
+deployment_scripts/puppet/modules/corosync
+deployment_scripts/puppet/modules/stdlib
+.build
+tmp
+*.fp
