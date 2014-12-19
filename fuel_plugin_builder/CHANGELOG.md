@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.2 (UNRELEASED)
+## 1.0.2 (2014-12-19)
 
 - Show correct message, if 'timeout' field is not specified for
   task in tasks.yaml
