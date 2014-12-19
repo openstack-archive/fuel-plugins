@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -eux
+
+ROOT="$(dirname `readlink -f $0`)"
+MODULES="${ROOT}"/deployment_scripts/puppet/modules/
+TMP_DIR="${ROOT}"/tmp
+mkdir -p "${MODULES}"
+mkdir -p "${TMP_DIR}"
+#Puppetlabs/stdlib 4.5.0
+REPO_PATH='https://github.com/puppetlabs/puppetlabs-stdlib/tarball/80f09623b63cf6946b5913b629911e2c49b5d1dd'
+
+wget -qO- "${REPO_PATH}" | \
+    tar -C "${MODULES}" -zxvf - \
+    puppetlabs-puppetlabs-stdlib-80f0962 && \
+    mv "${MODULES}puppetlabs-puppetlabs-stdlib-80f0962" "${MODULES}stdlib"
+
+#Fuel 5.1.1 puppet-corosync
+REPO_PATH='https://github.com/stackforge/fuel-library/tarball/a3043477337b4a0a8fd166dc83d6cd5d504f5da8'
+MODULES="${ROOT}"/deployment_scripts/puppet/modules/
+
+wget -qO- "${REPO_PATH}" | \
+    tar -C "${MODULES}" --strip-components=3 -zxvf - \
+    stackforge-fuel-library-a304347/deployment/puppet/corosync
+
+

@@ -1,0 +1,36 @@
+{
+  "name": "pcs_fencing",
+  "version": "6.1.0",
+  "author": "Bogdan Dobrelya <bdobrelia@mirantis.com>",
+  "summary": "Puppet Pacemaker fencing Module for Fuel fencing plugin",
+  "license": "Apache License 2.0",
+  "source": "git://github.com/bogdando/pcs_fencing.git",
+  "project_page": "none",
+  "issues_url": "none",
+  "requirements": [
+    { "name": "pe","version_requirement": "3.x" },
+    { "name": "puppet","version_requirement": "3.x" }
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": ["7"]
+    },
+    {
+      "operatingsystem": "Fedora",
+      "operatingsystemrelease": ["20"]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": ["6.5","7"]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": ["12.04","14.04"]
+    }
+  ],
+  "description": "Puppet module for configuring Pacemaker HA fencing in Fuel plugin",
+  "dependencies": [
+    { "name":"puppetlabs/stdlib","version_requirement": "4.x" }
+  ]
+}
