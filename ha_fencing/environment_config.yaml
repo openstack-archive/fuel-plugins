@@ -1,0 +1,7 @@
+attributes:
+  fence_policy:
+    value: 'reboot'
+    label: 'Policy for HA fencing [disabled, reboot, poweroff]'
+    description: 'Pick a type of HA fencing policy'
+    weight: 25
+    type: "text"
