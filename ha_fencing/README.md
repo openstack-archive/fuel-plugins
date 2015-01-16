@@ -10,7 +10,9 @@ Fuel Fencing Plugin
 5. [Limitations - OS compatibility, etc.](#limitations)
 6. [Development - Guide for contributing to the plugin](#development)
 7. [Contributors - Those with commits](#contributors)
-8. [Release Notes - Notes on the most recent updates to the plugin](#release-notes)
+8. [Versioning - Fuel and plugin versions](#versioning)
+9. [Known Issues - Issues and workarounds](#known-issues)
+10. [Release Notes - Notes on the most recent updates to the plugin](#release-notes)
 
 Overview
 --------
@@ -118,6 +120,14 @@ Note that in order to build this plugin the following tools must present:
 
 TODO(bogdando) finish the guide, add agents and devices verification commands
 
+Please also note that the recommended value for the ``no-quorum-policy`` cluster property
+should be changed manually (after deployment is done) from ignore/stopped to suicide.
+For more information on no-quorum policy, see the [Cluster Options](http://clusterlabs.org/doc/en-US/Pacemaker/1.0/html/Pacemaker_Explained/s-cluster-options.html)
+section in the official Pacemaker documentation. You can set this property by the command
+```
+pcs property set no-quorum-policy=suicide
+```
+
 Implementation
 --------------
 
@@ -169,6 +179,33 @@ versioning for plugin releases are as follows:
 Plugin :: Fuel version
 6.0.0  -> 6.0
 ```
+
+Known Issues
+------------
+
+[LP1411603](https://bugs.launchpad.net/fuel/+bug/1411603)
+
+After the deployment is finished, please make sure all of the controller nodes have
+corresponding ``stonith__*`` primitives and the stonith verification command gives
+no errors.
+
+You can list the STONITH primitives and check their health by the commands:
+```
+pcs stonith
+pcs stonith level verify
+```
+
+And the location constraints could be shown by the commands:
+```
+pcs constraint list
+pcs constraint ref <stonith_resource_name>
+```
+
+It is expected that every ``stonith_*`` primitive should have one "prohibit" and
+one "allow" location shown by the ref command.
+
+If some of the controller nodes does not have corresponding stonith primitives
+or locations for them, please follow the workaround provided at the LP bug.
 
 Release Notes
 -------------
