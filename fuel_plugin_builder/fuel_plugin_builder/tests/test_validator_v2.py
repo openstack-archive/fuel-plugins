@@ -18,21 +18,21 @@ import mock
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
-from fuel_plugin_builder.validators import ValidatorV1
+from fuel_plugin_builder.validators import ValidatorV2
 
-from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
+from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
 
 
-class TestValidatorV1(BaseTestCase):
+class TestValidatorV2(BaseTestCase):
 
     def setUp(self):
         self.plugin_path = '/tmp/plugin_path'
-        self.validator = ValidatorV1(self.plugin_path)
+        self.validator = ValidatorV2(self.plugin_path)
 
-    @mock.patch.object(ValidatorV1, 'check_schemas')
-    @mock.patch.object(ValidatorV1, 'check_tasks')
-    @mock.patch.object(ValidatorV1, 'check_releases_paths')
-    @mock.patch.object(ValidatorV1, 'check_compatibility')
+    @mock.patch.object(ValidatorV2, 'check_schemas')
+    @mock.patch.object(ValidatorV2, 'check_tasks')
+    @mock.patch.object(ValidatorV2, 'check_releases_paths')
+    @mock.patch.object(ValidatorV2, 'check_compatibility')
     def test_validate(
             self,
             check_tasks_mock,
@@ -45,36 +45,40 @@ class TestValidatorV1(BaseTestCase):
         check_paths_mock.assert_called_once_with()
         check_compatibility_mock.assert_called_once_with()
 
-    @mock.patch.object(ValidatorV1, 'check_env_config_attrs')
-    @mock.patch.object(ValidatorV1, 'validate_file_by_schema')
+    @mock.patch.object(ValidatorV2, 'check_env_config_attrs')
+    @mock.patch.object(ValidatorV2, 'validate_file_by_schema')
     def test_check_schemas(self, validator_mock, check_env_conf_mock):
         self.validator.check_schemas()
         self.assertEqual(
             [mock.call(
-                SchemaV1.metadata_schema,
+                SchemaV2.metadata_schema,
                 self.validator.meta_path),
              mock.call(
-                 SchemaV1.tasks_schema,
+                 SchemaV2.tasks_schema,
                  self.validator.tasks_path)],
             validator_mock.call_args_list)
         check_env_conf_mock.assert_called_once_with()
 
-    @mock.patch.object(ValidatorV1, 'validate_schema')
-    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')
+    @mock.patch.object(ValidatorV2, 'validate_schema')
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.utils')
     def test_check_tasks(self, utils_mock, validate_schema_mock):
         utils_mock.parse_yaml.return_value = [
             {'type': 'puppet', 'parameters': 'param1'},
-            {'type': 'shell', 'parameters': 'param2'}]
+            {'type': 'shell', 'parameters': 'param2'},
+            {'type': 'reboot', 'parameters': 'param3'}]
 
         self.validator.check_tasks()
 
         self.assertEqual(
-            [mock.call('param1', SchemaV1.puppet_parameters,
+            [mock.call('param1', SchemaV2.puppet_parameters,
                        self.validator.tasks_path,
                        value_path=[0, 'parameters']),
-             mock.call('param2', SchemaV1.shell_parameters,
+             mock.call('param2', SchemaV2.shell_parameters,
                        self.validator.tasks_path,
-                       value_path=[1, 'parameters'])],
+                       value_path=[1, 'parameters']),
+             mock.call('param3', SchemaV2.reboot_parameters,
+                       self.validator.tasks_path,
+                       value_path=[2, 'parameters'])],
             validate_schema_mock.call_args_list)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
@@ -105,13 +109,13 @@ class TestValidatorV1(BaseTestCase):
                 ', /tmp/repository_path for release "'):
             self.validator.check_releases_paths()
 
-    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.utils.parse_yaml')
     def test_check_env_config_attrs_do_not_fail_if_empty(
             self, parse_yaml_mock):
         parse_yaml_mock.return_value = None
         self.validator.check_env_config_attrs()
 
-    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.utils.parse_yaml')
     def test_check_env_config_attrs_fail_if_none(self, parse_yaml_mock):
         parse_yaml_mock.return_value = {'attributes': None}
         with self.assertRaisesRegexp(
@@ -120,7 +124,7 @@ class TestValidatorV1(BaseTestCase):
                 "is not of type 'object', value path 'attributes'"):
             self.validator.check_env_config_attrs()
 
-    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.utils.parse_yaml')
     def test_check_env_config_attrs_checks_metadata(self, parse_yaml_mock):
         parse_yaml_mock.return_value = {
             'attributes': {'metadata': []}}
@@ -131,7 +135,7 @@ class TestValidatorV1(BaseTestCase):
                 "not of type 'object', value path 'attributes -> metadata'"):
             self.validator.check_env_config_attrs()
 
-    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.utils.parse_yaml')
     def test_check_env_config_attrs_checks_attrs(self, parse_yaml_mock):
         parse_yaml_mock.return_value = {
             'attributes': {
@@ -150,13 +154,13 @@ class TestValidatorV1(BaseTestCase):
     @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
     def test_check_compatibility(self, parse_yaml_mock):
         parse_yaml_mock.return_value = {
-            'fuel_version': ['5.1', '6.0', '6.1'],
-            'package_version': '1.0.0'}
+            'fuel_version': ['6.0', '6.1'],
+            'package_version': '2.0.0'}
 
         with self.assertRaisesRegexp(
                 errors.ValidationError,
-                'Current plugin format 1.0.0 is not compatible with 5.1 Fuel'
-                ' release. Fuel version must be 6.0 or higher.'
-                ' Please remove 5.1 version from metadata.yaml file or'
+                'Current plugin format 2.0.0 is not compatible with 6.0 Fuel'
+                ' release. Fuel version must be 6.1 or higher.'
+                ' Please remove 6.0 version from metadata.yaml file or'
                 ' downgrade package_version.'):
             self.validator.check_compatibility()

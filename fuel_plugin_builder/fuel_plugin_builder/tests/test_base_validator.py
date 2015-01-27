@@ -25,6 +25,11 @@ class TestBaseValidator(BaseTestCase):
 
     def setUp(self):
         class NewValidator(BaseValidator):
+
+            @property
+            def basic_version(self):
+                return None
+
             def validate(self):
                 pass
 

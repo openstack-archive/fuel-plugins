@@ -59,6 +59,9 @@ def parse_args():
         description='fpb is a fuel plugin builder which '
         'helps you create plugin for Fuel')
 
+    #TODO(vsharshov): we should move to subcommands instead of
+    # exclusive group, because in this case we could not
+    # support such behavior [-a xxx | [-b yyy -c zzz]]
     group = parser.add_mutually_exclusive_group(required=True)
 
     group.add_argument(
@@ -75,7 +78,14 @@ def parse_args():
         '--debug', help='enable debug mode',
         action="store_true")
 
-    return parser.parse_args()
+    parser.add_argument(
+        '--package-version', help='which package version to use',
+        type=str)
+
+    result = parser.parse_args()
+    package_version_check(result, parser)
+
+    return result
 
 
 def perform_action(args):
@@ -83,9 +93,8 @@ def perform_action(args):
 
     :param args: argparse object
     """
-
     if args.create:
-        actions.CreatePlugin(args.create).run()
+        actions.CreatePlugin(args.create, args.package_version).run()
         print('Plugin is created')
     elif args.build:
         actions.BuildPlugin(args.build).run()
@@ -93,6 +102,13 @@ def perform_action(args):
     elif args.check:
         ValidatorManager(args.check).get_validator().validate()
         print('Plugin is valid')
+
+
+def package_version_check(args, parser):
+    """Check exclusive nature of --package-version argument
+    """
+    if (args.build or args.check) and args.package_version:
+        parser.error('--package-version works only with --create')
 
 
 def main():
