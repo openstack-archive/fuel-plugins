@@ -149,24 +149,29 @@ class TestUtils(BaseTestCase):
         shutil_mock.rmtree.assert_called_once_with(path)
         self.method_was_not_called(os_mock.remove)
 
+    @mock.patch('fuel_plugin_builder.utils.dir_util')
     @mock.patch('fuel_plugin_builder.utils.shutil')
     @mock.patch('fuel_plugin_builder.utils.os')
-    def test_copy_file(self, os_mock, shutil_mock):
+    def test_copy_file(self, os_mock, shutil_mock, dir_util_mock):
         src = '/tmp/soruce_file'
         dst = '/tmp/destination_file'
         os_mock.path.isdir.return_value = False
         utils.copy(src, dst)
         shutil_mock.copy.assert_called_once_with(src, dst)
-        self.method_was_not_called(shutil_mock.copytree)
+        self.method_was_not_called(dir_util_mock.copy_tree)
 
+    @mock.patch('fuel_plugin_builder.utils.dir_util')
     @mock.patch('fuel_plugin_builder.utils.shutil')
     @mock.patch('fuel_plugin_builder.utils.os')
-    def test_copy_dir(self, os_mock, shutil_mock):
+    def test_copy_dir(self, os_mock, shutil_mock, dir_util_mock):
         src = '/tmp/soruce_file'
         dst = '/tmp/destination_file'
         os_mock.path.isdir.return_value = True
         utils.copy(src, dst)
-        shutil_mock.copytree.assert_called_once_with(src, dst, symlinks=True)
+        dir_util_mock.copy_tree.assert_called_once_with(
+            src,
+            dst,
+            preserve_symlinks=True)
         self.method_was_not_called(shutil_mock.copy)
 
     @mock.patch('fuel_plugin_builder.utils.copy')

@@ -24,13 +24,15 @@ class TestCli(BaseTestCase):
 
     @mock.patch('fuel_plugin_builder.cli.actions')
     def test_perform_action_create(self, actions_mock):
-        args = mock.MagicMock(create='plugin_path')
+        args = mock.MagicMock(create='plugin_path', package_version='2.0.0')
         creatre_obj = mock.MagicMock()
         actions_mock.CreatePlugin.return_value = creatre_obj
 
         perform_action(args)
 
-        actions_mock.CreatePlugin.assert_called_once_with('plugin_path')
+        actions_mock.CreatePlugin.assert_called_once_with(
+            'plugin_path',
+            '2.0.0')
         creatre_obj.run.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.cli.actions')
