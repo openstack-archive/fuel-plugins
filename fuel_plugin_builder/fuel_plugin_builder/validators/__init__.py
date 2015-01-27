@@ -16,4 +16,5 @@
 
 from fuel_plugin_builder.validators.manager import ValidatorManager
 from fuel_plugin_builder.validators.validator_v1 import ValidatorV1
+from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
 from fuel_plugin_builder.validators.base import BaseValidator

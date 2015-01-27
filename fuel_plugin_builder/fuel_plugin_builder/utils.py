@@ -22,6 +22,7 @@ import subprocess
 import tarfile
 import yaml
 
+from distutils import dir_util
 from glob import glob
 
 from mako.template import Template
@@ -184,6 +185,7 @@ def remove(path):
 
 def copy(src, dst):
     """Copy a given file or directory from one place to another.
+    Rewrite already exists files.
 
     :param src: copy from
     :param dst: copy to
@@ -191,7 +193,7 @@ def copy(src, dst):
     logger.debug(u'Copy from %s to %s', src, dst)
 
     if os.path.isdir(src):
-        shutil.copytree(src, dst, symlinks=True)
+        dir_util.copy_tree(src, dst, preserve_symlinks=True)
     else:
         shutil.copy(src, dst)
 
