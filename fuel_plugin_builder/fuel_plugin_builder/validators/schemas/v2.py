@@ -17,5 +17,21 @@
 from base import BaseSchema
 
 
-class SchemaV1(BaseSchema):
-    pass
+class SchemaV2(BaseSchema):
+
+    @classmethod
+    def task_schema(self):
+        basic_schema = super()
+        basic_schema['properties']['type'] = {
+            'enum': ['puppet', 'shell', 'reboot']}
+        return basic_schema
+
+    @classmethod
+    def reboot_parameters(self):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'object',
+            'required': ['timeout'],
+            'properties': {
+                'timeout': self.positive_integer()}
+        }
