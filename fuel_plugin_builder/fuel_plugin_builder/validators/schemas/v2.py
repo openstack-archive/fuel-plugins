@@ -15,3 +15,12 @@
 #    under the License.
 
 from base import *
+
+TASK_SCHEMA['properties']['type'] = {'enum': ['puppet', 'shell', 'reboot']}
+
+REBOOT_PARAMETERS = {
+    '$schema': 'http://json-schema.org/draft-04/schema#',
+    'type': 'object',
+    'required': ['timeout'],
+    'properties': {
+        'timeout': POSITIVE_INTEGER}}
