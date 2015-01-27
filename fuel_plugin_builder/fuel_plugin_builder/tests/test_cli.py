@@ -16,6 +16,7 @@
 
 import mock
 
+from fuel_plugin_builder.cli import package_version_check
 from fuel_plugin_builder.cli import perform_action
 from fuel_plugin_builder.tests.base import BaseTestCase
 
@@ -23,14 +24,27 @@ from fuel_plugin_builder.tests.base import BaseTestCase
 class TestCli(BaseTestCase):
 
     @mock.patch('fuel_plugin_builder.cli.actions')
-    def test_perform_action_create(self, actions_mock):
-        args = mock.MagicMock(create='plugin_path')
+    def test_perform_action_create_with_package_version(self, actions_mock):
+        args = mock.MagicMock(create='plugin_path', package_version='2.0.0')
         creatre_obj = mock.MagicMock()
         actions_mock.CreatePlugin.return_value = creatre_obj
 
         perform_action(args)
 
-        actions_mock.CreatePlugin.assert_called_once_with('plugin_path')
+        actions_mock.CreatePlugin.assert_called_once_with(
+            'plugin_path',
+            '2.0.0')
+        creatre_obj.run.assert_called_once_with()
+
+    @mock.patch('fuel_plugin_builder.cli.actions')
+    def test_perform_action_create_without_package_version(self, actions_mock):
+        args = mock.MagicMock(create='plugin_path', package_version=None)
+        creatre_obj = mock.MagicMock()
+        actions_mock.CreatePlugin.return_value = creatre_obj
+
+        perform_action(args)
+
+        actions_mock.CreatePlugin.assert_called_once_with('plugin_path', None)
         creatre_obj.run.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.cli.actions')
@@ -58,3 +72,78 @@ class TestCli(BaseTestCase):
         perform_action(args)
 
         validator_mock.assert_called_once_with('plugin_path')
+
+    def test_package_version_check_with_create_and_version(self):
+        args = mock.MagicMock(
+            create='plugin_path',
+            package_version='2.0.0',
+            build=None,
+            check=None)
+
+        parser = mock.MagicMock()
+
+        package_version_check(args, parser)
+        assert not parser.error.called
+
+    def test_package_version_check_with_create_and_without_version(self):
+        args = mock.MagicMock(
+            create='plugin_path',
+            package_version=None,
+            build=None,
+            check=None)
+
+        parser = mock.MagicMock()
+
+        package_version_check(args, parser)
+        assert not parser.error.called
+
+    def test_package_version_check_with_build_and_version(self):
+        args = mock.MagicMock(
+            create=None,
+            package_version='2.0.0',
+            build='plugin_path',
+            check=None)
+
+        parser = mock.MagicMock()
+
+        package_version_check(args, parser)
+        parser.error.assert_called_with(
+            '--package-version works only with --create')
+
+    def test_package_version_check_with_build_and_without_version(self):
+        args = mock.MagicMock(
+            create=None,
+            package_version=None,
+            build='plugin_path',
+            check=None)
+
+        parser = mock.MagicMock()
+
+        package_version_check(args, parser)
+        assert not parser.error.called
+
+    def test_package_version_check_with_check_and_version(self):
+        args = mock.MagicMock(
+            create=None,
+            package_version='2.0.0',
+            build=None,
+            check='plugin_path')
+
+        parser = mock.MagicMock()
+
+        package_version_check(args, parser)
+
+        parser.error.assert_called_with(
+            '--package-version works only with --create')
+
+    def test_package_version_check_with_check_and_without_version(self):
+        args = mock.MagicMock(
+            create=None,
+            package_version=None,
+            build=None,
+            check='plugin_path')
+
+        parser = mock.MagicMock()
+
+        package_version_check(args, parser)
+        assert not parser.error.called
