@@ -26,3 +26,12 @@ from base import TASKS_SCHEMA
 from base import ATTR_ELEMENT_SCHEMA
 from base import ATTR_META_SCHEMA
 from base import ATTR_ROOT_SCHEMA
+
+TASK_SCHEMA['properties']['type'] = {'enum': ['puppet', 'shell', 'reboot']}
+
+REBOOT_PARAMETERS = {
+    '$schema': 'http://json-schema.org/draft-04/schema#',
+    'type': 'object',
+    'required': ['timeout'],
+    'properties': {
+        'timeout': POSITIVE_INTEGER}}
