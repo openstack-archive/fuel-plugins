@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from distutils.version import StrictVersion
 import logging
 
 from os.path import join as join_path
@@ -23,38 +24,42 @@ import six
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.base import BaseValidator
-from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
+from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
 
 
 logger = logging.getLogger(__name__)
 
 
-class ValidatorV1(BaseValidator):
+class ValidatorV2(BaseValidator):
+
+    basic_version = '6.1'
 
     def __init__(self, *args, **kwargs):
-        super(ValidatorV1, self).__init__(*args, **kwargs)
+        super(ValidatorV2, self).__init__(*args, **kwargs)
         self.meta_path = join_path(self.plugin_path, 'metadata.yaml')
         self.tasks_path = join_path(self.plugin_path, 'tasks.yaml')
         self.env_conf_path = join_path(
             self.plugin_path, 'environment_config.yaml')
-        self.schema = SchemaV1
+        self.schema = SchemaV2
 
     def validate(self):
         self.check_schemas()
         self.check_tasks()
         self.check_releases_paths()
+        self.check_compability()
 
     def check_tasks(self):
         """Json schema doesn't have any conditions, so we have
-        to make sure here, that puppet task is really puppet
-        and shell task is correct too
+        to make sure here, that puppet task is really puppet,
+        shell or reboot tasks are correct too
         """
         logger.debug('Start tasks checking "%s"', self.tasks_path)
         tasks = utils.parse_yaml(self.tasks_path)
 
         schemas = {
             'puppet': self.schema.puppet_parameters(),
-            'shell': self.schema.shell_parameters()}
+            'shell': self.schema.shell_parameters(),
+            'reboot': self.schema.reboot_parameters()}
 
         for idx, task in enumerate(tasks):
             self.validate_schema(
@@ -62,3 +67,17 @@ class ValidatorV1(BaseValidator):
                 schemas[task['type']],
                 self.tasks_path,
                 value_path=[idx, 'parameters'])
+
+    def check_compability(self):
+        """Json schema doesn't have any conditions, so we have
+        to make sure here, that this validation schema can be used
+        for described fuel releases
+        """
+        meta = utils.parse_yaml(self.meta_path)
+        for fuel_release in meta['fuel_version']:
+            if StrictVersion(fuel_release) < StrictVersion(self.basic_version):
+                raise errors.ValidationError(
+                    'This scheme can be used only for releases {0} or higher.'
+                    ' Fuel version {1} does not support. Please remove it or'
+                    ' downgrade package version'
+                ).format(self.basic_version, fuel_release)

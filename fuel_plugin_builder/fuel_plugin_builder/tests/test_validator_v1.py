@@ -20,7 +20,7 @@ from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 from fuel_plugin_builder.validators import ValidatorV1
 
-from fuel_plugin_builder.validators.schemas import v1
+from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
 
 
 class TestValidatorV1(BaseTestCase):
@@ -45,10 +45,10 @@ class TestValidatorV1(BaseTestCase):
         self.validator.check_schemas()
         self.assertEqual(
             [mock.call(
-                v1.METADATA_SCHEMA,
+                SchemaV1.metadata_schema(),
                 self.validator.meta_path),
              mock.call(
-                 v1.TASKS_SCHEMA,
+                 SchemaV1.tasks_schema(),
                  self.validator.tasks_path)],
             validator_mock.call_args_list)
         check_env_conf_mock.assert_called_once_with()
@@ -63,10 +63,10 @@ class TestValidatorV1(BaseTestCase):
         self.validator.check_tasks()
 
         self.assertEqual(
-            [mock.call('param1', v1.PUPPET_PARAMETERS,
+            [mock.call('param1', SchemaV1.puppet_parameters(),
                        self.validator.tasks_path,
                        value_path=[0, 'parameters']),
-             mock.call('param2', v1.SHELL_PARAMETERS,
+             mock.call('param2', SchemaV1.shell_parameters(),
                        self.validator.tasks_path,
                        value_path=[1, 'parameters'])],
             validate_schema_mock.call_args_list)
