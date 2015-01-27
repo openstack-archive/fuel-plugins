@@ -27,14 +27,16 @@ logger = logging.getLogger(__name__)
 
 class CreatePlugin(BaseAction):
 
-    def __init__(self, plugin_path):
+    def __init__(self, plugin_path, package_version=None):
         self.plugin_name = utils.basename(plugin_path.rstrip('/'))
         self.plugin_path = plugin_path
+        self.package_version = package_version or version_mapping.latest_vesion
+
         self.render_ctx = {
             'plugin_name': self.plugin_name,
-            'plugin_version': '1.0.0'}
-        self.template_path = version_mapping.get_plugin_for_version(
-            version_mapping.latest_vesion)['templates']
+            'plugin_version': self.package_version}
+        self.template_paths = version_mapping.get_plugin_for_version(
+            self.package_version)['templates']
 
     def check(self):
         if utils.exists(self.plugin_path):
@@ -46,8 +48,10 @@ class CreatePlugin(BaseAction):
         logger.debug('Start plugin creation "%s"', self.plugin_path)
         self.check()
 
-        template_dir = os.path.join(
-            os.path.dirname(__file__), '..', self.template_path)
+        for template_path in self.template_paths:
 
-        utils.copy(template_dir, self.plugin_path)
-        utils.render_files_in_dir(self.plugin_path, self.render_ctx)
+            template_dir = os.path.join(
+                os.path.dirname(__file__), '..', self.template_path)
+
+            utils.copy(template_dir, self.plugin_path)
+            utils.render_files_in_dir(self.plugin_path, self.render_ctx)

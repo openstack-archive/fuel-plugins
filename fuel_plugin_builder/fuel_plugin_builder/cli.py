@@ -74,6 +74,9 @@ def parse_args():
     parser.add_argument(
         '--debug', help='enable debug mode',
         action="store_true")
+    parser.add_argument(
+        '--package-version', help='which package version to use',
+         type=str)
 
     return parser.parse_args()
 
@@ -85,7 +88,7 @@ def perform_action(args):
     """
 
     if args.create:
-        actions.CreatePlugin(args.create).run()
+        actions.CreatePlugin(args.create, args.package_version).run()
         print('Plugin is created')
     elif args.build:
         actions.BuildPlugin(args.build).run()

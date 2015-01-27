@@ -16,13 +16,18 @@
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.validators import ValidatorV1
+from fuel_plugin_builder.validators import ValidatorV2
 
-latest_vesion = '1.0.0'
+latest_vesion = '2.0.0'
 
 mapping = [
     {'version': '1.0.0',
      'validator': ValidatorV1,
-     'templates': 'templates/v1/'}]
+     'templates': ['templates/base', 'templates/v1/']},
+    {'version': '2.0.0',
+     'validator': ValidatorV2,
+     'templates': ['templates/base', 'templates/v2/']}
+]
 
 
 def get_plugin_for_version(version):
@@ -32,7 +37,7 @@ def get_plugin_for_version(version):
     :returns: dict which contains
               'version' - package version
               'validator' - validator object
-              'templates' - path to templates
+              'templates' - array of paths to templates
     """
     data = filter(lambda p: p['version'] == version, mapping)
 
