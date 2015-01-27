@@ -18,6 +18,7 @@ import abc
 import logging
 
 import jsonschema
+from os.path import join as join_path
 import six
 
 from fuel_plugin_builder import errors
@@ -66,3 +67,64 @@ class BaseValidator(object):
     def validate(self):
         """Performs validation
         """
+
+    def check_schemas(self):
+        logger.debug('Start schema checking "%s"', self.plugin_path)
+        self.validate_file_by_schema(
+            self.schema.metadata_schema(),
+            self.meta_path)
+        self.validate_file_by_schema(
+            self.schema.tasks_schema(),
+            self.tasks_path)
+        self.check_env_config_attrs()
+
+    def check_env_config_attrs(self):
+        """Check attributes in environment config file.
+
+        'attributes' is not required field, but if it's
+        present it should contain UI elements OR metadata
+        structure.
+        """
+        config = utils.parse_yaml(self.env_conf_path)
+        if not config:
+            return
+
+        self.validate_schema(
+            config,
+            self.schema.attr_root_schema(),
+            self.env_conf_path)
+
+        attrs = config.get('attributes', {})
+        for attr_id, attr in six.iteritems(attrs):
+            schema = self.schema.attr_element_schema()
+            # Metadata object is totally different
+            # from the others, we have to set different
+            # validator for it
+            if attr_id == 'metadata':
+                schema = self.schema.attr_meta_schema()
+
+            self.validate_schema(
+                attr,
+                schema,
+                self.env_conf_path,
+                value_path=['attributes', attr_id])
+
+    def check_releases_paths(self):
+        meta = utils.parse_yaml(self.meta_path)
+        for release in meta['releases']:
+            scripts_path = join_path(
+                self.plugin_path,
+                release['deployment_scripts_path'])
+            repo_path = join_path(
+                self.plugin_path,
+                release['repository_path'])
+
+            wrong_paths = []
+            for path in [scripts_path, repo_path]:
+                if not utils.exists(path):
+                    wrong_paths.append(path)
+
+            if wrong_paths:
+                raise errors.ReleasesDirectoriesError(
+                    'Cannot find directories {0} for release "{1}"'.format(
+                        ', '.join(wrong_paths), release))
