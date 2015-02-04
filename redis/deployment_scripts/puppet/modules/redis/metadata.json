@@ -1,0 +1,28 @@
+{
+  "name": "fsalum-redis",
+  "version": "1.0.3",
+  "author": "Felipe Salum",
+  "summary": "Puppet module for Redis Server",
+  "license": "Apache License, Version 2.0",
+  "source": "git://github.com/fsalum/puppet-redis.git",
+  "project_page": "https://github.com/fsalum/puppet-redis",
+  "issues_url": "https://github.com/fsalum/puppet-redis/issues",
+  "tags": ["redis", "memcached", "cache", "nosql"],
+  "operatingsystem_support": [
+        { "operatingsystem":"Centos",
+              "operatingsystemrelease":[ "5.0", "6.0" ] },
+        { "operatingsystem": "Ubuntu",
+              "operatingsystemrelease": [ "12.04", "13.10", "14.04" ] },
+        { "operatingsystem": "Debian",
+              "operatingsystemrelease": [ "6", "7" ] }
+    ],
+  "requirements": [
+    { "name": "pe",
+      "version_requirement": "3.x" },
+    { "name": "puppet",
+      "version_requirement": "3.x" }
+  ],
+  "dependencies": [
+    {"name":"thias/sysctl","version_requirement":">= 0.3.0"}
+  ]
+}

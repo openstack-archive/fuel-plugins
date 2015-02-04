@@ -1,0 +1,6 @@
+attributes:
+  # Install redis only if ceilometer is enabled
+  metadata:
+    restrictions:
+      - condition: settings:additional_components.ceilometer.value == false
+        action: hide

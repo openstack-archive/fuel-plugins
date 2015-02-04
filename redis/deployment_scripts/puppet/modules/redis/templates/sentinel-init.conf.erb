@@ -1,0 +1,14 @@
+# redis-sentinel - Redis Datastore Server
+#
+# Redis is a key value in memory persistent datastore
+
+start on (local-filesystems and runlevel [2345])
+stop on runlevel [016]
+respawn
+expect fork
+limit nofile 20000 65000
+pre-start script
+mkdir -p /var/run/redis-sentinel
+chown redis:redis /var/run/redis-sentinel
+end script
+exec start-stop-daemon --start --chuid redis:redis --pidfile <%= @conf_pidfile_real %> --umask 007 --exec /usr/bin/redis-sentinel -- <%= @conf_sentinel %>
