@@ -1,0 +1,2 @@
+Redis plugin for ceilometer
+===========================
