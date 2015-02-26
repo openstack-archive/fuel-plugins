@@ -47,17 +47,17 @@ class TestCli(BaseTestCase):
         actions_mock.CreatePlugin.assert_called_once_with('plugin_path', None)
         creatre_obj.run.assert_called_once_with()
 
-    @mock.patch('fuel_plugin_builder.cli.actions')
-    def test_perform_action_build(self, actions_mock):
+    @mock.patch('fuel_plugin_builder.cli.actions.make_builder')
+    def test_perform_action_build(self, builder_mock):
         args = mock.MagicMock(
             create=None,
             build='plugin_path')
         build_obj = mock.MagicMock()
-        actions_mock.BuildPlugin.return_value = build_obj
+        builder_mock.return_value = build_obj
 
         perform_action(args)
 
-        actions_mock.BuildPlugin.assert_called_once_with('plugin_path')
+        builder_mock.assert_called_once_with('plugin_path')
         build_obj.run.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.cli.ValidatorManager')

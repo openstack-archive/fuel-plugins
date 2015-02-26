@@ -17,6 +17,9 @@
 
 class BaseSchema(object):
 
+    list_of_strings = {'type': 'array',
+                       'items': {'type': 'string'}}
+
     plugin_release_schema = {
         'type': 'object',
         'required': ['version', 'os', 'mode'],
@@ -34,9 +37,13 @@ class BaseSchema(object):
         'title': 'plugin',
         'type': 'object',
         'required': [
-            'name', 'title',
-            'version', 'releases',
-            'package_version'
+            'name',
+            'title',
+            'version',
+            'package_version',
+            'description',
+            'fuel_version',
+            'releases',
         ],
         'properties': {
             'name': {
@@ -47,8 +54,7 @@ class BaseSchema(object):
             'version': {'type': 'string'},
             'package_version': {'enum': ['1.0.0']},
             'description': {'type': 'string'},
-            'fuel_version': {'type': 'array',
-                             'items': {'type': 'string'}},
+            'fuel_version': list_of_strings,
             'releases': {
                 'type': 'array',
                 'items': plugin_release_schema}}
@@ -93,7 +99,7 @@ class BaseSchema(object):
             'stage': {'enum': ['post_deployment', 'pre_deployment']},
             'role': {
                 'oneOf': [
-                    {'type': 'array', 'items': {'type': 'string'}},
+                    list_of_strings,
                     {'enum': ['*']}]}}
     }
 

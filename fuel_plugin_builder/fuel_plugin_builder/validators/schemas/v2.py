@@ -24,9 +24,16 @@ class SchemaV2(BaseSchema):
         'title': 'plugin',
         'type': 'object',
         'required': [
-            'name', 'title',
-            'version', 'releases',
-            'package_version'
+            'name',
+            'title',
+            'version',
+            'package_version',
+            'description',
+            'fuel_version',
+            'licenses',
+            'authors',
+            'homepage',
+            'releases',
         ],
         'properties': {
             'name': {
@@ -37,8 +44,10 @@ class SchemaV2(BaseSchema):
             'version': {'type': 'string'},
             'package_version': {'enum': ['2.0.0']},
             'description': {'type': 'string'},
-            'fuel_version': {'type': 'array',
-                             'items': {'type': 'string'}},
+            'fuel_version': BaseSchema.list_of_strings,
+            'licenses': BaseSchema.list_of_strings,
+            'authors': BaseSchema.list_of_strings,
+            'homepage': {'type': 'string'},
             'releases': {
                 'type': 'array',
                 'items': BaseSchema.plugin_release_schema}}
@@ -54,7 +63,7 @@ class SchemaV2(BaseSchema):
             'stage': {'enum': ['post_deployment', 'pre_deployment']},
             'role': {
                 'oneOf': [
-                    {'type': 'array', 'items': {'type': 'string'}},
+                    BaseSchema.list_of_strings,
                     {'enum': ['*']}]}}
     }
 

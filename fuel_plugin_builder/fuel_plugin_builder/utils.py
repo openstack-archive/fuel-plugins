@@ -23,6 +23,7 @@ import tarfile
 import yaml
 
 from distutils import dir_util
+from distutils.version import StrictVersion
 from glob import glob
 
 from mako.template import Template
@@ -298,3 +299,11 @@ def create_checksums_file(dir_path, checksums_file):
 
     with open(checksums_file, 'w') as f:
         f.writelines(checksum_lines)
+
+
+def version_split_name_rpm(version):
+    version_tuple = StrictVersion(version).version
+    major = '.'.join(map(str, version_tuple[0:2]))
+    minor = version
+
+    return (major, minor)

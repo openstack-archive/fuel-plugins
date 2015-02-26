@@ -15,13 +15,28 @@
 #    under the License.
 
 import mock
+import os
 
-from fuel_plugin_builder.actions import BuildPlugin
+from os.path import join as join_path
+
+from fuel_plugin_builder.actions.build import BaseBuildPlugin
+from fuel_plugin_builder.actions.build import BuildPluginV1
+from fuel_plugin_builder.actions.build import BuildPluginV2
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 
 
-class TestBuild(BaseTestCase):
+class TestBaseBuild(BaseTestCase):
+
+    # Prevent test runner to run tests in base
+    __test__ = False
+    # Redefine class
+    builder_class = None
+
+    releases = [
+        {'os': 'ubuntu',
+         'deployment_scripts_path': 'deployment_scripts_path',
+         'repository_path': 'repository_path'}]
 
     def setUp(self):
         self.plugins_name = 'fuel_plugin'
@@ -29,18 +44,8 @@ class TestBuild(BaseTestCase):
 
         with mock.patch(
                 'fuel_plugin_builder.actions.build.utils.parse_yaml',
-                return_value="line 1\n line2\n line3"):
-            self.builder = BuildPlugin(self.plugin_path)
-
-        self.releases = [
-            {'os': 'ubuntu',
-             'deployment_scripts_path': 'deployment_scripts_path',
-             'repository_path': 'repository_path'}]
-
-        self.builder.meta = {
-            'name': 'awesome_plugin',
-            'version': '2.0.1',
-            'releases': self.releases}
+                return_value=self.meta):
+            self.builder = self.builder_class(self.plugin_path)
 
     def test_run(self):
         mocked_methods = [
@@ -67,21 +72,8 @@ class TestBuild(BaseTestCase):
         exec_cmd_mock.assert_called_once_with(self.builder.pre_build_hook_path)
         which_mock.assert_called_once_with(self.builder.pre_build_hook_path)
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_make_package(self, utils_mock):
-        utils_mock.exists.return_value = True
-        self.builder.make_package()
-        tar_path = '/tmp/fuel_plugin/awesome_plugin-2.0.1.fp'
-
-        utils_mock.exists.assert_called_once_with(tar_path)
-        utils_mock.remove.assert_called_once_with(tar_path)
-        utils_mock.make_tar_gz.assert_called_once_with(
-            self.builder.build_dir,
-            tar_path,
-            'awesome_plugin-2.0.1')
-
-    @mock.patch.object(BuildPlugin, 'build_ubuntu_repos')
-    @mock.patch.object(BuildPlugin, 'build_centos_repos')
+    @mock.patch.object(BaseBuildPlugin, 'build_ubuntu_repos')
+    @mock.patch.object(BaseBuildPlugin, 'build_centos_repos')
     @mock.patch('fuel_plugin_builder.actions.build.utils')
     def test_build_repos(self,
                          utils_mock,
@@ -96,7 +88,7 @@ class TestBuild(BaseTestCase):
             self.builder.build_dir)
         build_centos_mock.assert_called_once_with([])
         build_ubuntu_mock.assert_called_once_with([
-            '/tmp/fuel_plugin/.build/repository_path'])
+            '/tmp/fuel_plugin/.build/src/repository_path'])
 
     @mock.patch('fuel_plugin_builder.actions.build.utils')
     def test_build_ubuntu_repos(self, utils_mock):
@@ -117,21 +109,12 @@ class TestBuild(BaseTestCase):
         utils_mock.exec_cmd.assert_called_once_with(
             'createrepo -o /repo/path /repo/path')
 
-    @mock.patch.object(BuildPlugin, '_check_requirements')
-    @mock.patch.object(BuildPlugin, '_check_structure')
+    @mock.patch.object(BaseBuildPlugin, '_check_requirements')
+    @mock.patch.object(BaseBuildPlugin, '_check_structure')
     def test_check(self, check_structure_mock, check_requirements_mock):
         self.builder.check()
         check_structure_mock.assert_called_once_with()
         check_requirements_mock.assert_called_once_with()
-
-    @mock.patch('fuel_plugin_builder.actions.build.utils.which',
-                return_value=False)
-    def test_check_requirements_raises_error(self, _):
-        self.assertRaisesRegexp(
-            errors.FuelCannotFindCommandError,
-            'Cannot find commands "rpm, createrepo, dpkg-scanpackages", '
-            'install required commands and try again',
-            self.builder._check_requirements)
 
     @mock.patch('fuel_plugin_builder.actions.build.utils.which',
                 return_value=True)
@@ -157,3 +140,100 @@ class TestBuild(BaseTestCase):
         self.builder.add_checksums_file()
         create_checksums_file_mock.assert_called_once_with(
             self.builder.build_dir, self.builder.checksums_path)
+
+
+class TestBaseBuildV1(TestBaseBuild):
+
+    __test__ = True
+    builder_class = BuildPluginV1
+
+    meta = {
+        'releases': TestBaseBuild.releases,
+        'version': '1.2.3',
+        'name': 'plugin_name'
+    }
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils')
+    def test_make_package(self, utils_mock):
+        self.builder.make_package()
+        tar_path = '/tmp/fuel_plugin/plugin_name-1.2.3.fp'
+
+        utils_mock.remove.assert_called_once_with(tar_path)
+        utils_mock.make_tar_gz.assert_called_once_with(
+            self.builder.build_dir,
+            tar_path,
+            'plugin_name-1.2.3')
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils.which',
+                return_value=False)
+    def test_check_requirements_raises_error(self, _):
+        self.assertRaisesRegexp(
+            errors.FuelCannotFindCommandError,
+            'Cannot find commands "rpm, createrepo, dpkg-scanpackages", '
+            'install required commands and try again',
+            self.builder._check_requirements)
+
+
+class TestBaseBuildV2(TestBaseBuild):
+
+    __test__ = True
+    builder_class = BuildPluginV2
+    meta = {
+        'releases': TestBaseBuild.releases,
+        'version': '1.2.3',
+        'name': 'plugin_name',
+        'title': 'Plugin title',
+        'description': 'Description',
+        'licenses': ['Apache', 'BSD'],
+        'authors': ['author1', 'author2'],
+        'homepage': 'url'
+    }
+
+    def path_from_plugin(self, path):
+        return join_path(self.plugin_path, path)
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils')
+    def test_make_package(self, utils_mock):
+        self.builder.make_package()
+        rpm_src_path = self.path_from_plugin('.build/rpm/SOURCES')
+        utils_mock.create_dir.assert_called_once_with(rpm_src_path)
+
+        fp_dst = self.path_from_plugin('.build/rpm/SOURCES/plugin_name-1.2.fp')
+        utils_mock.remove.assert_called_once_with(fp_dst)
+        utils_mock.make_tar_gz.assert_called_once_with(
+            self.path_from_plugin('.build/src'),
+            fp_dst,
+            'plugin_name-1.2')
+
+        spec_src = os.path.abspath(join_path(
+            os.path.dirname(__file__),
+            '../templates/build/plugin_rpm.spec.mako'))
+        utils_mock.render_to_file.assert_called_once_with(
+            spec_src,
+            join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
+            {'vendor': 'author1, author2',
+             'description': 'Description',
+             'license': 'Apache and BSD',
+             'summary': 'Plugin title',
+             'version': '1.2.3',
+             'homepage': 'url',
+             'name': 'plugin_name-1.2'})
+
+        utils_mock.exec_cmd.assert_called_once_with(
+            'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
+            '{1}'.format(
+                self.path_from_plugin('.build/rpm'),
+                self.path_from_plugin('.build/rpm/plugin_rpm.spec')))
+
+        utils_mock.copy_files_in_dir.assert_called_once_with(
+            self.path_from_plugin('.build/rpm/RPMS/noarch/*.rpm'),
+            self.plugin_path)
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils.which',
+                return_value=False)
+    def test_check_requirements_raises_error(self, _):
+        self.assertRaisesRegexp(
+            errors.FuelCannotFindCommandError,
+            'Cannot find commands "rpmbuild, rpm, createrepo, '
+            'dpkg-scanpackages", install required commands and try again',
+            self.builder._check_requirements)
