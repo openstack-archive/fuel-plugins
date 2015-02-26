@@ -19,49 +19,55 @@ from base import BaseSchema
 
 class SchemaV2(BaseSchema):
 
-    metadata_schema = {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'title': 'plugin',
-        'type': 'object',
-        'required': [
-            'name', 'title',
-            'version', 'releases',
-            'package_version'
-        ],
-        'properties': {
-            'name': {
-                'type': 'string',
-                # Only lower case letters, numbers, '_', '-' symbols
-                'pattern': '^[a-z0-9_-]+$'},
-            'title': {'type': 'string'},
-            'version': {'type': 'string'},
-            'package_version': {'enum': ['2.0.0']},
-            'description': {'type': 'string'},
-            'fuel_version': {'type': 'array',
-                             'items': {'type': 'string'}},
-            'releases': {
-                'type': 'array',
-                'items': BaseSchema.plugin_release_schema}}
-    }
+    @property
+    def metadata_schema(self):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'title': 'plugin',
+            'type': 'object',
+            'required': [
+                'name', 'title',
+                'version', 'releases',
+                'package_version'
+            ],
+            'properties': {
+                'name': {
+                    'type': 'string',
+                    # Only lower case letters, numbers, '_', '-' symbols
+                    'pattern': '^[a-z0-9_-]+$'},
+                'title': {'type': 'string'},
+                'version': {'type': 'string'},
+                'package_version': {'enum': ['2.0.0']},
+                'description': {'type': 'string'},
+                'fuel_version': {'type': 'array',
+                                 'items': {'type': 'string'}},
+                'releases': {
+                    'type': 'array',
+                    'items': super(SchemaV2, self).plugin_release_schema}}
+        }
 
-    task_schema = {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'type': 'object',
-        'required': ['parameters', 'type', 'stage', 'role'],
-        'properties': {
-            'type': {'enum': ['puppet', 'shell', 'reboot']},
-            'parameters': BaseSchema.task_base_parameters,
-            'stage': {'enum': ['post_deployment', 'pre_deployment']},
-            'role': {
-                'oneOf': [
-                    {'type': 'array', 'items': {'type': 'string'}},
-                    {'enum': ['*']}]}}
-    }
+    @property
+    def task_schema(self):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'object',
+            'required': ['parameters', 'type', 'stage', 'role'],
+            'properties': {
+                'type': {'enum': ['puppet', 'shell', 'reboot']},
+                'parameters': super(SchemaV2, self).task_base_parameters,
+                'stage': {'enum': ['post_deployment', 'pre_deployment']},
+                'role': {
+                    'oneOf': [
+                        {'type': 'array', 'items': {'type': 'string'}},
+                        {'enum': ['*']}]}}
+        }
 
-    reboot_parameters = {
-        '$schema': 'http://json-schema.org/draft-04/schema#',
-        'type': 'object',
-        'required': ['timeout'],
-        'properties': {
-            'timeout': BaseSchema.positive_integer}
-    }
+    @property
+    def reboot_parameters(self):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'object',
+            'required': ['timeout'],
+            'properties': {
+                'timeout': super(SchemaV2, self).positive_integer}
+        }

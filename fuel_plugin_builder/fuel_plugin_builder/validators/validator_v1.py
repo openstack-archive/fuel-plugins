@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class ValidatorV1(BaseValidator):
 
-    schema = SchemaV1
+    schema = SchemaV1()
 
     @property
     def basic_version(self):
