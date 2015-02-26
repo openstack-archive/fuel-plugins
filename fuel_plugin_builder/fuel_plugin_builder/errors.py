@@ -39,3 +39,7 @@ class WrongPackageVersionError(FuelPluginException):
 
 class ReleasesDirectoriesError(FuelPluginException):
     pass
+
+
+class WrongPluginDirectoryError(FuelPluginException):
+    pass

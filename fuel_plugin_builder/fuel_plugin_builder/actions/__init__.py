@@ -15,4 +15,6 @@
 
 from fuel_plugin_builder.actions.base import BaseAction
 from fuel_plugin_builder.actions.create import CreatePlugin
-from fuel_plugin_builder.actions.build import BuildPlugin
+from fuel_plugin_builder.actions.build import BuildPluginV1
+from fuel_plugin_builder.actions.build import BuildPluginV2
+from fuel_plugin_builder.actions.build import make_builder

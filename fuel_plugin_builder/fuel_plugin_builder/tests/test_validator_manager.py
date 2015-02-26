@@ -18,7 +18,6 @@ import mock
 
 from fuel_plugin_builder.tests.base import BaseTestCase
 from fuel_plugin_builder.validators import ValidatorManager
-from fuel_plugin_builder.validators import ValidatorV1
 
 
 class TestValidatorManager(BaseTestCase):
@@ -26,11 +25,15 @@ class TestValidatorManager(BaseTestCase):
     def setUp(self):
         self.plugin_path = '/tmp/plugin_path'
 
-        with mock.patch(
-                'fuel_plugin_builder.validators.manager.utils.parse_yaml',
-                return_value={'package_version': '1.0.0'}):
-            self.manager = ValidatorManager(self.plugin_path)
-
     def test_get_validator(self):
-        validator = self.manager.get_validator()
-        self.assertIsInstance(validator, ValidatorV1)
+        validator = mock.MagicMock(return_value='test')
+
+        with mock.patch(
+                'fuel_plugin_builder.validators.manager.'
+                'version_mapping.get_version_mapping_from_plugin',
+                return_value={'validator': validator}):
+            self.assertEqual(
+                ValidatorManager(self.plugin_path).get_validator(),
+                'test')
+
+        validator.assert_called_once_with(self.plugin_path)

@@ -30,11 +30,10 @@ class CreatePlugin(BaseAction):
     def __init__(self, plugin_path, package_version=None):
         self.plugin_name = utils.basename(plugin_path.rstrip('/'))
         self.plugin_path = plugin_path
-        self.package_version = package_version or version_mapping.latest_vesion
+        self.package_version = (package_version or
+                                version_mapping.latest_version)
 
-        self.render_ctx = {
-            'plugin_name': self.plugin_name,
-            'plugin_version': self.package_version}
+        self.render_ctx = {'plugin_name': self.plugin_name}
         self.template_paths = version_mapping.get_plugin_for_version(
             self.package_version)['templates']
 
