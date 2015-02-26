@@ -14,20 +14,29 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from os.path import join as join_path
+
 from fuel_plugin_builder import errors
-from fuel_plugin_builder.validators import ValidatorV1
-from fuel_plugin_builder.validators import ValidatorV2
+from fuel_plugin_builder import utils
 
-latest_vesion = '2.0.0'
 
-mapping = [
-    {'version': '1.0.0',
-     'validator': ValidatorV1,
-     'templates': ['templates/base', 'templates/v1/']},
-    {'version': '2.0.0',
-     'validator': ValidatorV2,
-     'templates': ['templates/base', 'templates/v2/']}
-]
+latest_version = '2.0.0'
+
+
+def get_mapping():
+    # NOTE(eli): It's required not to have circular dependencies error
+    from fuel_plugin_builder.actions import build
+    from fuel_plugin_builder import validators
+
+    return [
+        {'version': '1.0.0',
+         'templates': ['templates/base', 'templates/v1/'],
+         'validator': validators.ValidatorV1,
+         'builder': build.BuildPluginV1},
+        {'version': '2.0.0',
+         'templates': ['templates/base', 'templates/v2/'],
+         'validator': validators.ValidatorV2,
+         'builder': build.BuildPluginV2}]
 
 
 def get_plugin_for_version(version):
@@ -36,13 +45,35 @@ def get_plugin_for_version(version):
     :param str version: version of package
     :returns: dict which contains
               'version' - package version
-              'validator' - validator object
               'templates' - array of paths to templates
+              'validator' - validator class
+              'builder' - builder class
     """
-    data = filter(lambda p: p['version'] == version, mapping)
+    data = filter(lambda p: p['version'] == version, get_mapping())
 
     if not data:
         raise errors.WrongPackageVersionError(
             'Wrong package version "{0}"'.format(version))
 
     return data[0]
+
+
+def get_version_mapping_from_plugin(plugin_path):
+    """Returns mapping for specific version of the plugin
+
+    :param str plugin_path: path to the directory with metadata.yaml file
+    :returns: dict which contains
+              'version' - package version
+              'validator' - validator class
+              'templates' - path to templates
+              'builder' - builder class
+    """
+    meta_path = join_path(plugin_path, 'metadata.yaml')
+    if not utils.exists(meta_path):
+        errors.WrongPluginDirectoryError(
+            'Wrong path to the plugin, cannot find "%s" file', meta_path)
+
+    meta = utils.parse_yaml(meta_path)
+    package_version = meta.get('package_version')
+
+    return get_plugin_for_version(package_version)

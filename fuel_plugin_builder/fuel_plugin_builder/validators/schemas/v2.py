@@ -26,10 +26,16 @@ class SchemaV2(BaseSchema):
             'title': 'plugin',
             'type': 'object',
             'required': [
-                'name', 'title',
-                'version', 'releases',
-                'package_version'
-            ],
+                'name',
+                'title',
+                'version',
+                'package_version',
+                'description',
+                'fuel_version',
+                'licenses',
+                'authors',
+                'homepage',
+                'releases'],
             'properties': {
                 'name': {
                     'type': 'string',
@@ -39,11 +45,13 @@ class SchemaV2(BaseSchema):
                 'version': {'type': 'string'},
                 'package_version': {'enum': ['2.0.0']},
                 'description': {'type': 'string'},
-                'fuel_version': {'type': 'array',
-                                 'items': {'type': 'string'}},
+                'fuel_version': self.list_of_strings,
+                'licenses': self.list_of_strings,
+                'authors': self.list_of_strings,
+                'homepage': {'type': 'string'},
                 'releases': {
                     'type': 'array',
-                    'items': super(SchemaV2, self).plugin_release_schema}}
+                    'items': self.plugin_release_schema}}
         }
 
     @property
@@ -54,11 +62,11 @@ class SchemaV2(BaseSchema):
             'required': ['parameters', 'type', 'stage', 'role'],
             'properties': {
                 'type': {'enum': ['puppet', 'shell', 'reboot']},
-                'parameters': super(SchemaV2, self).task_base_parameters,
+                'parameters': self.task_base_parameters,
                 'stage': {'enum': ['post_deployment', 'pre_deployment']},
                 'role': {
                     'oneOf': [
-                        {'type': 'array', 'items': {'type': 'string'}},
+                        self.list_of_strings,
                         {'enum': ['*']}]}}
         }
 
@@ -68,6 +76,5 @@ class SchemaV2(BaseSchema):
             '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'object',
             'required': ['timeout'],
-            'properties': {
-                'timeout': super(SchemaV2, self).positive_integer}
+            'properties': {'timeout': self.positive_integer}
         }

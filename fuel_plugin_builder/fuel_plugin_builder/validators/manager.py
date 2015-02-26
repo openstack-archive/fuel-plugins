@@ -14,21 +14,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from os.path import join as join_path
-
-from fuel_plugin_builder import utils
+from fuel_plugin_builder import version_mapping
 
 
 class ValidatorManager(object):
 
     def __init__(self, plugin_path):
         self.plugin_path = plugin_path
-        self.meta = utils.parse_yaml(join_path(plugin_path, 'metadata.yaml'))
-        self.package_version = self.meta.get('package_version')
 
     def get_validator(self):
-        # NOTE(eli): it's here because of circular dependency problem
-        from fuel_plugin_builder.version_mapping import get_plugin_for_version
-
-        validator = get_plugin_for_version(self.package_version)['validator']
+        validator = version_mapping.get_version_mapping_from_plugin(
+            self.plugin_path)['validator']
         return validator(self.plugin_path)

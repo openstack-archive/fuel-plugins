@@ -3,11 +3,17 @@ name: ${plugin_name}
 # Human-readable name for your plugin
 title: Title for ${plugin_name} plugin
 # Plugin version
-version: ${plugin_version}
+version: '1.0.0'
 # Description
 description: Enable to use plugin X for Neutron
 # Required fuel version
 fuel_version: ['6.1']
+# Specify license of your plugin
+licenses: ['Apache License Version 2.0']
+# Specify author or company name
+authors: ['Specify author or company name']
+# A link to the plugin's page
+homepage: 'https://github.com/stackforge/fuel-plugins'
 
 # The plugin is compatible with releases in the list
 releases:

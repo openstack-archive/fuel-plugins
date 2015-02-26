@@ -3,7 +3,7 @@ name: ${plugin_name}
 # Human-readable name for your plugin
 title: Title for ${plugin_name} plugin
 # Plugin version
-version: ${plugin_version}
+version: '1.0.0'
 # Description
 description: Enable to use plugin X for Neutron
 # Required fuel version

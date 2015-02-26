@@ -38,9 +38,13 @@ class BaseSchema(object):
             'title': 'plugin',
             'type': 'object',
             'required': [
-                'name', 'title',
-                'version', 'releases',
-                'package_version'
+                'name',
+                'title',
+                'version',
+                'package_version',
+                'description',
+                'fuel_version',
+                'releases',
             ],
             'properties': {
                 'name': {
@@ -51,12 +55,16 @@ class BaseSchema(object):
                 'version': {'type': 'string'},
                 'package_version': {'enum': ['1.0.0']},
                 'description': {'type': 'string'},
-                'fuel_version': {'type': 'array',
-                                 'items': {'type': 'string'}},
+                'fuel_version': self.list_of_strings,
                 'releases': {
                     'type': 'array',
                     'items': self.plugin_release_schema}}
         }
+
+    @property
+    def list_of_strings(self):
+        return {'type': 'array',
+                'items': {'type': 'string'}}
 
     @property
     def positive_integer(self):
@@ -107,7 +115,7 @@ class BaseSchema(object):
                 'stage': {'enum': ['post_deployment', 'pre_deployment']},
                 'role': {
                     'oneOf': [
-                        {'type': 'array', 'items': {'type': 'string'}},
+                        self.list_of_strings,
                         {'enum': ['*']}]}}
         }
 

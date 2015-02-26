@@ -97,7 +97,7 @@ def perform_action(args):
         actions.CreatePlugin(args.create, args.package_version).run()
         print('Plugin is created')
     elif args.build:
-        actions.BuildPlugin(args.build).run()
+        actions.make_builder(args.build).run()
         print('Plugin is built')
     elif args.check:
         ValidatorManager(args.check).get_validator().validate()
