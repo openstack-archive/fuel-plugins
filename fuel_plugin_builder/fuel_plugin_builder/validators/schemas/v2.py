@@ -35,7 +35,8 @@ class SchemaV2(BaseSchema):
                 'licenses',
                 'authors',
                 'homepage',
-                'releases'],
+                'releases',
+                'groups'],
             'properties': {
                 'name': {
                     'type': 'string',
@@ -48,6 +49,13 @@ class SchemaV2(BaseSchema):
                 'fuel_version': self.list_of_strings,
                 'licenses': self.list_of_strings,
                 'authors': self.list_of_strings,
+                'groups': {'type': 'array', 'uniqueItems': True, 'items':
+                           {'enum':
+                            ['network',
+                             'storage',
+                             'storage::cinder',
+                             'storage::glance',
+                             'hypervisor']}},
                 'homepage': {'type': 'string'},
                 'releases': {
                     'type': 'array',
