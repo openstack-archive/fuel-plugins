@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+2: Evgeniy L <eli@mirantis.com>
+Workflow+1: Evgeniy L <eli@mirantis.com>
+Code-Review+1: Vladimir Sharshov <vsharshov@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Irina <ipovolotskaya@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 04 Mar 2015 17:20:04 +0000
+Reviewed-on: https://review.openstack.org/161229
+Project: stackforge/fuel-plugins
+Branch: refs/heads/master
