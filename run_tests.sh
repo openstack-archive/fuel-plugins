@@ -128,6 +128,7 @@ function run_build {
 
   mkdir -p $BUILT_PLUGINS_PATH
   rm -f $BUILT_PLUGINS_PATH/*.fp
+  rm -f $BUILT_PLUGINS_PATH/*.rpm
 
   # Find plugins
   for dir in $ROOT/*/metadata.yaml;
@@ -136,6 +137,7 @@ function run_build {
     pushd "${plugin_dir}"
     fpb --build "${plugin_dir}" --debug || return 1
     cp *.fp $BUILT_PLUGINS_PATH/
+    cp *.rpm $BUILT_PLUGINS_PATH/
     popd
   done
 
