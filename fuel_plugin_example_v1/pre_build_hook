@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -eux
 
 command -v fpm >/dev/null 2>&1 || {
     echo >&2 "Install 'fpm' to build this plugin. Aborting."; exit 1;
