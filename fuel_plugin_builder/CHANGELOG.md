@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.3 (UNRELEASED)
+## 2.0.0 (UNRELEASED)
 
 ## 1.0.2 (2014-12-19)
 
