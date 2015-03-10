@@ -27,6 +27,6 @@ If you use Ubuntu, run:
 
 If you use CentOS, run:
 
-    # yum install createrepo rpm dpkg-devel
+    # yum install createrepo dpkg-devel rpm rpm-build
 
 """
