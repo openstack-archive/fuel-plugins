@@ -71,7 +71,10 @@ class SchemaV2(BaseSchema):
             'properties': {
                 'type': {'enum': ['puppet', 'shell', 'reboot']},
                 'parameters': self.task_base_parameters,
-                'stage': {'enum': ['post_deployment', 'pre_deployment']},
+                'stage': {'type': 'string',
+                          'pattern':
+                          '^(post_deployment|pre_deployment)'
+                          '(/[-+]?([0-9]*\.[0-9]+|[0-9]+))?$'},
                 'role': {
                     'oneOf': [
                         self.list_of_strings,
