@@ -5,16 +5,30 @@
   parameters:
     cmd: ./deploy.sh
     timeout: 42
-# Task is applied for all roles
+
 - role: '*'
-  stage: pre_deployment
+  stage: pre_deployment/100
   type: shell
   parameters:
-    cmd: echo all > /tmp/plugin.all
+    cmd: echo all > /tmp/plugin+100.all
     timeout: 42
-# "reboot" task reboots the nodes and waits until they get back online
-# - role: '*'
-#   stage: pre_deployment
-#   type: reboot
-#   parameters:
-#     timeout: 600
+
+- role: '*'
+  stage: pre_deployment/+101.0
+  type: shell
+  parameters:
+    cmd: echo all > /tmp/plugin+100.0.all
+    timeout: 42
+
+- role: '*'
+  stage: pre_deployment/-100
+  type: shell
+  parameters:
+    cmd: echo all > /tmp/plugin-100.all
+    timeout: 42
+
+- role: '*'
+  stage: pre_deployment
+  type: reboot
+  parameters:
+    timeout: 600
