@@ -16,7 +16,7 @@ Source0:        ${ name }.fp
 Vendor:         ${ vendor }
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Group:          Development/Libraries
-Release:        0
+Release:        1
 BuildArch:      noarch
 
 %%description
