@@ -20,6 +20,16 @@ releases:
     mode: ['ha', 'multinode']
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/centos
+  - os: ubuntu
+    version: 2014.2-6.1
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+  - os: centos
+    version: 2014.2-6.1
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/centos
 
 # Version of plugin package
 package_version: '1.0.0'
