@@ -31,7 +31,7 @@ to download release versions of these and other Fuel plugins.
 
 Creating your own plugins
 -------------------------
-Detailed instructions can be found in the [Plugin Development Guide](http://docs.mirantis.com/openstack/fuel/fuel-6.0/plugin-dev.html "Plugin Development Guide").
+Detailed instructions can be found in the [ Plugins ](http://wiki.openstack.org/Fuel/Plugins "Plugins") wiki page.
 
 
 Plugins should be built using the
