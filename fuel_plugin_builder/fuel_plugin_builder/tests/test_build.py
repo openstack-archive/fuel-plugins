@@ -72,14 +72,14 @@ class BaseBuild(BaseTestCase):
         exec_cmd_mock.assert_called_once_with(self.builder.pre_build_hook_path)
         which_mock.assert_called_once_with(self.builder.pre_build_hook_path)
 
-    @mock.patch.object(BaseBuildPlugin, 'build_ubuntu_repos')
-    @mock.patch.object(BaseBuildPlugin, 'build_centos_repos')
     @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_build_repos(self,
-                         utils_mock,
-                         build_centos_mock,
-                         build_ubuntu_mock):
-        self.builder.build_repos()
+    def test_build_repos(self, utils_mock):
+        with mock.patch.object(
+                self.builder_class, 'build_ubuntu_repos') as build_ubuntu_mock:
+            with mock.patch.object(
+                    self.builder_class,
+                    'build_centos_repos') as build_centos_mock:
+                self.builder.build_repos()
 
         utils_mock.remove.assert_called_once_with(self.builder.build_dir)
         utils_mock.create_dir.assert_called_once_with(self.builder.build_dir)
@@ -239,3 +239,20 @@ class TestBaseBuildV2(BaseBuild):
             'Cannot find commands "rpmbuild, rpm, createrepo, '
             'dpkg-scanpackages", install required commands and try again',
             self.builder._check_requirements)
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils')
+    def test_build_ubuntu_repos(self, utils_mock):
+        path = '/repo/path'
+        self.builder.build_ubuntu_repos([path])
+        utils_mock.exec_cmd.assert_called_once_with(
+            'dpkg-scanpackages . | gzip -c9 > Packages.gz',
+            cwd=path)
+        release_src = os.path.abspath(join_path(
+            os.path.dirname(__file__),
+            '../templates/build/Release.mako'))
+        utils_mock.render_to_file.assert_called_once_with(
+            release_src,
+            '/repo/path/Release',
+            {'major_version': '1.2',
+             'plugin_name': 'plugin_name',
+             'authors': ['author1', 'author2']})
