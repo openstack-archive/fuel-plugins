@@ -82,7 +82,6 @@ class BaseBuildPlugin(BaseAction):
         self.build_ubuntu_repos(releases_paths.get('ubuntu', []))
         self.build_centos_repos(releases_paths.get('centos', []))
 
-    @classmethod
     def build_ubuntu_repos(cls, releases_paths):
         for repo_path in releases_paths:
             utils.exec_cmd(
@@ -139,12 +138,13 @@ class BuildPluginV2(BaseBuildPlugin):
     def __init__(self, *args, **kwargs):
         super(BuildPluginV2, self).__init__(*args, **kwargs)
 
-        plugin_version, self.full_version = utils.version_split_name_rpm(
+        self.plugin_version, self.full_version = utils.version_split_name_rpm(
             self.meta['version'])
         self.rpm_path = os.path.abspath(
             join_path(self.plugin_path, '.build', 'rpm'))
         self.rpm_src_path = join_path(self.rpm_path, 'SOURCES')
-        self.full_name = '{0}-{1}'.format(self.meta['name'], plugin_version)
+        self.full_name = '{0}-{1}'.format(
+            self.meta['name'], self.plugin_version)
 
         tar_name = '{0}.fp'.format(self.full_name)
         self.tar_path = join_path(self.rpm_src_path, tar_name)
@@ -152,6 +152,8 @@ class BuildPluginV2(BaseBuildPlugin):
         fpb_dir = join_path(os.path.dirname(__file__), '..')
         self.spec_src = os.path.abspath(join_path(
             fpb_dir, 'templates', 'build', 'plugin_rpm.spec.mako'))
+        self.release_tmpl_src = os.path.abspath(join_path(
+            fpb_dir, 'templates', 'build', 'Release.mako'))
 
         self.spec_dst = join_path(self.rpm_path, 'plugin_rpm.spec')
         self.rpm_packages_mask = join_path(
@@ -188,6 +190,19 @@ class BuildPluginV2(BaseBuildPlugin):
             'homepage': self.meta.get('homepage'),
             'vendor': ', '.join(self.meta.get('authors', [])),
             'year': utils.get_current_year()}
+
+    def build_ubuntu_repos(self, releases_paths):
+        for repo_path in releases_paths:
+            utils.exec_cmd(
+                'dpkg-scanpackages . | gzip -c9 > Packages.gz',
+                cwd=repo_path)
+            release_path = join_path(repo_path, 'Release')
+            utils.render_to_file(
+                self.release_tmpl_src,
+                release_path,
+                {'authors': ', '.join(self.meta.get('authors', [])),
+                 'plugin_name': self.meta['name'],
+                 'major_version': self.plugin_version})
 
 
 def make_builder(plugin_path):
