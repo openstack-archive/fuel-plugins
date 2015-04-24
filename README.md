@@ -19,6 +19,20 @@ For production versions of plugins, including certified plugins, see
 For instructions on installing Fuel plugins, see
 [Installing Plugins](https://wiki.openstack.org/wiki/Fuel/Plugins#Installation_procedure "Installing Plugins")
 
+Finding documentation
+=====================
+
+You can find Fuel Plugins documentation in the following sources:
+
+* Development issues - [ Plugins ](http://wiki.openstack.org/Fuel/Plugins "Plugins") wiki page
+
+* Common installation instructions - 
+  [ Install Fuel Plugins ](http://docs.mirantis.com/openstack/fuel/master/user-guide.html#install-fuel-plugins "Install Fuel Plugins")
+  and [ CLI command reference ](http://docs.mirantis.com/openstack/fuel/master/user-guide.html#install-fuel-plugins "CLI command reference") sections in the User Guide
+
+* Specific installation instructions -
+  [ Fuel Plugins Catalog ](https://software.mirantis.com/download-mirantis-openstack-fuel-plug-ins/ "Fuel Plugins Catalog").
+
 
 StackForge Fuel-plugins Repository
 ==================================
@@ -31,7 +45,8 @@ to download release versions of these and other Fuel plugins.
 
 Creating your own plugins
 -------------------------
-Detailed instructions can be found in the [Plugin Development Guide](http://docs.mirantis.com/openstack/fuel/fuel-6.0/plugin-dev.html "Plugin Development Guide").
+
+Detailed instructions can be found in the [ Plugins ](http://wiki.openstack.org/Fuel/Plugins "Plugins") wiki page.
 
 
 Plugins should be built using the
@@ -54,6 +69,7 @@ This will:
 
 Plugins
 -------
+
 The following is a list of plugins in this repository. Build Artifacts,
 including per-change built packages of these plugins can be found at
 [Fuel CI job]( https://fuel-jenkins.mirantis.com/job/stackforge-master-fuel-plugins/ "Fuel CI job")
