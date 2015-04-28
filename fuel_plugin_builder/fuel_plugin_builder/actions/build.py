@@ -84,8 +84,8 @@ class BaseBuildPlugin(BaseAction):
 
     def build_ubuntu_repos(cls, releases_paths):
         for repo_path in releases_paths:
-            utils.exec_cmd(
-                'dpkg-scanpackages . | gzip -c9 > Packages.gz',
+            utils.exec_piped_cmds(
+                ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
 
     @classmethod
