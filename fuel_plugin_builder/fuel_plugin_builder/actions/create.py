@@ -16,8 +16,10 @@
 
 import logging
 import os
+import re
 
 from fuel_plugin_builder.actions import BaseAction
+from fuel_plugin_builder import consts
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 from fuel_plugin_builder import version_mapping
@@ -42,6 +44,11 @@ class CreatePlugin(BaseAction):
             raise errors.PluginDirectoryExistsError(
                 'Plugins directory {0} already exists, '
                 'choose another name'.format(self.plugin_path))
+
+        if not re.match(consts.PLUGIN_NAME_PATTERN, self.plugin_name):
+            raise errors.ValidationError(
+                'Plugin name is invalid, use only '
+                'lower case letters, numbers, \'_\', \'-\' symbols')
 
     def run(self):
         logger.debug('Start plugin creation "%s"', self.plugin_path)
