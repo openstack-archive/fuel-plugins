@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from fuel_plugin_builder import consts
+
 
 class BaseSchema(object):
 
@@ -50,7 +52,7 @@ class BaseSchema(object):
                 'name': {
                     'type': 'string',
                     # Only lower case letters, numbers, '_', '-' symbols
-                    'pattern': '^[a-z0-9_-]+$'},
+                    'pattern': consts.PLUGIN_NAME_PATTERN},
                 'title': {'type': 'string'},
                 'version': {'type': 'string'},
                 'package_version': {'enum': ['1.0.0']},

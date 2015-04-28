@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2014 Mirantis, Inc.
+#    Copyright 2015 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,8 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuel_plugin_builder.validators.schemas import BaseSchema
-
-
-class SchemaV1(BaseSchema):
-    pass
+PLUGIN_NAME_PATTERN = '^[a-z0-9_-]+$'
+PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE = "Plugin name is invalid, use only "
+"lower case letters, numbers, '_', '-' symbols"
