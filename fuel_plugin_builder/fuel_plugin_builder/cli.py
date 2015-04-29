@@ -38,8 +38,8 @@ def handle_exception(exc):
     logger.exception(exc)
 
     if isinstance(exc, errors.FuelCannotFindCommandError):
-        print_err(messages.header)
-        print_err(messages.install_required_packages)
+        print_err(messages.HEADER)
+        print_err(messages.INSTALL_REQUIRED_PACKAGES)
 
     elif isinstance(exc, errors.ValidationError):
         print_err('Validation failed')
