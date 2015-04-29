@@ -34,6 +34,38 @@ class BaseSchema(object):
         }
 
     @property
+    def condition(self):
+        return {'type': 'string'}
+
+    @property
+    def full_restriction(self):
+        return {
+            'type': 'object',
+            'required': ['condition'],
+            'properties': {
+                'condition': self.condition,
+                'message': {'type': 'string'},
+                'action': {'type': 'string'}}}
+
+    @property
+    def short_restriction(self):
+        return {
+            'type': 'object',
+            'minProperties': 1,
+            'maxProperties': 1}
+
+    @property
+    def restrictions(self):
+        return {
+            'type': 'array',
+            'minItems': 1,
+            'items': {
+                'anyOf': [
+                    self.condition,
+                    self.full_restriction,
+                    self.short_restriction]}}
+
+    @property
     def metadata_schema(self):
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
@@ -51,7 +83,6 @@ class BaseSchema(object):
             'properties': {
                 'name': {
                     'type': 'string',
-                    # Only lower case letters, numbers, '_', '-' symbols
                     'pattern': consts.PLUGIN_NAME_PATTERN},
                 'title': {'type': 'string'},
                 'version': {'type': 'string'},
@@ -140,6 +171,7 @@ class BaseSchema(object):
                 'weight': {'type': 'integer'},
                 'value': {'type': ['string', 'boolean']},
                 'label': {'type': 'string'},
+                'restrictions': self.restrictions,
                 'values': {'type': 'array', 'items':
                            {'type': 'object',
                             'required': ['data', 'label'],
@@ -158,8 +190,7 @@ class BaseSchema(object):
                 'weight': {'type': 'integer'},
                 'toggleable': {'type': 'boolean'},
                 'enabled': {'type': 'boolean'},
-                'restrictions': {
-                    'type': 'array', 'items': {'type': ['string', 'object']}}}
+                'restrictions': self.restrictions}
         }
 
     @property

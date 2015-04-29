@@ -147,6 +147,37 @@ class TestValidatorV1(BaseTestCase):
                 "of type 'string', value path 'attributes -> key1 -> type'"):
             self.validator.check_env_config_attrs()
 
+    #TODO(apopovych): group attributes schema validation in separate test case
+    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
+    def test_check_env_config_attrs_restriction_fails(self, parse_yaml_mock):
+        parse_yaml_mock.return_value = {
+            'attributes': {
+                'key1': {
+                    'type': 'text',
+                    'label': 'test',
+                    'value': 'test',
+                    'weight': 1,
+                    'restrictions': [
+                        {
+                            'condition': 'false',
+                            'action': 'disable'
+                        },
+                        {
+                            'condition': True,
+                            'action': 'hide'
+                        }
+                    ]
+                }
+            }
+        }
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/environment_config.yaml', True is not "
+                "of type 'string', value path "
+                "'attributes -> key1 -> restrictions -> 1 -> condition"):
+            self.validator.check_env_config_attrs()
+
     @mock.patch('fuel_plugin_builder.validators.validator_v1.utils.parse_yaml')
     def test_check_compatibility(self, parse_yaml_mock):
         parse_yaml_mock.return_value = {
