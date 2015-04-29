@@ -41,7 +41,6 @@ class SchemaV2(BaseSchema):
             'properties': {
                 'name': {
                     'type': 'string',
-                    # Only lower case letters, numbers, '_', '-' symbols
                     'pattern': consts.PLUGIN_NAME_PATTERN},
                 'title': {'type': 'string'},
                 'version': {'type': 'string'},
