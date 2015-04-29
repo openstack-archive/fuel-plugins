@@ -15,10 +15,8 @@
 #    under the License.
 
 
-header = '=' * 50
-
-
-install_required_packages = """
+HEADER = '=' * 50
+INSTALL_REQUIRED_PACKAGES = """
 Was not able to find required packages.
 
 If you use Ubuntu, run:
@@ -30,3 +28,6 @@ If you use CentOS, run:
     # yum install createrepo dpkg-devel rpm rpm-build
 
 """
+PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE = ("Plugin name is invalid, use only "
+                                       "lower case letters, numbers, '_', '-' "
+                                       "symbols")

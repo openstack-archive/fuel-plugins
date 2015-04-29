@@ -49,13 +49,22 @@ class BaseValidator(object):
                 self._make_error_message(exc, file_path, value_path))
 
     def _make_error_message(self, exc, file_path, value_path):
-        error_msg = "File '{0}', {1}".format(file_path, exc.message)
-
         if value_path is None:
             value_path = []
 
         if exc.absolute_path:
             value_path.extend(exc.absolute_path)
+
+        if exc.context:
+            sub_exceptions = sorted(
+                exc.context, key=lambda e: len(e.schema_path), reverse=True)
+            sub_message = sub_exceptions[0]
+            value_path.extend(list(sub_message.absolute_path)[2:])
+            message = sub_message.message
+        else:
+            message = exc.message
+
+        error_msg = "File '{0}', {1}".format(file_path, message)
 
         if value_path:
             value_path = ' -> '.join(map(six.text_type, value_path))
