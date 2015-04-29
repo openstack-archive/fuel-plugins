@@ -14,7 +14,5 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+# Only lower case letters, numbers, '_', '-' symbols
 PLUGIN_NAME_PATTERN = '^[a-z0-9_-]+$'
-PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE = ("Plugin name is invalid, use only "
-                                       "lower case letters, numbers, '_', '-' "
-                                       "symbols")
