@@ -17,6 +17,12 @@
 - New required field homepage (for plugins with 2.0.0 package version)
 - New parameter "--package-version", to generate the plugins in old
   format (e.g. package version 1.0.0)
+- Fixed, plugins with package version 2.0.0, generate Release file
+  for Ubuntu repositories
+  https://bugs.launchpad.net/fuel/+bug/1435892
+- New format of stages for plugins with package version 2.0.0,
+  added numerical postfixes
+  https://github.com/stackforge/fuel-specs/blob/master/specs/6.1/plugins-deployment-order.rst
 
 ## 1.0.2 (2014-12-19)
 
