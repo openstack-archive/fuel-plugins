@@ -65,10 +65,15 @@ class TestUtils(BaseTestCase):
             self.assertIsNone(utils.which('some_exec'))
 
     def make_process_mock(self, return_code=0):
-        process_mock = mock.Mock()
-        process_mock.stdout = ['Stdout line 1', 'Stdout line 2']
+        process_mock = mock.Mock(
+            communicate=mock.Mock(return_value=[list('Some data')])
+        )
         process_mock.returncode = return_code
-
+        process_mock.stdout = mock.MagicMock(close=lambda: None)
+        process_mock.stdout.__iter__.return_value = [
+            'Stdout line 1',
+            'Stdout line 2'
+        ]
         return process_mock
 
     def test_exec_cmd_raises_error_in_case_of_non_zero_exit_code(self):
@@ -83,11 +88,29 @@ class TestUtils(BaseTestCase):
                 'exit code: {1} '.format(return_code, cmd),
                 utils.exec_cmd, cmd)
 
+    def test_exec_piped_cmds_raises_error_in_case_of_non_zero_exit_code(self):
+        cmds = ['some command', 'some other command']
+        return_code = 1
+
+        process_mock = self.make_process_mock(return_code=return_code)
+        with patch.object(subprocess, 'Popen', return_value=process_mock):
+            self.assertRaisesRegexp(
+                errors.ExecutedErrorNonZeroExitCode,
+                'Shell command executed with "{0}" '
+                'exit code: {1} '.format(return_code, " | ".join(cmds)),
+                utils.exec_piped_cmds, cmds)
+
     def test_exec_cmd(self):
         process_mock = self.make_process_mock(return_code=0)
         with patch.object(subprocess, 'Popen', return_value=process_mock):
             utils.exec_cmd('some command')
             process_mock.wait.assert_called_once_with()
+
+    def test_exec_piped_cmds(self):
+        process_mock = self.make_process_mock(return_code=0)
+        with patch.object(subprocess, 'Popen', return_value=process_mock):
+            utils.exec_piped_cmds(['some command', 'some other command'])
+            process_mock.communicate.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.utils.os')
     def test_create_dir(self, os_mock):

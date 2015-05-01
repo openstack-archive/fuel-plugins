@@ -68,7 +68,7 @@ def which(cmd):
 
 def exec_cmd(cmd, cwd=None):
     """Execute command with logging.
-    Ouput of stdout and stderr will be written
+    Output of stdout and stderr will be written
     in log.
 
     :param cmd: shell command
@@ -94,6 +94,50 @@ def exec_cmd(cmd, cwd=None):
             'exit code: {1} '.format(exit_code, cmd))
 
     logger.debug(u'Command "{0}" successfully executed'.format(cmd))
+
+
+def exec_piped_cmds(cmds, cwd=None):
+    """Execute pipe of commands with logging.
+    Output of stdout and stderr of the last command
+    will be written in log.
+
+    :param cmds: list of shell commands
+    :param cwd: string or None
+    """
+    logger.debug(u'Executing commands "{0}"'.format(" | ".join(cmds)))
+
+    children = []
+    for i, cmd in enumerate(cmds):
+        child = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            stdin=None if i == 0 else children[-1].stdout,
+            shell=True,
+            cwd=cwd
+        )
+        child.name = cmd
+        children.append(child)
+
+    children[0].stdout.close()
+    output = children[-1].communicate()[0]
+
+    logger.debug(
+        u'Stdout and stderr of command "{0}":'.format(" | ".join(cmds))
+    )
+
+    logger.debug(output)
+
+    for c in children:
+        c.wait()
+        if c.returncode != 0:
+            raise errors.ExecutedErrorNonZeroExitCode(
+                u'Shell command executed with "{0}" '
+                'exit code: {1} '.format(c.returncode, c.name))
+
+    logger.debug(
+        u'Command "{0}" successfully executed'.format(" | ".join(cmds))
+    )
 
 
 def create_dir(dir_path):
