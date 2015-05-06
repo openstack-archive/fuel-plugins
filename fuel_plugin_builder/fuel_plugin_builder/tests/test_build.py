@@ -199,8 +199,10 @@ class TestBaseBuildV2(BaseBuild):
         rpm_src_path = self.path_from_plugin('.build/rpm/SOURCES')
         utils_mock.create_dir.assert_called_once_with(rpm_src_path)
 
+        rpm_path = self.path_from_plugin('.build/rpm')
+        utils_mock.remove.assert_called_once_with(rpm_path)
+
         fp_dst = self.path_from_plugin('.build/rpm/SOURCES/plugin_name-1.2.fp')
-        utils_mock.remove.assert_called_once_with(fp_dst)
         utils_mock.make_tar_gz.assert_called_once_with(
             self.path_from_plugin('.build/src'),
             fp_dst,

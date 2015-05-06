@@ -162,8 +162,8 @@ class BuildPluginV2(BaseBuildPlugin):
     def make_package(self):
         """Builds rpm package
         """
+        utils.remove(self.rpm_path)
         utils.create_dir(self.rpm_src_path)
-        utils.remove(self.tar_path)
 
         utils.make_tar_gz(self.build_dir, self.tar_path, self.full_name)
         utils.render_to_file(
