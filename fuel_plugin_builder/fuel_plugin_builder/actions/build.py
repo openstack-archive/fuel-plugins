@@ -47,37 +47,42 @@ class BaseBuildPlugin(BaseAction):
         self.plugin_path = plugin_path
         self.pre_build_hook_path = join_path(plugin_path, 'pre_build_hook')
         self.meta = utils.parse_yaml(join_path(plugin_path, 'metadata.yaml'))
-        self.build_dir = join_path(plugin_path, '.build', 'src')
-        self.checksums_path = join_path(self.build_dir, 'checksums.sha1')
+        self.build_dir = join_path(plugin_path, '.build')
+        self.build_src_dir = join_path(self.build_dir, 'src')
+        self.checksums_path = join_path(self.build_src_dir, 'checksums.sha1')
 
     def run(self):
         logger.debug('Start plugin building "%s"', self.plugin_path)
+        self.clean()
         self.run_pre_build_hook()
         self.check()
         self.build_repos()
         self.add_checksums_file()
         self.make_package()
 
+    def clean(self):
+        utils.remove(self.build_dir)
+        utils.create_dir(self.build_dir)
+
     def run_pre_build_hook(self):
         if utils.which(self.pre_build_hook_path):
             utils.exec_cmd(self.pre_build_hook_path)
 
     def add_checksums_file(self):
-        utils.create_checksums_file(self.build_dir, self.checksums_path)
+        utils.create_checksums_file(self.build_src_dir, self.checksums_path)
 
     def build_repos(self):
-        utils.remove(self.build_dir)
-        utils.create_dir(self.build_dir)
+        utils.create_dir(self.build_src_dir)
 
         utils.copy_files_in_dir(
             join_path(self.plugin_path, '*'),
-            self.build_dir)
+            self.build_src_dir)
 
         releases_paths = {}
         for release in self.meta['releases']:
             releases_paths.setdefault(release['os'], [])
             releases_paths[release['os']].append(
-                join_path(self.build_dir, release['repository_path']))
+                join_path(self.build_src_dir, release['repository_path']))
 
         self.build_ubuntu_repos(releases_paths.get('ubuntu', []))
         self.build_centos_repos(releases_paths.get('centos', []))
@@ -127,8 +132,7 @@ class BuildPluginV1(BaseBuildPlugin):
             self.plugin_path,
             tar_name)
 
-        utils.remove(tar_path)
-        utils.make_tar_gz(self.build_dir, tar_path, full_name)
+        utils.make_tar_gz(self.build_src_dir, tar_path, full_name)
 
 
 class BuildPluginV2(BaseBuildPlugin):
@@ -163,9 +167,8 @@ class BuildPluginV2(BaseBuildPlugin):
         """Builds rpm package
         """
         utils.create_dir(self.rpm_src_path)
-        utils.remove(self.tar_path)
 
-        utils.make_tar_gz(self.build_dir, self.tar_path, self.full_name)
+        utils.make_tar_gz(self.build_src_dir, self.tar_path, self.full_name)
         utils.render_to_file(
             self.spec_src,
             self.spec_dst,

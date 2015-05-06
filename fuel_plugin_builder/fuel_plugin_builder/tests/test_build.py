@@ -49,6 +49,7 @@ class BaseBuild(BaseTestCase):
 
     def test_run(self):
         mocked_methods = [
+            'clean',
             'run_pre_build_hook',
             'check',
             'build_repos',
@@ -58,6 +59,7 @@ class BaseBuild(BaseTestCase):
         self.mock_methods(self.builder, mocked_methods)
         self.builder.run()
 
+        self.builder.clean.assert_called_once_with()
         self.builder.run_pre_build_hook.assert_called_once_with()
         self.builder.check.assert_called_once_with()
         self.builder.add_checksums_file()
@@ -81,11 +83,11 @@ class BaseBuild(BaseTestCase):
                     'build_centos_repos') as build_centos_mock:
                 self.builder.build_repos()
 
-        utils_mock.remove.assert_called_once_with(self.builder.build_dir)
-        utils_mock.create_dir.assert_called_once_with(self.builder.build_dir)
+        utils_mock.create_dir.assert_called_once_with(
+            self.builder.build_src_dir)
         utils_mock.copy_files_in_dir.assert_called_once_with(
             '/tmp/fuel_plugin/*',
-            self.builder.build_dir)
+            self.builder.build_src_dir)
         build_centos_mock.assert_called_once_with([])
         build_ubuntu_mock.assert_called_once_with([
             '/tmp/fuel_plugin/.build/src/repository_path'])
@@ -139,7 +141,14 @@ class BaseBuild(BaseTestCase):
     def test_add_checksums_file(self, create_checksums_file_mock):
         self.builder.add_checksums_file()
         create_checksums_file_mock.assert_called_once_with(
-            self.builder.build_dir, self.builder.checksums_path)
+            self.builder.build_src_dir, self.builder.checksums_path)
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils')
+    def test_clean(self, utils_mock):
+        self.builder.clean()
+        utils_mock.assert_has_calls([
+            mock.call.remove(self.builder.build_dir),
+            mock.call.create_dir(self.builder.build_dir)])
 
 
 class TestBaseBuildV1(BaseBuild):
@@ -158,9 +167,8 @@ class TestBaseBuildV1(BaseBuild):
         self.builder.make_package()
         tar_path = '/tmp/fuel_plugin/plugin_name-1.2.3.fp'
 
-        utils_mock.remove.assert_called_once_with(tar_path)
         utils_mock.make_tar_gz.assert_called_once_with(
-            self.builder.build_dir,
+            self.builder.build_src_dir,
             tar_path,
             'plugin_name-1.2.3')
 
@@ -200,7 +208,6 @@ class TestBaseBuildV2(BaseBuild):
         utils_mock.create_dir.assert_called_once_with(rpm_src_path)
 
         fp_dst = self.path_from_plugin('.build/rpm/SOURCES/plugin_name-1.2.fp')
-        utils_mock.remove.assert_called_once_with(fp_dst)
         utils_mock.make_tar_gz.assert_called_once_with(
             self.path_from_plugin('.build/src'),
             fp_dst,
