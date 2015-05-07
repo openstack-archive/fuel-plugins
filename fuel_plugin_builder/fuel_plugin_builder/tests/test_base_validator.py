@@ -97,3 +97,48 @@ class TestBaseValidator(BaseTestCase):
         self.validator.validate_file_by_schema(self.schema, self.plugin_path)
         utils_mock.parse_yaml.assert_called_once_with(self.plugin_path)
         validate_mock(self.data, self.schema, self.plugin_path)
+
+    def test_validate_schema_with_subschemas(self):
+        schema_object = {
+            'key': {
+                'type': 'array',
+                'items': {
+                    'anyOf': [
+                        {
+                            'type': 'string'
+                        },
+                        {
+                            'type': 'object',
+                            'required': ['inner_key'],
+                            'properties': {
+                                'inner_key_1': {'type': 'string'},
+                                'inner_key_2': {'type': 'string'},
+                            }
+                        },
+                        {
+                            'type': 'object',
+                            'minProperties': 1,
+                            'maxProperties': 1
+                        }
+                    ]
+                }
+            }
+        }
+
+        schema = self.make_schema(['key'], schema_object)
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File 'file_path', True is not of type 'string', "
+                "value path '0 -> path1 -> key -> 0'"):
+            data = {'key': [True]}
+            self.validator.validate_schema(
+                data, schema, 'file_path', value_path=[0, 'path1'])
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File 'file_path', True is not of type 'string', "
+                "value path '0 -> path1 -> key -> 0 -> inner_key_1'"):
+            data = {'key': [{'inner_key_1': True, 'inner_key_2': 'str'}]}
+            self.validator.validate_schema(
+                data, schema, 'file_path', value_path=[0, 'path1'])

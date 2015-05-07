@@ -21,6 +21,7 @@ import re
 from fuel_plugin_builder.actions import BaseAction
 from fuel_plugin_builder import consts
 from fuel_plugin_builder import errors
+from fuel_plugin_builder import messages
 from fuel_plugin_builder import utils
 from fuel_plugin_builder import version_mapping
 
@@ -49,7 +50,7 @@ class CreatePlugin(BaseAction):
 
         if not self.plugin_name_pattern.match(self.plugin_name):
             raise errors.ValidationError(
-                consts.PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE)
+                messages.PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE)
 
     def run(self):
         logger.debug('Start plugin creation "%s"', self.plugin_path)

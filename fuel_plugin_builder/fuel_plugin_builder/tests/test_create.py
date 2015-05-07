@@ -17,8 +17,8 @@
 import mock
 
 from fuel_plugin_builder.actions import CreatePlugin
-from fuel_plugin_builder import consts
 from fuel_plugin_builder import errors
+from fuel_plugin_builder import messages
 from fuel_plugin_builder.tests.base import BaseTestCase
 
 
@@ -53,7 +53,7 @@ class TestCreate(BaseTestCase):
         self.creator.plugin_name = 'Test_plugin'
         self.assertRaisesRegexp(
             errors.ValidationError,
-            consts.PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE,
+            messages.PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE,
             self.creator.check)
         exists_mock.assert_called_once_with(self.plugin_path)
 
