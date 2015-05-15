@@ -1,5 +1,7 @@
 # Changelog
 
+## 2.0.3 (UNRELEASED)
+
 ## 2.0.2 (2014-05-15)
 
 - Reverted fix for https://bugs.launchpad.net/fuel/+bug/1447981
