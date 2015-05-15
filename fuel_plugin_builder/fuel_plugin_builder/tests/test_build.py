@@ -94,8 +94,8 @@ class BaseBuild(BaseTestCase):
     def test_build_ubuntu_repos(self, utils_mock):
         path = '/repo/path'
         self.builder.build_ubuntu_repos([path])
-        utils_mock.exec_piped_cmds.assert_called_once_with(
-            ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
+        utils_mock.exec_cmd.assert_called_once_with(
+            'dpkg-scanpackages . | gzip -c9 > Packages.gz',
             cwd=path)
 
     @mock.patch('fuel_plugin_builder.actions.build.utils')
