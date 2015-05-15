@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.2 (2014-05-15)
+
+- Reverted fix for https://bugs.launchpad.net/fuel/+bug/1447981
+  because it caused creation of broken ubuntu repository
+  https://bugs.launchpad.net/fuel-plugins/+bug/1455130
+
 ## 2.0.1 (2014-05-08)
 
 - Fix, fail build, if there are invalid deb packages for ubuntu repository
