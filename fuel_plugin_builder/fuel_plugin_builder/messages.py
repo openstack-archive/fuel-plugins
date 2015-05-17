@@ -25,7 +25,7 @@ If you use Ubuntu, run:
 
 If you use CentOS, run:
 
-    # yum install createrepo dpkg-devel rpm rpm-build
+    # yum install createrepo dpkg-devel dpkg-dev rpm rpm-build
 
 """
 PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE = ("Plugin name is invalid, use only "
