@@ -96,6 +96,45 @@ def exec_cmd(cmd, cwd=None):
     logger.debug(u'Command "{0}" successfully executed'.format(cmd))
 
 
+def exec_piped_cmds(cmds, cwd=None):
+    """Execute pipe of commands with logging.
+    Ouput of stdout and stderr of last command will be written in log.
+
+    :param cmds: list of shell commands
+    :type cmds: list
+    :param cwd: current working directory
+    :type cwd: string or None
+    """
+    logger.debug(u'Executing commands "{0}"'.format(" | ".join(cmds)))
+
+    std_out = None
+    for cmd in cmds:
+        child = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            shell=True,
+            cwd=cwd)
+
+        std_out, std_err = child.communicate(input=std_out)
+        exit_code = child.returncode
+
+        if exit_code != 0:
+            logger.debug(u'Stderr of command "{0}":'.format(cmd))
+            logger.debug(std_err)
+
+            raise errors.ExecutedErrorNonZeroExitCode(
+                u'Shell command executed with "{0}" '
+                'exit code: {1} '.format(exit_code, cmd))
+
+    logger.debug(u'Stdout of command "{0}":'.format(" | ".join(cmds)))
+    logger.debug(std_out)
+    logger.debug(
+        u'Command "{0}" successfully executed'.format(" | ".join(cmds))
+    )
+
+
 def create_dir(dir_path):
     """Creates directory
 
