@@ -10,12 +10,12 @@ attributes:
       source: '\S'
       error: "Error field cannot be empty"
 
-  fuel_plugin_example_dropdown:
-    type: "dropdown"
+  fuel_plugin_example_select:
+    type: "select"
     weight: 20
     value: "value2"
-    label: "Dropdown label"
-    description: "Dropdown description"
+    label: "Select label"
+    description: "Select description"
     values:
       - data: "value1"
         label: "Value 1 label"
