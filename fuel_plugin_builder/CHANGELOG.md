@@ -1,5 +1,7 @@
 # Changelog
 
+## 2.0.4 (UNRELEASED)
+
 ## 2.0.3 (2014-06-08)
 
 - New "monitoring" group
