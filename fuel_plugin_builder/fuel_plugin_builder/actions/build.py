@@ -200,6 +200,7 @@ class BuildPluginV2(BaseBuildPlugin):
 
         :returns: dictionary with required data
         """
+
         return {
             'name': self.full_name,
             'version': self.full_version,
@@ -234,3 +235,27 @@ def make_builder(plugin_path):
         plugin_path)['builder']
 
     return builder(plugin_path)
+
+
+class BuildPluginV3(BuildPluginV2):
+
+    def _make_data_for_template(self):
+        uninst = utils.read_if_exist(join_path(self.plugin_path,
+                                     "uninstall.sh"))
+        preinst = utils.read_if_exist(join_path(self.plugin_path,
+                                      "pre_install.sh"))
+        postinst = utils.read_if_exist(join_path(self.plugin_path,
+                                       "post_install.sh"))
+
+        return {
+            'name': self.full_name,
+            'version': self.full_version,
+            'summary': self.meta['title'],
+            'description': self.meta['description'],
+            'license': ' and '.join(self.meta.get('licenses', [])),
+            'homepage': self.meta.get('homepage'),
+            'vendor': ', '.join(self.meta.get('authors', [])),
+            'year': utils.get_current_year(),
+            'preinst': preinst,
+            'postinst': postinst,
+            'uninst': uninst}

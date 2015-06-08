@@ -36,5 +36,14 @@ cp -r ${ name } %{buildroot}/var/www/nailgun/plugins/
 %%clean
 rm -rf %{buildroot}
 
+%%pre
+${ preinst }
+
+%%post
+${ postinst }
+
+%%preun
+${ uninst }
+
 %%files
 /var/www/nailgun/plugins/${ name }
