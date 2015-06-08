@@ -184,6 +184,13 @@ class BuildPluginV2(BaseBuildPlugin):
 
         :returns: dictionary with required data
         """
+        uninst = utils.read_if_exist(join_path(self.plugin_path,
+                                     "uninstall.sh"))
+        preinst = utils.read_if_exist(join_path(self.plugin_path,
+                                      "pre_install.sh"))
+        postinst = utils.read_if_exist(join_path(self.plugin_path,
+                                       "post_install.sh"))
+
         return {
             'name': self.full_name,
             'version': self.full_version,
@@ -192,7 +199,10 @@ class BuildPluginV2(BaseBuildPlugin):
             'license': ' and '.join(self.meta.get('licenses', [])),
             'homepage': self.meta.get('homepage'),
             'vendor': ', '.join(self.meta.get('authors', [])),
-            'year': utils.get_current_year()}
+            'year': utils.get_current_year(),
+            'preinst': preinst,
+            'postinst': postinst,
+            'uninst': uninst}
 
     def build_ubuntu_repos(self, releases_paths):
         for repo_path in releases_paths:

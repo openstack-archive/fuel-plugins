@@ -163,6 +163,21 @@ def basename(path):
     return os.path.basename(path)
 
 
+def read_if_exist(filename):
+    """Read contents from filename
+
+    :param str filename: path to the file
+    :retruns: str with contents of filename or empty string
+    """
+
+    if not exists(filename):
+        logger.debug('File not found. Skipping {0}'.format(filename))
+        return ""
+    with open(filename) as f:
+        logger.debug('Reading file {0}'.format(filename))
+        return f.read()
+
+
 def render_to_file(src, dst, params):
     """Render mako template and write it to specified file
 
