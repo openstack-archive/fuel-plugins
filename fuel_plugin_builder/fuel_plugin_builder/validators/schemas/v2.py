@@ -21,6 +21,10 @@ from fuel_plugin_builder.validators.schemas import BaseSchema
 class SchemaV2(BaseSchema):
 
     @property
+    def package_version(self):
+        return {'enum': ['2.0.0']}
+
+    @property
     def metadata_schema(self):
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
@@ -44,7 +48,7 @@ class SchemaV2(BaseSchema):
                     'pattern': consts.PLUGIN_NAME_PATTERN},
                 'title': {'type': 'string'},
                 'version': {'type': 'string'},
-                'package_version': {'enum': ['2.0.0']},
+                'package_version': self.package_version,
                 'description': {'type': 'string'},
                 'fuel_version': self.list_of_strings,
                 'licenses': self.list_of_strings,

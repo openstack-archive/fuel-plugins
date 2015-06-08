@@ -18,6 +18,7 @@ from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 from fuel_plugin_builder.validators import ValidatorV1
 from fuel_plugin_builder.validators import ValidatorV2
+from fuel_plugin_builder.validators import ValidatorV3
 from fuel_plugin_builder.version_mapping import get_plugin_for_version
 
 
@@ -26,18 +27,34 @@ class TestVersionMapping(BaseTestCase):
     def test_get_plugin_for_version_1(self):
         result = get_plugin_for_version('1.0.0')
         self.assertEqual(result['version'], '1.0.0')
-        self.assertEqual(
+        self.assertDictEqual(
             result['templates'],
-            ['templates/base', 'templates/v1/'])
+            {'plugin_data': ['templates/plugin_data/base',
+                             'templates/plugin_data/v1']}
+        )
         self.assertEqual(result['validator'], ValidatorV1)
 
     def test_get_plugin_for_version_2(self):
         result = get_plugin_for_version('2.0.0')
         self.assertEqual(result['version'], '2.0.0')
-        self.assertEqual(
+        self.assertDictEqual(
             result['templates'],
-            ['templates/base', 'templates/v2/'])
+            {'plugin_data': ['templates/plugin_data/base',
+                             'templates/plugin_data/v2'],
+             'build': 'templates/build/v2'}
+        )
         self.assertEqual(result['validator'], ValidatorV2)
+
+    def test_get_plugin_for_version_3(self):
+        result = get_plugin_for_version('3.0.0')
+        self.assertEqual(result['version'], '3.0.0')
+        self.assertDictEqual(
+            result['templates'],
+            {'plugin_data': ['templates/plugin_data/base',
+                             'templates/plugin_data/v3'],
+             'build': 'templates/build/v3'}
+        )
+        self.assertEqual(result['validator'], ValidatorV3)
 
     def test_get_plugin_for_version_raises_error(self):
         with self.assertRaisesRegexp(errors.WrongPackageVersionError,
