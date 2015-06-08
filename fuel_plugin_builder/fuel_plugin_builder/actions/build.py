@@ -48,8 +48,9 @@ class BaseBuildPlugin(BaseAction):
         """Method should be implemented in child classes
         """
 
-    def __init__(self, plugin_path):
+    def __init__(self, plugin_path, build_templates_path=None):
         self.plugin_path = plugin_path
+        self.build_templates_path = build_templates_path
         self.pre_build_hook_path = join_path(plugin_path, 'pre_build_hook')
         self.meta = utils.parse_yaml(join_path(plugin_path, 'metadata.yaml'))
         self.build_dir = join_path(plugin_path, '.build')
@@ -166,9 +167,9 @@ class BuildPluginV2(BaseBuildPlugin):
 
         fpb_dir = join_path(os.path.dirname(__file__), '..')
         self.spec_src = os.path.abspath(join_path(
-            fpb_dir, 'templates', 'build', 'plugin_rpm.spec.mako'))
+            fpb_dir, self.build_templates_path, 'plugin_rpm.spec.mako'))
         self.release_tmpl_src = os.path.abspath(join_path(
-            fpb_dir, 'templates', 'build', 'Release.mako'))
+            fpb_dir, self.build_templates_path, 'Release.mako'))
 
         self.spec_dst = join_path(self.rpm_path, 'plugin_rpm.spec')
         self.rpm_packages_mask = join_path(
@@ -200,6 +201,7 @@ class BuildPluginV2(BaseBuildPlugin):
 
         :returns: dictionary with required data
         """
+
         return {
             'name': self.full_name,
             'version': self.full_version,
@@ -224,13 +226,40 @@ class BuildPluginV2(BaseBuildPlugin):
                  'major_version': self.plugin_version})
 
 
+class BuildPluginV3(BuildPluginV2):
+
+    def _make_data_for_template(self):
+        uninst = utils.read_if_exist(join_path(self.plugin_path,
+                                     "uninstall.sh"))
+        preinst = utils.read_if_exist(join_path(self.plugin_path,
+                                      "pre_install.sh"))
+        postinst = utils.read_if_exist(join_path(self.plugin_path,
+                                       "post_install.sh"))
+
+        return {
+            'name': self.full_name,
+            'version': self.full_version,
+            'summary': self.meta['title'],
+            'description': self.meta['description'],
+            'license': ' and '.join(self.meta.get('licenses', [])),
+            'homepage': self.meta.get('homepage'),
+            'vendor': ', '.join(self.meta.get('authors', [])),
+            'year': utils.get_current_year(),
+            'preinst': preinst,
+            'postinst': postinst,
+            'uninst': uninst}
+
+
 def make_builder(plugin_path):
     """Creates build object
 
     :param str plugin_path: path to the plugin
     :returns: specific version of builder object
     """
-    builder = version_mapping.get_version_mapping_from_plugin(
-        plugin_path)['builder']
+    version_data = version_mapping.get_version_mapping_from_plugin(
+        plugin_path
+    )
+    build_templates_path = version_data['templates'].get('build')
+    builder = version_data['builder']
 
-    return builder(plugin_path)
+    return builder(plugin_path, build_templates_path)

@@ -40,7 +40,7 @@ class CreatePlugin(BaseAction):
 
         self.render_ctx = {'plugin_name': self.plugin_name}
         self.template_paths = version_mapping.get_plugin_for_version(
-            self.package_version)['templates']
+            self.package_version)['templates']['plugin_data']
 
     def check(self):
         if utils.exists(self.plugin_path):

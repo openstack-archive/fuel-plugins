@@ -20,7 +20,7 @@ from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 
 
-latest_version = '2.0.0'
+latest_version = '3.0.0'
 
 
 def get_mapping():
@@ -30,13 +30,34 @@ def get_mapping():
 
     return [
         {'version': '1.0.0',
-         'templates': ['templates/base', 'templates/v1/'],
+         'templates': {
+             'plugin_data': [
+                 'templates/plugin_data/base',
+                 'templates/plugin_data/v1'
+             ]
+         },
          'validator': validators.ValidatorV1,
          'builder': build.BuildPluginV1},
         {'version': '2.0.0',
-         'templates': ['templates/base', 'templates/v2/'],
+         'templates': {
+             'plugin_data': [
+                 'templates/plugin_data/base',
+                 'templates/plugin_data/v2'
+             ],
+             'build': 'templates/build/v2'
+         },
          'validator': validators.ValidatorV2,
-         'builder': build.BuildPluginV2}]
+         'builder': build.BuildPluginV2},
+        {'version': '3.0.0',
+         'templates': {
+             'plugin_data': [
+                 'templates/plugin_data/base',
+                 'templates/plugin_data/v3'
+             ],
+             'build': 'templates/build/v3'
+         },
+         'validator': validators.ValidatorV3,
+         'builder': build.BuildPluginV3}]
 
 
 def get_plugin_for_version(version):
