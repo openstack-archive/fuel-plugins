@@ -137,6 +137,20 @@ class TestUtils(BaseTestCase):
         self.assertFalse(utils.exists(file_path))
         os_exists.assert_called_once_with(file_path)
 
+    @mock.patch('fuel_plugin_builder.utils.exists',
+                return_value=True)
+    def test_read_if_exist(self, utils_exists):
+        file_path = '/tmp/file'
+        with mock.patch('__builtin__.open', self.mock_open("foo")):
+            self.assertEqual(utils.read_if_exist(file_path), "foo")
+
+    @mock.patch('fuel_plugin_builder.utils.exists',
+                return_value=False)
+    def test_read_if_exist_returns_empty(self, utils_exists):
+        file_path = '/tmp/file'
+        with mock.patch('__builtin__.open', self.mock_open("foo")):
+            self.assertEqual(utils.read_if_exist(file_path), "")
+
     @mock.patch('fuel_plugin_builder.utils.os.path.basename')
     def test_basename(self, base_mock):
         path = 'some_path'

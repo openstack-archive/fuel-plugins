@@ -203,6 +203,7 @@ class TestBaseBuildV2(BaseBuild):
     @mock.patch('fuel_plugin_builder.actions.build.utils')
     def test_make_package(self, utils_mock):
         utils_mock.get_current_year.return_value = '2014'
+        utils_mock.read_if_exist.return_value = ''
         self.builder.make_package()
         rpm_src_path = self.path_from_plugin('.build/rpm/SOURCES')
         utils_mock.create_dir.assert_called_once_with(rpm_src_path)
@@ -226,7 +227,10 @@ class TestBaseBuildV2(BaseBuild):
              'version': '1.2.3',
              'homepage': 'url',
              'name': 'plugin_name-1.2',
-             'year': '2014'})
+             'year': '2014',
+             'preinst': '',
+             'postinst': '',
+             'uninst': ''})
 
         utils_mock.exec_cmd.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
