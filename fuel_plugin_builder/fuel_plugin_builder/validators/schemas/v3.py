@@ -14,8 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuel_plugin_builder.validators.manager import ValidatorManager
-from fuel_plugin_builder.validators.validator_v1 import ValidatorV1
-from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
-from fuel_plugin_builder.validators.validator_v3 import ValidatorV3
-from fuel_plugin_builder.validators.base import BaseValidator
+from fuel_plugin_builder.validators.schemas import v2
+
+
+class SchemaV3(v2.SchemaV2):
+
+    @property
+    def package_version(self):
+        return {'enum': ['3.0.0']}
