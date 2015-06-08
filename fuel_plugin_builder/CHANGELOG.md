@@ -1,6 +1,13 @@
 # Changelog
 
-## 2.0.3 (UNRELEASED)
+## 2.0.3 (2014-06-08)
+
+- New "monitoring" group
+  https://bugs.launchpad.net/fuel/+bug/1458592
+- Fix, fail build, if there are invalid deb packages for ubuntu repository
+  https://bugs.launchpad.net/fuel/+bug/1447981
+- Fix dependency package name for newer CentOS
+  https://bugs.launchpad.net/fuel/+bug/1455882
 
 ## 2.0.2 (2014-05-15)
 
