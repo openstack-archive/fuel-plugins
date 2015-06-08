@@ -203,6 +203,8 @@ class TestBaseBuildV2(BaseBuild):
     @mock.patch('fuel_plugin_builder.actions.build.utils')
     def test_make_package(self, utils_mock):
         utils_mock.get_current_year.return_value = '2014'
+        utils_mock.read_if_exist.side_effect = ['echo uninst', 'echo preinst',
+                                                'echo postinst']
         self.builder.make_package()
         rpm_src_path = self.path_from_plugin('.build/rpm/SOURCES')
         utils_mock.create_dir.assert_called_once_with(rpm_src_path)
@@ -226,7 +228,10 @@ class TestBaseBuildV2(BaseBuild):
              'version': '1.2.3',
              'homepage': 'url',
              'name': 'plugin_name-1.2',
-             'year': '2014'})
+             'year': '2014',
+             'preinst': 'echo preinst',
+             'postinst': 'echo postinst',
+             'uninst': 'echo uninst'})
 
         utils_mock.exec_cmd.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
@@ -237,6 +242,11 @@ class TestBaseBuildV2(BaseBuild):
         utils_mock.copy_files_in_dir.assert_called_once_with(
             self.path_from_plugin('.build/rpm/RPMS/noarch/*.rpm'),
             self.plugin_path)
+
+        utils_mock.read_if_exist.assert_has_calls([
+            mock.call(self.path_from_plugin('uninstall.sh')),
+            mock.call(self.path_from_plugin('pre_install.sh')),
+            mock.call(self.path_from_plugin('post_install.sh'))])
 
     @mock.patch('fuel_plugin_builder.actions.build.utils.which',
                 return_value=False)
