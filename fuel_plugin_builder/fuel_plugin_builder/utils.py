@@ -352,3 +352,13 @@ def get_current_year():
     """Returns current year
     """
     return str(datetime.date.today().year)
+
+
+def remove_by_mask(mask):
+    """Deletes files by mask
+
+    :param str mask: files mask
+    """
+    logger.debug(u'Remove files by mask %s', mask)
+    for f in glob(mask):
+        remove(f)

@@ -38,6 +38,11 @@ class BaseBuildPlugin(BaseAction):
         are required for the builder
         """
 
+    @abc.abstractproperty
+    def result_package_mask(self):
+        """Should return mask for built package
+        """
+
     @abc.abstractmethod
     def make_package(self):
         """Method should be implemented in child classes
@@ -50,6 +55,7 @@ class BaseBuildPlugin(BaseAction):
         self.build_dir = join_path(plugin_path, '.build')
         self.build_src_dir = join_path(self.build_dir, 'src')
         self.checksums_path = join_path(self.build_src_dir, 'checksums.sha1')
+        self.name = self.meta['name']
 
     def run(self):
         logger.debug('Start plugin building "%s"', self.plugin_path)
@@ -63,6 +69,7 @@ class BaseBuildPlugin(BaseAction):
     def clean(self):
         utils.remove(self.build_dir)
         utils.create_dir(self.build_dir)
+        utils.remove_by_mask(self.result_package_mask)
 
     def run_pre_build_hook(self):
         if utils.which(self.pre_build_hook_path):
@@ -124,6 +131,10 @@ class BuildPluginV1(BaseBuildPlugin):
 
     requires = ['rpm', 'createrepo', 'dpkg-scanpackages']
 
+    @property
+    def result_package_mask(self):
+        return join_path(self.plugin_path, '{0}-*.fp'.format(self.name))
+
     def make_package(self):
         full_name = '{0}-{1}'.format(self.meta['name'],
                                      self.meta['version'])
@@ -162,6 +173,11 @@ class BuildPluginV2(BaseBuildPlugin):
         self.spec_dst = join_path(self.rpm_path, 'plugin_rpm.spec')
         self.rpm_packages_mask = join_path(
             self.rpm_path, 'RPMS', 'noarch', '*.rpm')
+
+    @property
+    def result_package_mask(self):
+        return join_path(
+            self.plugin_path, '{0}-*.noarch.rpm'.format(self.name))
 
     def make_package(self):
         """Builds rpm package

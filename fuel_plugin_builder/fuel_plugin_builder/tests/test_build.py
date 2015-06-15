@@ -148,7 +148,8 @@ class BaseBuild(BaseTestCase):
         self.builder.clean()
         utils_mock.assert_has_calls([
             mock.call.remove(self.builder.build_dir),
-            mock.call.create_dir(self.builder.build_dir)])
+            mock.call.create_dir(self.builder.build_dir),
+            mock.call.remove_by_mask(self.builder.result_package_mask)])
 
 
 class TestBaseBuildV1(BaseBuild):

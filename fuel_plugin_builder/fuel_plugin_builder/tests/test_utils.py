@@ -323,3 +323,14 @@ class TestUtils(BaseTestCase):
         self.assertEqual(
             fileobj.getvalue(),
             'checksum file1.txt\nchecksum2 file2.txt\n')
+
+    @mock.patch('fuel_plugin_builder.utils.remove')
+    @mock.patch('fuel_plugin_builder.utils.glob',
+                return_value=['file1', 'file2'])
+    def test_remove_by_mask(self, glob_mock, remove_mock):
+        mask = '/tmp/test/*.yaml'
+        utils.remove_by_mask(mask)
+        glob_mock.assert_called_once_with(mask)
+        self.assertEqual(
+            remove_mock.call_args_list,
+            [mock.call('file1'), mock.call('file2')])
