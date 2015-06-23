@@ -1,5 +1,7 @@
 # Changelog
 
+## 2.0.5 (UNRELEASED)
+
 ## 2.0.4 (2014-06-23)
 
 - Fix, remove plugin package from previous build
