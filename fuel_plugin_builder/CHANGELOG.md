@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.0.4 (UNRELEASED)
+## 2.0.4 (2014-06-23)
+
+- Fix, remove plugin package from previous build
+  https://bugs.launchpad.net/fuel/+bug/1464143
 
 ## 2.0.3 (2014-06-08)
 
