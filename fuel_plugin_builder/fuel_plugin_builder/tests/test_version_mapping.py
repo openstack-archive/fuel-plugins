@@ -37,7 +37,7 @@ class TestVersionMapping(BaseTestCase):
         self.assertEqual(result['version'], '2.0.0')
         self.assertEqual(
             result['templates'],
-            ['templates/base', 'templates/v2/'])
+            ['templates/base', 'templates/v2/plugin_data/'])
         self.assertEqual(result['validator'], ValidatorV2)
 
     def test_get_plugin_for_version_3(self):
@@ -45,7 +45,7 @@ class TestVersionMapping(BaseTestCase):
         self.assertEqual(result['version'], '3.0.0')
         self.assertEqual(
             result['templates'],
-            ['templates/base', 'templates/v3/'])
+            ['templates/base', 'templates/v3/plugin_data/'])
         self.assertEqual(result['validator'], ValidatorV3)
 
     def test_get_plugin_for_version_raises_error(self):

@@ -216,8 +216,8 @@ class TestBaseBuildV2(BaseBuild):
             'plugin_name-1.2')
 
         spec_src = os.path.abspath(join_path(
-            os.path.dirname(__file__),
-            '../templates/build/plugin_rpm.spec.mako'))
+            os.path.dirname(__file__), '..',
+            self.builder.rpm_spec_src_path))
         utils_mock.render_to_file.assert_called_once_with(
             spec_src,
             join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
@@ -257,8 +257,8 @@ class TestBaseBuildV2(BaseBuild):
             ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
             cwd=path)
         release_src = os.path.abspath(join_path(
-            os.path.dirname(__file__),
-            '../templates/build/Release.mako'))
+            os.path.dirname(__file__), '..',
+            self.builder.release_tmpl_src_path))
         utils_mock.render_to_file.assert_called_once_with(
             release_src,
             '/repo/path/Release',
@@ -267,8 +267,68 @@ class TestBaseBuildV2(BaseBuild):
              'authors': ['author1', 'author2']})
 
 
-# NOTE(aroma): BuilderPluginV3 incorporates same logic as
-# V2 so tests' coverage should be also the same
-class TestBaseBuildV3(TestBaseBuildV2):
+class TestBaseBuildV3(BaseBuild):
 
+    __test__ = True
     builder_class = BuildPluginV3
+    meta = {
+        'releases': BaseBuild.releases,
+        'version': '1.2.3',
+        'name': 'plugin_name',
+        'title': 'Plugin title',
+        'description': 'Description',
+        'licenses': ['Apache', 'BSD'],
+        'authors': ['author1', 'author2'],
+        'homepage': 'url'
+    }
+
+    def path_from_plugin(self, path):
+        return join_path(self.plugin_path, path)
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils')
+    def test_make_package(self, utils_mock):
+        utils_mock.get_current_year.return_value = '2014'
+        utils_mock.read_if_exist.side_effect = ['echo uninst', 'echo preinst',
+                                                'echo postinst']
+        self.builder.make_package()
+        rpm_src_path = self.path_from_plugin('.build/rpm/SOURCES')
+        utils_mock.create_dir.assert_called_once_with(rpm_src_path)
+
+        fp_dst = self.path_from_plugin('.build/rpm/SOURCES/plugin_name-1.2.fp')
+        utils_mock.make_tar_gz.assert_called_once_with(
+            self.path_from_plugin('.build/src'),
+            fp_dst,
+            'plugin_name-1.2')
+
+        spec_src = os.path.abspath(join_path(
+            os.path.dirname(__file__), '..',
+            self.builder.rpm_spec_src_path))
+        utils_mock.render_to_file.assert_called_once_with(
+            spec_src,
+            join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
+            {'vendor': 'author1, author2',
+             'description': 'Description',
+             'license': 'Apache and BSD',
+             'summary': 'Plugin title',
+             'version': '1.2.3',
+             'homepage': 'url',
+             'name': 'plugin_name-1.2',
+             'year': '2014',
+             'preinstall_hook': 'echo preinst',
+             'postinstall_hook': 'echo postinst',
+             'uninstall_hook': 'echo uninst'})
+
+        utils_mock.exec_cmd.assert_called_once_with(
+            'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
+            '{1}'.format(
+                self.path_from_plugin('.build/rpm'),
+                self.path_from_plugin('.build/rpm/plugin_rpm.spec')))
+
+        utils_mock.copy_files_in_dir.assert_called_once_with(
+            self.path_from_plugin('.build/rpm/RPMS/noarch/*.rpm'),
+            self.plugin_path)
+
+        utils_mock.read_if_exist.assert_has_calls([
+            mock.call(self.path_from_plugin('uninstall.sh')),
+            mock.call(self.path_from_plugin('pre_install.sh')),
+            mock.call(self.path_from_plugin('post_install.sh'))])

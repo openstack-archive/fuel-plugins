@@ -150,6 +150,9 @@ class BuildPluginV2(BaseBuildPlugin):
 
     requires = ['rpmbuild', 'rpm', 'createrepo', 'dpkg-scanpackages']
 
+    rpm_spec_src_path = 'templates/v2/build/plugin_rpm.spec.mako'
+    release_tmpl_src_path = 'templates/v2/build/Release.mako'
+
     def __init__(self, *args, **kwargs):
         super(BuildPluginV2, self).__init__(*args, **kwargs)
 
@@ -166,9 +169,9 @@ class BuildPluginV2(BaseBuildPlugin):
 
         fpb_dir = join_path(os.path.dirname(__file__), '..')
         self.spec_src = os.path.abspath(join_path(
-            fpb_dir, 'templates', 'build', 'plugin_rpm.spec.mako'))
+            fpb_dir, self.rpm_spec_src_path))
         self.release_tmpl_src = os.path.abspath(join_path(
-            fpb_dir, 'templates', 'build', 'Release.mako'))
+            fpb_dir, self.release_tmpl_src_path))
 
         self.spec_dst = join_path(self.rpm_path, 'plugin_rpm.spec')
         self.rpm_packages_mask = join_path(
@@ -225,12 +228,29 @@ class BuildPluginV2(BaseBuildPlugin):
 
 
 class BuildPluginV3(BuildPluginV2):
-    """Plugin builder for package version 3.0.0
-    Is needed for role-as-a-plugin feature. So far
-    it doesn't introduce any new logic but will later as
-    the feature develops.
-    """
-    pass
+
+    rpm_spec_src_path = 'templates/v3/build/plugin_rpm.spec.mako'
+    release_tmpl_src_path = 'templates/v3/build/Release.mako'
+
+    def _make_data_for_template(self):
+        data = super(BuildPluginV3, self)._make_data_for_template()
+
+        uninst = utils.read_if_exist(
+            join_path(self.plugin_path, "uninstall.sh"))
+
+        preinst = utils.read_if_exist(
+            join_path(self.plugin_path, "pre_install.sh"))
+
+        postinst = utils.read_if_exist(
+            join_path(self.plugin_path, "post_install.sh"))
+
+        data.update(
+            {'postinstall_hook': postinst,
+             'preinstall_hook': preinst,
+             'uninstall_hook': uninst}
+        )
+
+        return data
 
 
 def make_builder(plugin_path):
