@@ -224,6 +224,15 @@ class BuildPluginV2(BaseBuildPlugin):
                  'major_version': self.plugin_version})
 
 
+class BuildPluginV3(BuildPluginV2):
+    """Plugin builder for package version 3.0.0
+    Is needed for role-as-a-plugin feature. So far
+    it doesn't introduce any new logic but will later as
+    the feature develops.
+    """
+    pass
+
+
 def make_builder(plugin_path):
     """Creates build object
 

@@ -36,7 +36,14 @@ def get_mapping():
         {'version': '2.0.0',
          'templates': ['templates/base', 'templates/v2/'],
          'validator': validators.ValidatorV2,
-         'builder': build.BuildPluginV2}]
+         'builder': build.BuildPluginV2},
+        # NOTE(aroma): so far building process for 3.0.0 is the same
+        # as for 2.0.0; it will be changed as feature role-as-a-plugin
+        # develops
+        {'version': '3.0.0',
+         'templates': ['templates/base', 'templates/v3/'],
+         'validator': validators.ValidatorV3,
+         'builder': build.BuildPluginV3}]
 
 
 def get_plugin_for_version(version):

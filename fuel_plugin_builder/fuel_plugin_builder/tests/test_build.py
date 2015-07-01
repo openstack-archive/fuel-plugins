@@ -22,6 +22,7 @@ from os.path import join as join_path
 from fuel_plugin_builder.actions.build import BaseBuildPlugin
 from fuel_plugin_builder.actions.build import BuildPluginV1
 from fuel_plugin_builder.actions.build import BuildPluginV2
+from fuel_plugin_builder.actions.build import BuildPluginV3
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 
@@ -264,3 +265,10 @@ class TestBaseBuildV2(BaseBuild):
             {'major_version': '1.2',
              'plugin_name': 'plugin_name',
              'authors': ['author1', 'author2']})
+
+
+# NOTE(aroma): BuilderPluginV3 incorporates same logic as
+# V2 so tests' coverage should be also the same
+class TestBaseBuildV3(TestBaseBuildV2):
+
+    builder_class = BuildPluginV3

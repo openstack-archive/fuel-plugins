@@ -18,6 +18,7 @@ from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 from fuel_plugin_builder.validators import ValidatorV1
 from fuel_plugin_builder.validators import ValidatorV2
+from fuel_plugin_builder.validators import ValidatorV3
 from fuel_plugin_builder.version_mapping import get_plugin_for_version
 
 
@@ -38,6 +39,14 @@ class TestVersionMapping(BaseTestCase):
             result['templates'],
             ['templates/base', 'templates/v2/'])
         self.assertEqual(result['validator'], ValidatorV2)
+
+    def test_get_plugin_for_version_3(self):
+        result = get_plugin_for_version('3.0.0')
+        self.assertEqual(result['version'], '3.0.0')
+        self.assertEqual(
+            result['templates'],
+            ['templates/base', 'templates/v3/'])
+        self.assertEqual(result['validator'], ValidatorV3)
 
     def test_get_plugin_for_version_raises_error(self):
         with self.assertRaisesRegexp(errors.WrongPackageVersionError,
