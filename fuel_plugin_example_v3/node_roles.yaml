@@ -1,0 +1,6 @@
+fuel_plugin_example_v3:
+  name: "Set here the name for the role. This name will be displayed in the Fuel web UI."
+  description: "Write description for your role"
+  has_primary: false                # whether has primary role or not
+  public_ip_required: false         # whether requires public net or not
+  weight: 100                       # weight that will be used for ordering on fuel ui
