@@ -20,7 +20,7 @@ from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 
 
-latest_version = '2.0.0'
+latest_version = '3.0.0'
 
 
 def get_mapping():
