@@ -22,12 +22,12 @@ groups: []
 releases:
   - os: ubuntu
     version: 2014.2-7.0
-    mode: ['ha', 'multinode']
+    mode: ['ha']
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/ubuntu
   - os: centos
     version: 2014.2-7.0
-    mode: ['ha', 'multinode']
+    mode: ['ha']
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/centos
 
