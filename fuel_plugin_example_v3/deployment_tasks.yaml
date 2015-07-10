@@ -1,0 +1,3 @@
+- id: fuel_plugin_example_v3
+  type: group
+  role: [fuel_plugin_example_v3]
