@@ -1,4 +1,4 @@
-${plugin_name}:
+fuel_plugin_example_v3:
   name: "Set here name for role how it should be visible in UI"
   description: "Write description for your role"
   has_primary: false  # whether has primary role or not
