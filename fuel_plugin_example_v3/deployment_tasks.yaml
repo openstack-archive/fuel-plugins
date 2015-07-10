@@ -1,0 +1,36 @@
+- id: fuel_plugin_example_v3
+  type: group
+  role: [fuel_plugin_example_v3]
+
+- id: fuel_plugin_example_v3
+  type: group
+  role: [fuel_plugin_example_v3]
+  tasks:
+    - hiera
+    - globals
+  required_for: [deploy_end]
+  requires: [deploy_start]
+  parameters:
+    strategy:
+      type: one_by_one
+
+- id: fuel_plugin_example_v3-deployment-sh
+  type: shell
+  groups: [fuel_plugin_example_v3]
+  required_for: [deploy_end]
+  requires: [deploy_start]
+  parameters:
+    cmd: deploy.sh
+    retries: 3
+    interval: 20
+    timeout: 180
+
+- id: fuel_plugin_example_v3-deployment
+  type: puppet
+  groups: [fuel_plugin_example_v3]
+  required_for: [deploy_end]
+  requires: [deploy_start]
+  parameters:
+    puppet_manifest: "deploy.pp"
+    puppet_modules: ""
+    timeout: 3600
