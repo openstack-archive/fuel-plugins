@@ -95,13 +95,14 @@ class BaseValidator(BaseTestCase):
         self.plugin_path = '/tmp/plugin_path'
         self.validator = self.validator_class(self.plugin_path)
 
-    def test_validate(self, _):
+    def test_validate(self, _, additional_mocked_methods=None):
         mocked_methods = [
             'check_schemas',
             'check_tasks',
             'check_releases_paths',
             'check_compatibility',
         ]
+        mocked_methods.extend(additional_mocked_methods or [])
         self.mock_methods(self.validator, mocked_methods)
         self.validator.validate()
 
