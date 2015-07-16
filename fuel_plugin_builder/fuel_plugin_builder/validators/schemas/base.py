@@ -66,6 +66,47 @@ class BaseSchema(object):
                     self.short_restriction]}}
 
     @property
+    def rule(self):
+        return {
+            'type': ['string', 'integer']
+        }
+
+    @property
+    def override(self):
+        return {
+            'type': 'object',
+            'required': ['condition'],
+            'properties': {
+                'condition': {'type': 'string'},
+                'max': self.rule,
+                'recommended': self.rule,
+                'min': self.rule,
+                'message': {'type': 'string'}
+            }
+        }
+
+    @property
+    def overrides(self):
+        return {
+            'type': 'array',
+            'minItems': 1,
+            'items': self.override
+        }
+
+    @property
+    def limits(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'condition': self.condition,
+                'max': self.rule,
+                'recommended': self.rule,
+                'min': self.rule,
+                'overrides': self.overrides
+            }
+        }
+
+    @property
     def metadata_schema(self):
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
