@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2014 Mirantis, Inc.
+#    Copyright 2015 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -16,19 +16,24 @@
 
 from os.path import join as join_path
 
-from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators.schemas import v3
-from fuel_plugin_builder.validators import validator_v2
+from fuel_plugin_builder.validators.schemas.v3 import SchemaV3
+from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
 
 
-class ValidatorV3(validator_v2.ValidatorV2):
+class ValidatorV3(ValidatorV2):
 
-    schema = v3.SchemaV3()
+    schema = SchemaV3()
 
     def __init__(self, *args, **kwargs):
         super(ValidatorV3, self).__init__(*args, **kwargs)
+        self.deployment_tasks_path = join_path(
+            self.plugin_path, 'deployment_tasks.yaml')
         self.network_roles_path = join_path(
             self.plugin_path, 'network_roles.yaml')
+        self.node_roles_path = join_path(
+            self.plugin_path, 'node_roles.yaml')
+        self.volumes_path = join_path(
+            self.plugin_path, 'volumes.yaml')
 
     @property
     def basic_version(self):
@@ -36,10 +41,29 @@ class ValidatorV3(validator_v2.ValidatorV2):
 
     def validate(self):
         super(ValidatorV3, self).validate()
+        self.check_deployment_tasks()
         self.check_network_roles()
+        self.check_node_roles()
+        self.check_volumes()
+
+    def check_deployment_tasks(self):
+        self.validate_file_by_schema(
+            self.schema.deployment_task_schema,
+            self.deployment_tasks_path)
 
     def check_network_roles(self):
-        network_roles = utils.parse_yaml(self.network_roles_path)
-        self.validate_schema(
-            network_roles, self.schema.network_roles_schema,
-            self.network_roles_path)
+        self.validate_file_by_schema(
+            self.schema.network_roles_schema,
+            self.network_roles_path,
+            required=False)
+
+    def check_node_roles(self):
+        self.validate_file_by_schema(
+            self.schema.node_role_schema,
+            self.node_roles_path)
+
+    def check_volumes(self):
+        self.validate_file_by_schema(
+            self.schema.volume_schema,
+            self.volumes_path,
+            required=False)

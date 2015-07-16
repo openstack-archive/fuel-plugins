@@ -73,9 +73,14 @@ class BaseValidator(object):
 
         return error_msg
 
-    def validate_file_by_schema(self, schema, file_path):
-        data = utils.parse_yaml(file_path)
-        self.validate_schema(data, schema, file_path)
+    def validate_file_by_schema(self, schema, file_path, required=True):
+        if utils.exists(file_path):
+            data = utils.parse_yaml(file_path)
+            self.validate_schema(data, schema, file_path)
+        else:
+            if required:
+                raise errors.ValidationError(
+                    'File {0} is required'.format(file_path))
 
     @abc.abstractmethod
     def validate(self):
