@@ -14,11 +14,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuel_plugin_builder.validators.schemas import v2
+from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
 
 
-class SchemaV3(v2.SchemaV2):
+class SchemaV3(SchemaV2):
 
     @property
     def package_version(self):
         return {'enum': ['3.0.0']}
+
+    def deployment_task_schema(self):
+        pass
+
+    def node_role_schema(self):
+        pass
+
+    def volume_schema(self):
+        pass
