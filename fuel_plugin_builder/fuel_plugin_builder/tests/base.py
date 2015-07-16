@@ -81,3 +81,9 @@ class BaseTestCase(TestCase):
         """
         for method in methods:
             setattr(obj, method, mock.MagicMock())
+
+    def assertNotRaises(self, exception, method, *args, **kwargs):
+        try:
+            method(*args, **kwargs)
+        except exception:
+            self.fail('Exception "{0}" raised.'.format(exception))
