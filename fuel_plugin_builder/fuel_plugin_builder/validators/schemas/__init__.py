@@ -16,3 +16,4 @@
 
 
 from fuel_plugin_builder.validators.schemas.base import BaseSchema
+from fuel_plugin_builder.validators.schemas.v3 import SchemaV3

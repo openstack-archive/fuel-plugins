@@ -83,6 +83,12 @@ class BaseTestCase(TestCase):
         for method in methods:
             setattr(obj, method, mock.MagicMock())
 
+    def assertNotRaises(self, exception, method, *args, **kwargs):
+        try:
+            method(*args, **kwargs)
+        except exception:
+            self.fail('Exception "{0}" raised.'.format(exception))
+
 
 @mock.patch('fuel_plugin_builder.validators.base.utils')
 class BaseValidator(BaseTestCase):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2014 Mirantis, Inc.
+#    Copyright 2015 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -19,7 +19,7 @@ from os.path import join as join_path
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators.schemas import v3
+from fuel_plugin_builder.validators.schemas import SchemaV3
 from fuel_plugin_builder.validators import ValidatorV2
 
 logger = logging.getLogger(__name__)
@@ -27,12 +27,18 @@ logger = logging.getLogger(__name__)
 
 class ValidatorV3(ValidatorV2):
 
-    schema = v3.SchemaV3()
+    schema = SchemaV3()
 
     def __init__(self, *args, **kwargs):
         super(ValidatorV3, self).__init__(*args, **kwargs)
+        self.deployment_tasks_path = join_path(
+            self.plugin_path, 'deployment_tasks.yaml')
         self.network_roles_path = join_path(
             self.plugin_path, 'network_roles.yaml')
+        self.node_roles_path = join_path(
+            self.plugin_path, 'node_roles.yaml')
+        self.volumes_path = join_path(
+            self.plugin_path, 'volumes.yaml')
 
     @property
     def basic_version(self):
@@ -48,12 +54,33 @@ class ValidatorV3(ValidatorV2):
             self.tasks_path,
             check_file_exists=False
         )
+        self.check_env_config_attrs()
+        self.check_deployment_tasks_schema()
+        self.check_network_roles_schema()
+        self.check_node_roles_schema()
+        self.check_volumes_schema()
+
+    def check_deployment_tasks_schema(self):
+        self.validate_file_by_schema(
+            self.schema.deployment_task_schema,
+            self.deployment_tasks_path)
+
+    def check_network_roles_schema(self):
         self.validate_file_by_schema(
             self.schema.network_roles_schema,
             self.network_roles_path,
-            check_file_exists=False
-        )
-        self.check_env_config_attrs()
+            check_file_exists=False)
+
+    def check_node_roles_schema(self):
+        self.validate_file_by_schema(
+            self.schema.node_roles_schema,
+            self.node_roles_path)
+
+    def check_volumes_schema(self):
+        self.validate_file_by_schema(
+            self.schema.volume_schema,
+            self.volumes_path,
+            check_file_exists=False)
 
     def _parse_tasks(self):
         if utils.exists(self.tasks_path):

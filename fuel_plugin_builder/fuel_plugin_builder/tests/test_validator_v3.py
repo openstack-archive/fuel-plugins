@@ -177,7 +177,11 @@ class TestValidatorV3(BaseValidator):
     def test_check_schemas(self):
         mocked_methods = [
             'check_env_config_attrs',
-            'validate_file_by_schema'
+            'validate_file_by_schema',
+            'check_deployment_tasks_schema',
+            'check_network_roles_schema',
+            'check_node_roles_schema',
+            'check_volumes_schema'
         ]
         self.mock_methods(self.validator, mocked_methods)
         self.validator.check_schemas()
@@ -186,12 +190,14 @@ class TestValidatorV3(BaseValidator):
             [mock.call(self.schema_class().metadata_schema,
                        self.validator.meta_path),
              mock.call(self.schema_class().tasks_schema,
-                       self.validator.tasks_path, check_file_exists=False),
-             mock.call(self.schema_class().network_roles_schema,
-                       self.validator.network_roles_path,
-                       check_file_exists=False)],
+                       self.validator.tasks_path, check_file_exists=False)],
             self.validator.validate_file_by_schema.call_args_list)
+
         self.validator.check_env_config_attrs.assert_called_once_with()
+        self.validator.check_deployment_tasks_schema.assert_called_once_with()
+        self.validator.check_network_roles_schema.assert_called_once_with()
+        self.validator.check_node_roles_schema.assert_called_once_with()
+        self.validator.check_volumes_schema.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility_failed(self, utils_mock):
@@ -220,3 +226,91 @@ class TestValidatorV3(BaseValidator):
             'fuel_version': ['7.0'],
             'package_version': '3.0.0'}
         self.validator.check_compatibility()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_group_type_deployment_task(self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'puppet',
+            'role': '[plugin_name]'}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml', 'puppet'"
+                " does not match 'shell|group', value path '0'"):
+            self.validator.check_deployment_tasks_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_puppet_type_deployment_task(self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'shell',
+            'groups': '[plugin_name]'}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml',"
+                " 'shell' does not match 'puppet', value path '0'"):
+            self.validator.check_deployment_tasks_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_group_type_deployment_task_does_not_contain_manifests(
+            self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'group',
+            'role': '[plugin_name]',
+            'parameters': {}}]
+
+        self.assertNotRaises(
+            errors.ValidationError,
+            self.validator.check_deployment_tasks_schema)
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_node_roles_have_correct_name(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'plug$n_n@me': {
+                'name': 'test_plugin',
+                'description': 'test plugin'}}
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/node_roles.yaml', Additional"
+                " properties are not allowed"):
+            self.validator.check_node_roles_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_node_role_should_has_name(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'plugin_name': {
+                'description': 'test plugin'}}
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/node_roles.yaml', 'name' is"
+                " a required property, value path 'plugin_name'"):
+            self.validator.check_node_roles_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_valid_volumes_roles_mapping_name(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'volumes_roles_mapping': {
+                'mapping_name': [{'allocate_size': 'min', 'id': 'test'}]},
+            'volumes': []}
+
+        self.assertNotRaises(
+            errors.ValidationError,
+            self.validator.check_volumes_schema)
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_invalid_volumes_roles_mapping_name(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'volumes_roles_mapping': {
+                'm@pping_name': [{'allocate_size': 'min', 'id': 'test'}]},
+            'volumes': []}
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/volumes.yaml', Additional"
+                " properties are not allowed"):
+            self.validator.check_volumes_schema()
