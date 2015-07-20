@@ -1,0 +1,7 @@
+# - id: "example_net_role"
+#   default_mapping: "public"
+#   subnet: true
+#   gateway: false
+#   properties:
+#     - name: "example_vip_a"
+#     - name: "example_vip_b"
