@@ -10,16 +10,6 @@
     strategy:
       type: parallel
 
-- id: fuel_plugin_example_v3-post-deployment-sh
-  type: shell
-  groups: [fuel_plugin_example_v3]
-  required_for: [post_deployment_end]
-  requires: [post_deployment_start]
-  parameters:
-    cmd: deploy.sh
-    retries: 3
-    interval: 20
-    timeout: 180
 
 - id: fuel_plugin_example_v3-deployment
   type: puppet
@@ -30,3 +20,15 @@
     puppet_manifest: "deploy.pp"
     puppet_modules: ""
     timeout: 3600
+
+
+- id: fuel_plugin_example_v3-post-deployment-sh
+  type: shell
+  role: [fuel_plugin_example_v3]
+  required_for: [post_deployment_end]
+  requires: [post_deployment_start]
+  parameters:
+    cmd: ./deploy.sh
+    retries: 3
+    interval: 20
+    timeout: 180

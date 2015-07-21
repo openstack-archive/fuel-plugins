@@ -1,5 +1,5 @@
-volumes:
-  # set here new volumes for your role
+# Set here new volumes for your role
+volumes: []
 volumes_roles_mapping:
   fuel_plugin_example_v3:
     # Default role mapping
