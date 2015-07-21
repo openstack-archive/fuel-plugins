@@ -22,3 +22,32 @@ class SchemaV3(v2.SchemaV2):
     @property
     def package_version(self):
         return {'enum': ['3.0.0']}
+
+    @property
+    def network_roles_schema(self):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'required': ['id', 'default_mapping', 'properties'],
+                'properties': {
+                    'id': {'type': 'string'},
+                    'default_mapping': {'type': 'string'},
+                    'properties': {
+                        'type': 'object',
+                        'required': ['subnet', 'gateway', 'vip'],
+                        'properties': {
+                            'subnet': {'type': 'boolean'},
+                            'gateway': {'type': 'boolean'},
+                            'vip': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'required': ['name'],
+                                    'properties': {
+                                        'name': {
+                                            'type': 'string'},
+                                        'namespace': {
+                                            'type': 'string'}}}}}}}}
+        }
