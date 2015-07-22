@@ -10,6 +10,15 @@
     strategy:
       type: parallel
 
+- id: fuel_plugin_example_v3-deployment-sh
+  type: puppet
+  groups: [controller]
+  required_for: [check_connectivity, deploy_end]
+  requires: [netconfig, deploy_start]
+  parameters:
+    puppet_manifest: "deploy.pp"
+    puppet_modules: ""
+    timeout: 3600
 
 - id: fuel_plugin_example_v3-deployment
   type: puppet
