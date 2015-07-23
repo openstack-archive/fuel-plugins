@@ -43,6 +43,8 @@ class BaseValidator(object):
             'Start schema validation for %s file, %s', file_path, schema)
 
         try:
+            if data is None:
+                raise jsonschema.exceptions.ValidationError('Empty file')
             jsonschema.validate(data, schema)
         except jsonschema.exceptions.ValidationError as exc:
             raise errors.ValidationError(
