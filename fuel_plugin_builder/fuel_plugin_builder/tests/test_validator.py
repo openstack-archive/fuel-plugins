@@ -20,9 +20,11 @@ from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 from fuel_plugin_builder.validators import ValidatorV1
 from fuel_plugin_builder.validators import ValidatorV2
+from fuel_plugin_builder.validators import ValidatorV3
 
 from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
 from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
+from fuel_plugin_builder.validators.schemas.v3 import SchemaV3
 
 
 @mock.patch('fuel_plugin_builder.validators.base.utils')
@@ -62,10 +64,7 @@ class BaseValidator(BaseTestCase):
         self.assertEqual(
             [mock.call(
                 self.schema_class().metadata_schema,
-                self.validator.meta_path),
-             mock.call(
-                 self.schema_class().tasks_schema,
-                 self.validator.tasks_path)],
+                self.validator.meta_path)],
             self.validator.validate_file_by_schema.call_args_list)
         self.validator.check_env_config_attrs.assert_called_once_with()
 
@@ -169,7 +168,8 @@ class TestValidatorV1(BaseValidator):
     schema_class = SchemaV1
 
     @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')
-    def test_check_tasks(self, utils_mock):
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.os.path.exists')
+    def test_check_tasks(self, exists_mock, utils_mock):
         mocked_methods = [
             'validate_schema'
         ]
@@ -177,6 +177,7 @@ class TestValidatorV1(BaseValidator):
         utils_mock.parse_yaml.return_value = [
             {'type': 'puppet', 'parameters': 'param1'},
             {'type': 'shell', 'parameters': 'param2'}]
+        exists_mock.return_value = True
 
         self.validator.check_tasks()
 
@@ -211,7 +212,8 @@ class TestValidatorV2(BaseValidator):
     schema_class = SchemaV2
 
     @mock.patch('fuel_plugin_builder.validators.validator_v2.utils')
-    def test_check_tasks(self, utils_mock):
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.os.path.exists')
+    def test_check_tasks(self, exists_mock, utils_mock):
         mocked_methods = [
             'validate_schema'
         ]
@@ -220,6 +222,7 @@ class TestValidatorV2(BaseValidator):
             {'type': 'puppet', 'parameters': 'param1'},
             {'type': 'shell', 'parameters': 'param2'},
             {'type': 'reboot', 'parameters': 'param3'}]
+        exists_mock.return_value = True
 
         self.validator.check_tasks()
 
@@ -235,6 +238,11 @@ class TestValidatorV2(BaseValidator):
                        value_path=[2, 'parameters'])],
             self.validator.validate_schema.call_args_list)
 
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.os.path.exists')
+    def test_check_tasks_no_file(self, exists_mock):
+        exists_mock.return_value = False
+        self.validator.check_tasks()
+
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility(self, utils_mock):
         utils_mock.parse_yaml.return_value = {
@@ -245,6 +253,55 @@ class TestValidatorV2(BaseValidator):
                 errors.ValidationError,
                 'Current plugin format 2.0.0 is not compatible with 6.0 Fuel'
                 ' release. Fuel version must be 6.1 or higher.'
+                ' Please remove 6.0 version from metadata.yaml file or'
+                ' downgrade package_version.'):
+            self.validator.check_compatibility()
+
+
+class TestValidatorV3(BaseValidator):
+
+    __test__ = True
+    validator_class = ValidatorV3
+    schema_class = SchemaV3
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.os.path.exists')
+    def test_check_network_roles(self, exists_mock, utils_mock):
+        mocked_methods = ['validate_schema']
+        self.mock_methods(self.validator, mocked_methods)
+        utils_mock.parse_yaml.return_value = [{
+            'id': 1,
+            'default_mapping': 'xx',
+            'properties': {
+                'subnet': True, 'gateway': True,
+                'vip': [{'name': 'a'}]
+            }
+        }]
+        exists_mock.return_value = True
+
+        self.validator.check_network_roles()
+
+        self.assertEqual(
+            [mock.call(utils_mock.parse_yaml.return_value,
+                       self.schema_class().network_roles_schema,
+                       self.validator.network_roles_path)],
+            self.validator.validate_schema.call_args_list)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v2.os.path.exists')
+    def test_check_tasks_no_file(self, exists_mock):
+        exists_mock.return_value = False
+        self.validator.check_network_roles()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_compatibility(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'fuel_version': ['6.0', '6.1', '7.0'],
+            'package_version': '3.0.0'}
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                'Current plugin format 3.0.0 is not compatible with 6.0 Fuel'
+                ' release. Fuel version must be 7.0 or higher.'
                 ' Please remove 6.0 version from metadata.yaml file or'
                 ' downgrade package_version.'):
             self.validator.check_compatibility()

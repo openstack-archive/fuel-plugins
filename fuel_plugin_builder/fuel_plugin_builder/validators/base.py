@@ -43,6 +43,8 @@ class BaseValidator(object):
             'Start schema validation for %s file, %s', file_path, schema)
 
         try:
+            if data is None:
+                raise jsonschema.exceptions.ValidationError('Empty file')
             jsonschema.validate(data, schema)
         except jsonschema.exceptions.ValidationError as exc:
             raise errors.ValidationError(
@@ -87,9 +89,6 @@ class BaseValidator(object):
         self.validate_file_by_schema(
             self.schema.metadata_schema,
             self.meta_path)
-        self.validate_file_by_schema(
-            self.schema.tasks_schema,
-            self.tasks_path)
         self.check_env_config_attrs()
 
     def check_env_config_attrs(self):
