@@ -15,7 +15,6 @@
 #    under the License.
 
 import logging
-
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
@@ -61,7 +60,7 @@ class ValidatorV1(BaseValidator):
 
         for idx, task in enumerate(tasks):
             self.validate_schema(
-                task['parameters'],
+                task.get('parameters'),
                 schemas[task['type']],
                 self.tasks_path,
                 value_path=[idx, 'parameters'])
