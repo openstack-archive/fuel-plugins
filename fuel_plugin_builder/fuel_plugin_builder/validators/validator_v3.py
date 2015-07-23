@@ -14,11 +14,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
+import os
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.schemas import v3
 from fuel_plugin_builder.validators import validator_v2
+
+logger = logging.getLogger(__name__)
 
 
 class ValidatorV3(validator_v2.ValidatorV2):
@@ -39,6 +43,11 @@ class ValidatorV3(validator_v2.ValidatorV2):
         self.check_network_roles()
 
     def check_network_roles(self):
+        if not os.path.exists(self.network_roles_path):
+            logger.debug('No file "%s". Skipping check.',
+                         self.network_roles_path)
+            return
+
         network_roles = utils.parse_yaml(self.network_roles_path)
         self.validate_schema(
             network_roles, self.schema.network_roles_schema,
