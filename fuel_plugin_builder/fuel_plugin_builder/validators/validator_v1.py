@@ -15,7 +15,7 @@
 #    under the License.
 
 import logging
-
+import os
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
@@ -52,8 +52,13 @@ class ValidatorV1(BaseValidator):
         to make sure here, that puppet task is really puppet
         and shell task is correct too
         """
+        if not os.path.exists(self.tasks_path):
+            logger.debug('No file "%s". Skipping check.', self.tasks_path)
+            return
+
         logger.debug('Start tasks checking "%s"', self.tasks_path)
         tasks = utils.parse_yaml(self.tasks_path)
+        self.validate_schema(tasks, self.schema.task_schema, self.tasks_path)
 
         schemas = {
             'puppet': self.schema.puppet_parameters,
