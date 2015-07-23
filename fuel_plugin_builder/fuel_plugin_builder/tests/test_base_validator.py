@@ -98,6 +98,15 @@ class TestBaseValidator(BaseTestCase):
         utils_mock.parse_yaml.assert_called_once_with(self.plugin_path)
         validate_mock(self.data, self.schema, self.plugin_path)
 
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_error_message_on_empty_file(self, utils_mock):
+        utils_mock.parse_yaml.return_value = None
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path', Empty file"):
+            self.validator.validate_file_by_schema(
+                self.schema, self.plugin_path)
+
     def test_validate_schema_with_subschemas(self):
         schema_object = {
             'key': {
