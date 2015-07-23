@@ -51,3 +51,56 @@ class SchemaV3(v2.SchemaV2):
                                         'namespace': {
                                             'type': 'string'}}}}}}}}
         }
+
+    @property
+    def task_schema(self):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'object',
+            'required': ['parameters', 'type', 'stage', 'role'],
+            'properties': {
+                'type': {'enum': ['shell', 'puppet', 'reboot']},
+                'parameters': {
+                    "anyOf": [
+                        {
+                            'type': 'object',
+                            'required': ['timeout', 'cmd'],
+                            'additionalProperties': False,
+                            'properties': {
+                                'timeout': self.positive_integer,
+                                'cmd': {'type': 'string'}
+                            }
+                        },
+                        {
+                            'type': 'object',
+                            'required': ['timeout', 'puppet_modules',
+                                         'puppet_manifest'],
+                            'additionalProperties': False,
+                            'properties': {
+                                'timeout': self.positive_integer,
+                                'puppet_modules': {'type': 'string'},
+                                'puppet_manifest': {'type': 'string'}
+                            }
+                        },
+                        {
+                            'type': 'object',
+                            'required': ['timeout'],
+                            'additionalProperties': False,
+                            'properties': {
+                                'timeout': self.positive_integer
+                            }
+                        }
+                    ]
+                },
+                'stage': {'type': 'string',
+                          'pattern':
+                          '^(post_deployment|pre_deployment)'
+                          '(/[-+]?([0-9]*\.[0-9]+|[0-9]+))?$'},
+                'role': {
+                    'oneOf': [
+                        self.list_of_strings,
+                        {'enum': ['*']}
+                    ]
+                }
+            }
+        }
