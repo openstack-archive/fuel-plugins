@@ -189,6 +189,24 @@ class TestValidatorV1(BaseValidator):
                        value_path=[1, 'parameters'])],
             self.validator.validate_schema.call_args_list)
 
+    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')
+    def test_check_tasks_no_parameters_not_failed(self, utils_mock):
+        mocked_methods = [
+            'validate_schema'
+        ]
+        self.mock_methods(self.validator, mocked_methods)
+        utils_mock.parse_yaml.return_value = [
+            {'type': 'puppet'},
+        ]
+
+        self.validator.check_tasks()
+
+        self.assertEqual(
+            [mock.call(None, self.schema_class().puppet_parameters,
+                       self.validator.tasks_path,
+                       value_path=[0, 'parameters'])],
+            self.validator.validate_schema.call_args_list)
+
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility(self, utils_mock):
         utils_mock.parse_yaml.return_value = {

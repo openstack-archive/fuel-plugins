@@ -51,3 +51,88 @@ class SchemaV3(v2.SchemaV2):
                                         'namespace': {
                                             'type': 'string'}}}}}}}}
         }
+
+    @property
+    def task_stage(self):
+        return {
+            'type': 'string',
+            'pattern': '^(post_deployment|pre_deployment)'
+                       '(/[-+]?([0-9]*\.[0-9]+|[0-9]+))?$'
+        }
+
+    @property
+    def task_role(self):
+        return {
+            'oneOf': [
+                self.list_of_strings,
+                {'enum': ['*']}
+            ]
+        }
+
+    @property
+    def task_required(self):
+        return ['parameters', 'type', 'stage', 'role']
+
+    @property
+    def task_schema(self):
+        return {
+            'anyOf': [
+                {
+                    '$schema': 'http://json-schema.org/draft-04/schema#',
+                    'type': 'object',
+                    'required': self.task_required,
+                    'properties': {
+                        'type': {'enum': ['shell']},
+                        'parameters': {
+                            'type': 'object',
+                            'required': ['timeout', 'cmd'],
+                            'additionalProperties': False,
+                            'properties': {
+                                'timeout': self.positive_integer,
+                                'cmd': {'type': 'string'}
+                            }
+                        },
+                        'stage': self.task_stage,
+                        'role': self.task_role
+                    }
+                },
+                {
+                    '$schema': 'http://json-schema.org/draft-04/schema#',
+                    'type': 'object',
+                    'required': self.task_required,
+                    'properties': {
+                        'type': {'enum': ['puppet']},
+                        'parameters': {
+                            'type': 'object',
+                            'required': ['timeout', 'puppet_modules',
+                                         'puppet_manifest'],
+                            'additionalProperties': False,
+                            'properties': {
+                                'timeout': self.positive_integer,
+                                'puppet_modules': {'type': 'string'},
+                                'puppet_manifest': {'type': 'string'}
+                            }
+                        },
+                        'stage': self.task_stage,
+                        'role': self.task_role
+                    }
+                },
+                {
+                    '$schema': 'http://json-schema.org/draft-04/schema#',
+                    'type': 'object',
+                    'required': self.task_required,
+                    'properties': {
+                        'type': {'enum': ['reboot']},
+                        'parameters': {
+                            'type': 'object',
+                            'additionalProperties': False,
+                            'properties': {
+                                'timeout': self.positive_integer,
+                            }
+                        },
+                        'stage': self.task_stage,
+                        'role': self.task_role
+                    }
+                }
+            ]
+        }

@@ -15,7 +15,6 @@
 #    under the License.
 
 import logging
-
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
