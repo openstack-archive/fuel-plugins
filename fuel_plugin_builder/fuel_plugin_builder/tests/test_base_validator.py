@@ -89,6 +89,16 @@ class TestBaseValidator(BaseTestCase):
             self.validator.validate_schema(
                 data, schema, 'file_path', value_path=[0, 'path2'])
 
+    @mock.patch(
+        'fuel_plugin_builder.validators.base.BaseValidator.validate_schema')
+    def test_validate_file_by_schema_failed(self, utils_mock):
+        utils_mock.parse_yaml.return_value = self.data
+        with self.assertRaisesRegexp(
+                errors.FileDoesNotExist,
+                "File '/tmp/plugin_path' does not exist"):
+            self.validator.validate_file_by_schema(
+                self.schema, self.plugin_path)
+
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     @mock.patch(
         'fuel_plugin_builder.validators.base.BaseValidator.validate_schema')
@@ -97,6 +107,17 @@ class TestBaseValidator(BaseTestCase):
         self.validator.validate_file_by_schema(self.schema, self.plugin_path)
         utils_mock.parse_yaml.assert_called_once_with(self.plugin_path)
         validate_mock(self.data, self.schema, self.plugin_path)
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
+    def test_error_message_on_empty_file(self, exists_mock, utils_mock):
+        utils_mock.parse_yaml.return_value = None
+        exists_mock.return_value = True
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path' is empty"):
+            self.validator.validate_file_by_schema(
+                self.schema, self.plugin_path)
 
     def test_validate_schema_with_subschemas(self):
         schema_object = {

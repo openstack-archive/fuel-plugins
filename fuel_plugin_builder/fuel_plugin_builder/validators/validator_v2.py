@@ -15,7 +15,6 @@
 #    under the License.
 
 import logging
-
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
@@ -47,13 +46,18 @@ class ValidatorV2(BaseValidator):
         self.check_releases_paths()
         self.check_compatibility()
 
+    def _parse_tasks(self):
+        return utils.parse_yaml(self.tasks_path)
+
     def check_tasks(self):
         """Json schema doesn't have any conditions, so we have
         to make sure here, that puppet task is really puppet,
         shell or reboot tasks are correct too
         """
         logger.debug('Start tasks checking "%s"', self.tasks_path)
-        tasks = utils.parse_yaml(self.tasks_path)
+        tasks = self._parse_tasks()
+        if tasks is None:
+            return
 
         schemas = {
             'puppet': self.schema.puppet_parameters,
@@ -62,7 +66,7 @@ class ValidatorV2(BaseValidator):
 
         for idx, task in enumerate(tasks):
             self.validate_schema(
-                task['parameters'],
+                task.get('parameters'),
                 schemas[task['type']],
                 self.tasks_path,
                 value_path=[idx, 'parameters'])

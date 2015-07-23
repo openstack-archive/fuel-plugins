@@ -33,6 +33,20 @@ class ValidationError(FuelPluginException):
     pass
 
 
+class FileIsEmpty(ValidationError):
+    def __init__(self, file_path):
+        super(FileIsEmpty, self).__init__(
+            "File '{0}' is empty".format(file_path)
+        )
+
+
+class FileDoesNotExist(ValidationError):
+    def __init__(self, file_path):
+        super(FileDoesNotExist, self).__init__(
+            "File '{0}' does not exist".format(file_path)
+        )
+
+
 class WrongPackageVersionError(FuelPluginException):
     pass
 
