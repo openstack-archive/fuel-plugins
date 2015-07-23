@@ -15,9 +15,9 @@
 #    under the License.
 
 import logging
-
 from os.path import join as join_path
 
+from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.base import BaseValidator
 from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
@@ -59,9 +59,13 @@ class ValidatorV1(BaseValidator):
             'puppet': self.schema.puppet_parameters,
             'shell': self.schema.shell_parameters}
 
+        if tasks is None:
+            raise errors.ValidationError(
+                'Empty file: {0}'.format(self.tasks_path))
+
         for idx, task in enumerate(tasks):
             self.validate_schema(
-                task['parameters'],
+                task.get('parameters'),
                 schemas[task['type']],
                 self.tasks_path,
                 value_path=[idx, 'parameters'])

@@ -29,6 +29,10 @@ class PluginDirectoryExistsError(FuelPluginException):
     pass
 
 
+class FileNotExists(FuelPluginException):
+    pass
+
+
 class ValidationError(FuelPluginException):
     pass
 

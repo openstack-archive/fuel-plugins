@@ -16,6 +16,7 @@
 
 import abc
 import logging
+import os
 
 import jsonschema
 import six
@@ -73,8 +74,23 @@ class BaseValidator(object):
 
         return error_msg
 
-    def validate_file_by_schema(self, schema, file_path):
+    def validate_file_by_schema(self, schema, file_path,
+                                check_file_exists=True):
+        if not check_file_exists and not os.path.exists(file_path):
+            logger.debug('No file "%s". Skipping check.',
+                         self.network_roles_path)
+            return
+
+        if not os.path.exists(file_path):
+            raise errors.FileNotExists(
+                "File '{0}' not exists".format(file_path))
+
         data = utils.parse_yaml(file_path)
+
+        if data is None:
+            raise errors.ValidationError(
+                "File '{0}' is empty".format(file_path))
+
         self.validate_schema(data, schema, file_path)
 
     @abc.abstractmethod
