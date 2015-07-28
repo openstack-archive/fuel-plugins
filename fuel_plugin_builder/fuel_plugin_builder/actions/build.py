@@ -222,8 +222,7 @@ class BuildPluginV2(BaseBuildPlugin):
             utils.render_to_file(
                 self.release_tmpl_src,
                 release_path,
-                {'authors': self.meta.get('authors', []),
-                 'plugin_name': self.meta['name'],
+                {'plugin_name': self.meta['name'],
                  'major_version': self.plugin_version})
 
 

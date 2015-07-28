@@ -263,8 +263,7 @@ class TestBaseBuildV2(BaseBuild):
             release_src,
             '/repo/path/Release',
             {'major_version': '1.2',
-             'plugin_name': 'plugin_name',
-             'authors': ['author1', 'author2']})
+             'plugin_name': 'plugin_name'})
 
 
 class TestBaseBuildV3(BaseBuild):
