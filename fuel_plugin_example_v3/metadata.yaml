@@ -21,15 +21,10 @@ groups: []
 # The plugin is compatible with releases in the list
 releases:
   - os: ubuntu
-    version: 2014.2-7.0
+    version: 2015.1.0-7.0
     mode: ['ha']
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/ubuntu
-  - os: centos
-    version: 2014.2-7.0
-    mode: ['ha']
-    deployment_scripts_path: deployment_scripts/
-    repository_path: repositories/centos
 
 # Version of plugin package
 package_version: '3.0.0'
