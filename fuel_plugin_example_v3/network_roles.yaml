@@ -13,3 +13,9 @@
        - name: "vip_name"
          # Optional linux namespace for VIP
          namespace: "haproxy"
+         # Optional alias so VIP can be queried via API
+         alias: "vip_name"
+         # Optional node role list to map VIP to (defaults to
+         # primary-controller and controller)
+         node_roles:
+           - "fuel_plugin_example_v3"
