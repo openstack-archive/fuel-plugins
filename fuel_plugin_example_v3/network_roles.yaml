@@ -13,3 +13,5 @@
        - name: "vip_name"
          # Optional linux namespace for VIP
          namespace: "haproxy"
+         # Optional alias so it can be queried via API
+         alias: "vip_name"
