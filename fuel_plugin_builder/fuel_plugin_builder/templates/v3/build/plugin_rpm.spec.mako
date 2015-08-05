@@ -41,9 +41,13 @@ ${ preinstall_hook }
 
 %%post
 ${ postinstall_hook }
+fuel plugins -sync
 
 %%preun
 ${ uninstall_hook }
+
+%%postun
+fuel plugins -sync
 
 %%files
 /var/www/nailgun/plugins/${ name }
