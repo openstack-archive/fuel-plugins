@@ -36,5 +36,11 @@ cp -r ${ name } %{buildroot}/var/www/nailgun/plugins/
 %%clean
 rm -rf %{buildroot}
 
+%%post
+fuel2 plugins -sync
+
+%%postun
+fuel2 plugins -sync
+
 %%files
 /var/www/nailgun/plugins/${ name }
