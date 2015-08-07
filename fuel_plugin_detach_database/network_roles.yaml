@@ -1,0 +1,19 @@
+# Unique network role name
+- id: "detach_database_database_vip"
+  # Role mapping to network
+  default_mapping: "management"
+  properties:
+    # Should be true if network role requires subnet being set
+    subnet: true
+    # Should be true if network role requires gateway being set
+    gateway: false
+    # List of VIPs to be allocated
+    vip:
+         # Unique VIP name
+       - name: "database"
+         # Optional linux namespace for VIP
+         namespace: "haproxy"
+         alias: "database"
+         node_roles:
+           - "primary-standalone-database"
+           - "standalone-database"

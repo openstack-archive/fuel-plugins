@@ -1,0 +1,73 @@
+##############################################
+# Deployment groups
+- id: primary-standalone-database
+  type: group
+  role: [primary-standalone-database]
+  requires: [deploy_start]
+  required_for: [deploy_end, primary-controller, controller]
+  tasks: [fuel_pkgs, hiera, globals, tools, logging, netconfig,
+    hosts, firewall, deploy_start, cluster, database-virtual-ip, cluster-haproxy,
+    task-database]
+  parameters:
+    strategy:
+      type: one_by_one
+
+- id: standalone-database
+  type: group
+  role: [standalone-database]
+  requires: [deploy_start, primary-standalone-database, primary-controller, controller]
+  required_for: [deploy_end]
+  tasks: [fuel_pkgs, hiera, globals, tools, logging, netconfig,
+    hosts, firewall, deploy_start, cluster, database-virtual-ip, cluster-haproxy,
+    task-database]
+  parameters:
+    strategy:
+      type: parallel
+
+# Deployment tasks
+- id: database-haproxy
+  type: puppet
+  groups: [primary-standalone-database,standalone-database]
+  required_for: [task-database, deploy_end]
+  requires: [deploy_start, database-virtual-ip, cluster-haproxy]
+  parameters:
+    puppet_manifest: "database-haproxy.pp"
+    puppet_modules: "/etc/puppet/modules"
+    timeout: 3600
+
+- id: database-virtual-ip
+  type: puppet
+  groups: [primary-standalone-database, standalone-database]
+  required_for: [deploy_end]
+  requires: [cluster]
+  parameters:
+    puppet_manifest: "virtual_ip.pp"
+    puppet_modules: "/etc/puppet/modules"
+    timeout: 3600
+
+- id: task-database
+  type: puppet
+  role: [primary-standalone-database, standalone-database]
+  requires: [hosts, firewall]
+  requires: [database-haproxy, database-virtual-ip]
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/database/database.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 3600
+  test_pre:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/database/database_pre.rb
+  test_post:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/database/database_post.rb
+
+- id: database-hiera-override
+  type: puppet
+  groups: [primary-controller, controller, primary-standalone-database,
+    standalone-database, cinder, cinder-vmware, compute, ceph-osd,
+    zabbix-server, primary-mongo, mongo]
+  requires: [globals]
+  required_for: [logging]
+  parameters:
+    puppet_manifest: "database_hiera_override.pp"
+    puppet_modules: "/etc/puppet/modules"
+    timeout: 120
+

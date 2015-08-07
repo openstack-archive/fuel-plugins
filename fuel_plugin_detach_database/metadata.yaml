@@ -1,0 +1,39 @@
+# Plugin name
+name: detach-database
+# Human-readable name for your plugin
+title: Separate DB from controller
+# Plugin version
+version: '1.1.0'
+# Description
+description: Creates separate Database role for deploying
+# Required fuel version
+fuel_version: ['7.0']
+# Specify license of your plugin
+licenses: ['Apache License Version 2.0']
+# Specify author or company name
+authors: ['Matthew Mosesohn','Mirantis']
+# A link to the plugin's page
+homepage: 'https://github.com/stackforge/fuel-plugins'
+# Specify a group which your plugin implements, possible options:
+# network, storage, storage::cinder, storage::glance, hypervisor
+groups: [network]
+
+# The plugin is compatible with releases in the list
+releases:
+  - os: ubuntu
+    version: 2014.2.2-6.1
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+  - os: ubuntu
+    version: 2014.2.2-7.0
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+  - os: ubuntu
+    version: 2015.1.0-7.0
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+# Version of plugin package
+package_version: '3.0.0'
