@@ -37,7 +37,7 @@
   required_for: [post_deployment_end]
   requires: [post_deployment_start]
   parameters:
-    cmd: ./deploy.sh
+    cmd: bash deploy.sh
     retries: 3
     interval: 20
     timeout: 180

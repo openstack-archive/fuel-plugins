@@ -6,7 +6,7 @@
   stage: post_deployment
   type: shell
   parameters:
-    cmd: ./deploy.sh
+    cmd: bash deploy.sh
     timeout: 42
 # Task is applied for all roles
 - role: '*'
