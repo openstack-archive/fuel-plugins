@@ -1,0 +1,4 @@
+volumes: []
+volumes_roles_mapping:
+  standalone-keystone:
+    - {allocate_size: 'min', id: 'os'}

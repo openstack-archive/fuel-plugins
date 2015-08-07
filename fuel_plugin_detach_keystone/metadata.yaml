@@ -1,0 +1,28 @@
+name: detach-keystone
+title: Separate Keystone from controller
+version: '1.0.2'
+description: Creates separate Keystone role for deploying
+fuel_version: ['7.0']
+licenses: ['Apache License Version 2.0']
+authors: ['Bartlomiej Piotrowski', 'Mirantis']
+homepage: 'https://github.com/stackforge/fuel-plugins'
+groups: [network]
+
+releases:
+  - os: ubuntu
+    version: 2014.2.2-6.1
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+  - os: ubuntu
+    version: 2014.2.2-7.0
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+  - os: ubuntu
+    version: 2015.1.0-7.0
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+
+package_version: '3.0.0'

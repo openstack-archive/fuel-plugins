@@ -1,0 +1,25 @@
+- id: 'detach_keystone_vip'
+  default_mapping: 'management'
+  node_roles:
+    - standalone-keystone
+    - primary-standalone-keystone
+  properties:
+    subnet: true
+    gateway: false
+    vip:
+       - name: 'service_endpoint'
+         namespace: 'haproxy'
+         alias: 'service_endpoint'
+
+- id: 'detach_keystone_public_vip'
+  default_mapping: 'public'
+  node_roles:
+    - standalone-keystone
+    - primary-standalone-keystone
+  properties:
+    subnet: true
+    gateway: true
+    vip:
+       - name: 'public_service_endpoint'
+         namespace: 'haproxy'
+         alias: 'public_service_endpoint'

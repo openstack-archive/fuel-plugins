@@ -1,0 +1,11 @@
+attributes:
+  metadata:
+    label: "Keystone settings (NOTE: Requires detach-database plugin!!!)"
+    weight: 90
+  yaml_additional_config:
+    type: "textarea"
+    weight: 52
+    value: |
+      foo: bar
+    label: "Additional config"
+    description: "Just put here valid yaml" 
