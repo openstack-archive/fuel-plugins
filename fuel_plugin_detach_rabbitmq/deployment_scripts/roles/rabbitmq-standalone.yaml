@@ -1,0 +1,10 @@
+meta:
+  description: 'Separated Rabbitmq from controller'
+  has_primary: false
+  name: 'RabbitMQ'
+name: rabbitmq-standalone
+volumes_roles_mapping:
+  - allocate_size: min
+    id: os
+  - allocate_size: all
+    id: image

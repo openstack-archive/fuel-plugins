@@ -1,0 +1,10 @@
+# This tasks will be applied on controller nodes,
+# here you can also specify several roles, for example
+# ['cinder', 'compute'] will be applied only on
+# cinder and compute nodes
+- role: '*'
+  stage: pre_deployment
+  type: shell
+  parameters:
+    cmd: echo OK
+    timeout: 30

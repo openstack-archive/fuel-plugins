@@ -1,0 +1,9 @@
+- id: deploy-hiera-override-rabbitmq
+  type: puppet
+  groups: [primary-controller, controller, rabbitmq-standalone, cinder, cinder-vmware, compute, ceph-osd, zabbix-server, primary-mongo, mongo]
+  requires: [deploy-hiera-deep-merge]
+  required_for: [globals]
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/detach-rabbitmq/deploy-hiera-override.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 120

@@ -1,0 +1,28 @@
+##############################################
+# Deployment groups
+- id: rabbitmq-standalone
+  type: group
+  role: [rabbitmq-standalone]
+  requires: [deploy_start]
+  required_for: [deploy_end, primary-controller, controller]
+  tasks: [fuel_pkgs, hiera, globals, tools, logging, netconfig,
+    hosts, firewall, deploy_start, task-rabbitmq]
+  parameters:
+    strategy:
+      type: parallel
+
+# Deployment tasks
+- id: task-rabbitmq
+  type: puppet
+  role: [rabbitmq-standalone]
+  requires: [hosts, firewall]
+  required_for: [deploy_end, glance, openstack-network]
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/rabbitmq/rabbitmq.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 3600
+  test_pre:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/rabbitmq/rabbitmq_pre.rb
+  test_post:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/rabbitmq/rabbitmq_post.rb
+

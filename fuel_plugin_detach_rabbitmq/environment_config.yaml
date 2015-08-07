@@ -1,0 +1,13 @@
+attributes:
+  metadata:
+    label: "Rabbitmq settings"
+    weight: 90
+  # Gathering variables from user about our DCP
+  yaml_additional_config:
+    type: "textarea"
+    weight: 52
+    value: |
+      # TODO: fill me out
+      queue_provider: 'rabbitmq'
+    label: "Additional config"
+    description: "Just put here valid yaml"
