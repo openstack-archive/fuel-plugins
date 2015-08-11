@@ -19,7 +19,7 @@ from os.path import join as join_path
 
 from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.base import BaseValidator
-from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
+from fuel_plugin_builder.validators.schemas import SchemaV2
 
 
 logger = logging.getLogger(__name__)
