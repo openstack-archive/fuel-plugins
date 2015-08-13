@@ -78,7 +78,8 @@ class ValidatorV3(ValidatorV2):
     def check_node_roles_schema(self):
         self.validate_file_by_schema(
             self.schema.node_roles_schema,
-            self.node_roles_path)
+            self.node_roles_path,
+            check_file_exists=False)
 
     def check_volumes_schema(self):
         self.validate_file_by_schema(
