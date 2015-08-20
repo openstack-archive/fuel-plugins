@@ -383,3 +383,53 @@ class TestValidatorV3(BaseValidator):
                 "File '/tmp/plugin_path/volumes.yaml', Additional"
                 " properties are not allowed"):
             self.validator.check_volumes_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_valid_network_roles(self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            "id": "example_net_role",
+            "default_mapping": "public",
+            "properties": {
+                "subnet": True,
+                "gateway": False,
+                "vip": [{
+                    "name": "vip_name",
+                    "namespace": "haproxy"}]}}]
+
+        self.validator.check_network_roles_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_network_roles_vip_have_correct_name(self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            "id": "example_net_role",
+            "default_mapping": "public",
+            "properties": {
+                "subnet": True,
+                "gateway": False,
+                "vip": [{
+                    "name": "vip@name",
+                    "namespace": "haproxy"}]}}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/network_roles.yaml',"
+                " 'vip@name' does not match"):
+            self.validator.check_network_roles_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_network_roles_vip_have_correct_namespace(self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            "id": "example_net_role",
+            "default_mapping": "public",
+            "properties": {
+                "subnet": True,
+                "gateway": False,
+                "vip": [{
+                    "name": "vip_name",
+                    "namespace": "hap roxy"}]}}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/network_roles.yaml',"
+                " 'hap roxy' does not match"):
+            self.validator.check_network_roles_schema()

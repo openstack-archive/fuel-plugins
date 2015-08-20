@@ -18,6 +18,7 @@ from fuel_plugin_builder.validators.schemas import SchemaV2
 
 
 TASK_NAME_PATTERN = '^[0-9a-zA-Z_-]+$'
+VIP_NAME_PATTERN = '^[0-9a-z_-]+$'
 
 
 class SchemaV3(SchemaV2):
@@ -191,9 +192,11 @@ class SchemaV3(SchemaV2):
                                     'required': ['name'],
                                     'properties': {
                                         'name': {
-                                            'type': 'string'},
+                                            'type': 'string',
+                                            'pattern': VIP_NAME_PATTERN},
                                         'namespace': {
-                                            'type': 'string'}}}}}}}}
+                                            'type': 'string',
+                                            'pattern': VIP_NAME_PATTERN}}}}}}}}
         }
 
     @property
