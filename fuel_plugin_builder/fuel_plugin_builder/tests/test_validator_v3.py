@@ -269,6 +269,14 @@ class TestValidatorV3(BaseValidator):
             self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_check_skipped_type_deployment_task(self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'skipped'}]
+
+        self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(
             self, utils_mock):
         utils_mock.parse_yaml.return_value = [{

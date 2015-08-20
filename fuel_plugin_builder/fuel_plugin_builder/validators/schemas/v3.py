@@ -143,6 +143,14 @@ class SchemaV3(SchemaV2):
         }
 
     @property
+    def skipped_task(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'type': {'enum': ['skipped']}}
+        }
+
+    @property
     def deployment_task_schema(self):
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
@@ -154,7 +162,7 @@ class SchemaV3(SchemaV2):
                     'id': {
                         'type': 'string',
                         'pattern': TASK_NAME_PATTERN},
-                    'type': {'enum': ['puppet', 'shell', 'group']},
+                    'type': {'enum': ['puppet', 'shell', 'group', 'skipped']},
                     'required_for': self.task_group,
                     'requires': self.task_group}}
         }

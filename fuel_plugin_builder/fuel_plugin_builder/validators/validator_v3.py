@@ -96,7 +96,8 @@ class ValidatorV3(ValidatorV2):
         schemas = {
             'puppet': self.schema.puppet_task,
             'shell': self.schema.shell_task,
-            'group': self.schema.group_task}
+            'group': self.schema.group_task,
+            'skipped': self.schema.skipped_task}
 
         for idx, deployment_task in enumerate(deployment_tasks):
             self.validate_schema(
