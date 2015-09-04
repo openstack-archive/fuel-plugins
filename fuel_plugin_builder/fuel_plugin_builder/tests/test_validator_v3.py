@@ -256,19 +256,6 @@ class TestValidatorV3(BaseValidator):
         self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_shell_type_deployment_task(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
-            'id': 'plugin_name',
-            'type': 'group',
-            'groups': ['plugin_name']}]
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/deployment_tasks.yaml', "
-                "'role' is a required property, value path '0'"):
-            self.validator.check_deployment_tasks()
-
-    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_skipped_type_deployment_task(self, utils_mock):
         utils_mock.parse_yaml.return_value = [{
             'id': 'plugin_name',
@@ -288,7 +275,7 @@ class TestValidatorV3(BaseValidator):
         self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_deployment_task_role(self, utils_mock):
+    def test_check_deployment_task_role_failed(self, utils_mock):
         utils_mock.parse_yaml.return_value = [{
             'id': 'plugin_name',
             'type': 'group',
@@ -299,6 +286,25 @@ class TestValidatorV3(BaseValidator):
                 "File '/tmp/plugin_path/deployment_tasks.yaml',"
                 " 'plugin_n@me' does not match"):
             self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_check_deployment_task_role(self, utils_mock):
+        utils_mock.parse_yaml.return_value = [
+            {'id': 'plugin_name', 'type': 'group', 'role': []},
+            {'id': 'plugin_name', 'type': 'group', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'group', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'puppet', 'role': []},
+            {'id': 'plugin_name', 'type': 'puppet', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'puppet', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'shell', 'role': []},
+            {'id': 'plugin_name', 'type': 'shell', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'shell', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'skipped', 'role': []},
+            {'id': 'plugin_name', 'type': 'skipped', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'skipped', 'role': '*'},
+        ]
+
+        self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_deployment_task_id(self, utils_mock):
