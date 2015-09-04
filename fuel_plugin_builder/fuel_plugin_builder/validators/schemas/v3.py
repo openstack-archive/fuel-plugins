@@ -24,6 +24,15 @@ NETWORK_ROLE_PATTERN = '^[0-9a-z_-]+$'
 class SchemaV3(SchemaV2):
 
     @property
+    def task_role(self):
+        return {
+            'oneOf': [
+                self.task_group,
+                {'enum': ['*']}
+            ]
+        }
+
+    @property
     def task_group(self):
         return {
             'type': 'array',
@@ -89,7 +98,7 @@ class SchemaV3(SchemaV2):
             'properties': {
                 'type': {'enum': ['puppet']},
                 'groups': self.task_group,
-                'role': self.task_group,
+                'role': self.task_role,
                 'parameters': {
                     'type': 'object',
                     'required': [
@@ -110,7 +119,7 @@ class SchemaV3(SchemaV2):
             'required': ['role'],
             'properties': {
                 'type': {'enum': ['shell']},
-                'role': self.task_group,
+                'role': self.task_role,
                 'parameters': {
                     'type': 'object',
                     'required': ['cmd'],
@@ -132,7 +141,7 @@ class SchemaV3(SchemaV2):
             'required': ['role'],
             'properties': {
                 'type': {'enum': ['group']},
-                'role': self.task_group,
+                'role': self.task_role,
                 'parameters': {
                     'type': 'object',
                     'properties': {
