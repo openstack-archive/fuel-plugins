@@ -74,12 +74,12 @@ class TestValidatorV3(BaseValidator):
             }
         ]
 
-        with mock.patch.object(self.validator, '_parse_tasks') as \
-                parse_tasks_mock:
+        with mock.patch('fuel_plugin_builder.validators.validator_v3.utils') \
+                as mock_utils:
             for data in data_sets:
-                parse_tasks_mock.return_value = [data]
+                mock_utils.parse_yaml.return_value = [data]
                 self.assertRaises(errors.ValidationError,
-                                  self.validator.check_tasks)
+                                  self.validator.check_deployment_tasks)
 
     def test_check_tasks_schema_validation_passed(self):
         data_sets = [
@@ -117,9 +117,10 @@ class TestValidatorV3(BaseValidator):
             ],
             [
                 {
-                    'type': 'reboot',
+                    'type': 'shell',
                     'parameters': {
                         'timeout': 3,
+                        'cmd': 'reboot'
                     },
                     'stage': 'post_deployment',
                     'role': '*'
@@ -146,20 +147,21 @@ class TestValidatorV3(BaseValidator):
             ],
             [
                 {
-                    'type': 'reboot',
+                    'type': 'shell',
                     'parameters': {
                         'timeout': 3,
-                        'cmd': 'xx'
+                        'cmd': 'reboot'
                     },
                     'stage': 'post_deployment',
                     'role': '*'
                 },
                 {
-                    'type': 'reboot',
+                    'type': 'shell',
                     'parameters': {
                         'timeout': 3,
                         'puppet_manifest': 'xx',
                         'puppet_modules': 'yy',
+                        'cmd': 'reboot'
                     },
                     'stage': 'post_deployment',
                     'role': '*'
@@ -167,18 +169,19 @@ class TestValidatorV3(BaseValidator):
             ]
         ]
 
-        with mock.patch.object(self.validator, '_parse_tasks') as \
-                parse_tasks_mock:
+        with mock.patch('fuel_plugin_builder.validators.validator_v3.utils') \
+                as mock_utils:
             for data in data_sets:
-                parse_tasks_mock.return_value = data
-                self.validator.check_tasks()
+                mock_utils.parse_yaml.return_value = data
+                self.validator.check_deployment_tasks()
 
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
-    def test_check_tasks_no_file(self, exists_mock):
+    def test_check_tasks_no_file(self, exists_mock, utils_mock):
         mocked_methods = ['validate_schema']
         self.mock_methods(self.validator, mocked_methods)
         exists_mock.return_value = False
-        self.validator.check_tasks()
+        self.validator.check_deployment_tasks()
         self.assertFalse(self.validator.validate_schema.called)
 
     def test_check_schemas(self):
