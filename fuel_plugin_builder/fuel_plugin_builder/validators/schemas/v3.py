@@ -202,7 +202,6 @@ class SchemaV3(SchemaV2):
                                     'properties': {
                                         'name': {
                                             'type': 'string',
-                                            'maxLength': 13,
                                             'pattern': NETWORK_ROLE_PATTERN},
                                         'namespace': {
                                             'type': 'string',
