@@ -433,22 +433,3 @@ class TestValidatorV3(BaseValidator):
                 "File '/tmp/plugin_path/network_roles.yaml',"
                 " 'hap roxy' does not match"):
             self.validator.check_network_roles_schema()
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_network_roles_name_length(self, utils_mock):
-        vip_name = 'a' * 14
-        utils_mock.parse_yaml.return_value = [{
-            "id": "example_net_role",
-            "default_mapping": "public",
-            "properties": {
-                "subnet": True,
-                "gateway": False,
-                "vip": [{
-                    "name": vip_name,
-                    "namespace": "haproxy"}]}}]
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/network_roles.yaml',"
-                " '%s' is too long" % vip_name):
-            self.validator.check_network_roles_schema()
