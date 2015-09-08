@@ -238,33 +238,160 @@ class TestValidatorV3(BaseValidator):
         self.validator.check_compatibility()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_group_type_deployment_task(self, utils_mock):
+    def test_role_attribute_is_required_for_deployment_task_types(
+            self, utils_mock):
+        deployment_task_types = [
+            'group', 'shell', 'copy_files', 'sync', 'upload_file']
+
+        for task_type in deployment_task_types:
+            utils_mock.parse_yaml.return_value = [{
+                'id': 'plugin_name',
+                'type': task_type}]
+
+            with self.assertRaisesRegexp(
+                    errors.ValidationError,
+                    "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                    "'role' is a required property, value path '0'"):
+                self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_parameters_attribute_is_required_for_deployment_task_types(
+            self, utils_mock):
+        deployment_task_types = ['copy_files', 'sync', 'upload_file']
+
+        for task_type in deployment_task_types:
+            utils_mock.parse_yaml.return_value = [{
+                'id': 'plugin_name',
+                'type': task_type,
+                'role': '*'}]
+
+            with self.assertRaisesRegexp(
+                    errors.ValidationError,
+                    "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                    "'parameters' is a required property, value path '0'"):
+                self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_files_attribute_is_required_for_copy_files_task_type(
+            self, utils_mock):
         utils_mock.parse_yaml.return_value = [{
             'id': 'plugin_name',
-            'type': 'group',
-            'groups': ['plugin_name']}]
+            'type': 'copy_files',
+            'role': '*',
+            'parameters': {}}]
 
         with self.assertRaisesRegexp(
                 errors.ValidationError,
                 "File '/tmp/plugin_path/deployment_tasks.yaml', "
-                "'role' is a required property, value path '0'"):
+                "'files' is a required property, value path '0 "
+                "-> parameters'"):
             self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_puppet_type_deployment_task(self, utils_mock):
+    def test_files_should_contain_at_least_one_item_for_copy_files_task_type(
+            self, utils_mock):
         utils_mock.parse_yaml.return_value = [{
             'id': 'plugin_name',
-            'type': 'puppet'}]
+            'type': 'copy_files',
+            'role': '*',
+            'parameters': {
+                'files': []}}]
 
-        self.validator.check_deployment_tasks()
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                "\[\] is too short, value path '0 -> parameters ->"
+                " files'"):
+            self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_skipped_type_deployment_task(self, utils_mock):
+    def test_src_and_dst_attributes_are_required_for_copy_files_task_type(
+            self, utils_mock):
         utils_mock.parse_yaml.return_value = [{
             'id': 'plugin_name',
-            'type': 'skipped'}]
+            'type': 'copy_files',
+            'role': '*',
+            'parameters': {
+                'files': [{}]}}]
 
-        self.validator.check_deployment_tasks()
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                "'src' is a required property, value path '0 "
+                "-> parameters -> files -> 0'"):
+            self.validator.check_deployment_tasks()
+
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'copy_files',
+            'role': '*',
+            'parameters': {
+                'files': [{'src': 'some_source'}]}}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                "'dst' is a required property, value path '0 "
+                "-> parameters -> files -> 0'"):
+            self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_src_and_dst_attributes_are_required_for_sync_task_type(
+            self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'sync',
+            'role': '*',
+            'parameters': {}}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                "'src' is a required property, value path '0 "
+                "-> parameters'"):
+            self.validator.check_deployment_tasks()
+
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'sync',
+            'role': '*',
+            'parameters': {'src': 'some_source'}}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                "'dst' is a required property, value path '0 "
+                "-> parameters'"):
+            self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_path_and_data_attributes_are_required_for_upload_file_task_type(
+            self, utils_mock):
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'upload_file',
+            'role': '*',
+            'parameters': {}}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                "'path' is a required property, value path '0 "
+                "-> parameters'"):
+            self.validator.check_deployment_tasks()
+
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'upload_file',
+            'role': '*',
+            'parameters': {'path': 'some_path'}}]
+
+        with self.assertRaisesRegexp(
+                errors.ValidationError,
+                "File '/tmp/plugin_path/deployment_tasks.yaml', "
+                "'data' is a required property, value path '0 "
+                "-> parameters'"):
+            self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(
@@ -302,9 +429,31 @@ class TestValidatorV3(BaseValidator):
             {'id': 'plugin_name', 'type': 'shell', 'role': []},
             {'id': 'plugin_name', 'type': 'shell', 'role': ['a', 'b']},
             {'id': 'plugin_name', 'type': 'shell', 'role': '*'},
-            {'id': 'plugin_name', 'type': 'skipped', 'role': []},
-            {'id': 'plugin_name', 'type': 'skipped', 'role': ['a', 'b']},
-            {'id': 'plugin_name', 'type': 'skipped', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'skipped'},
+            {'id': 'plugin_name', 'type': 'stage'},
+            {'id': 'plugin_name', 'type': 'reboot'},
+            {
+                'id': 'plugin_name',
+                'type': 'copy_files',
+                'role': '*',
+                'parameters': {
+                    'files': [
+                        {'src': 'some_source', 'dst': 'some_destination'}]}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'sync',
+                'role': '*',
+                'parameters': {
+                    'src': 'some_source', 'dst': 'some_destination'}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'upload_file',
+                'role': '*',
+                'parameters': {
+                    'path': 'some_path', 'data': 'some_data'}
+            },
         ]
 
         self.validator.check_deployment_tasks()
