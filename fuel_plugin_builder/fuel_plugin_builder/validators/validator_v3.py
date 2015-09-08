@@ -97,7 +97,12 @@ class ValidatorV3(ValidatorV2):
             'puppet': self.schema.puppet_task,
             'shell': self.schema.shell_task,
             'group': self.schema.group_task,
-            'skipped': self.schema.skipped_task}
+            'skipped': self.schema.skipped_task,
+            'copy_files': self.schema.copy_files,
+            'sync': self.schema.sync,
+            'upload_file': self.schema.upload_file,
+            'stage': self.schema.stage,
+            'reboot': self.schema.reboot}
 
         for idx, deployment_task in enumerate(deployment_tasks):
             self.validate_schema(

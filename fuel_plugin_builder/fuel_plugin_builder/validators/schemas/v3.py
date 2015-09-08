@@ -19,6 +19,7 @@ from fuel_plugin_builder.validators.schemas import SchemaV2
 
 TASK_NAME_PATTERN = '^[0-9a-zA-Z_-]+$'
 NETWORK_ROLE_PATTERN = '^[0-9a-z_-]+$'
+FILE_PERMISSIONS_PATTERN = '^[0-7]{4}$'
 
 
 class SchemaV3(SchemaV2):
@@ -161,6 +162,82 @@ class SchemaV3(SchemaV2):
         }
 
     @property
+    def copy_files(self):
+        return {
+            'type': 'object',
+            'required': ['role'],
+            'properties': {
+                'type': {'enum': ['copy_files']},
+                'role': self.task_role,
+                'parameters': {
+                    'type': 'object',
+                    'required': ['files'],
+                    'properties': {
+                        'files': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'required': ['src', 'dst'],
+                                'properties': {
+                                    'src': {'type': 'string'},
+                                    'dst': {'type': 'string'}}}},
+                        'permissions': {
+                            'type': 'string',
+                            'pattern': FILE_PERMISSIONS_PATTERN},
+                        'dir_permissions': {
+                            'type': 'string',
+                            'pattern': FILE_PERMISSIONS_PATTERN}}}}
+        }
+
+    @property
+    def sync(self):
+        return {
+            'type': 'object',
+            'required': ['role'],
+            'properties': {
+                'type': {'enum': ['sync']},
+                'role': self.task_role,
+                'parameters': {
+                    'type': 'object',
+                    'required': ['src', 'dst'],
+                    'properties': {
+                        'src': {'type': 'string'},
+                        'dst': {'type': 'string'}}}}
+        }
+
+    @property
+    def upload_file(self):
+        return {
+            'type': 'object',
+            'required': ['role'],
+            'properties': {
+                'type': {'enum': ['upload_file']},
+                'role': self.task_role,
+                'parameters': {
+                    'type': 'object',
+                    'required': ['path', 'data'],
+                    'properties': {
+                        'path': {'type': 'string'},
+                        'data': {'type': 'string'}}}}
+        }
+
+    @property
+    def stage(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'type': {'enum': ['stage']}}
+        }
+
+    @property
+    def reboot(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'type': {'enum': ['reboot']}}
+        }
+
+    @property
     def deployment_task_schema(self):
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
@@ -172,7 +249,17 @@ class SchemaV3(SchemaV2):
                     'id': {
                         'type': 'string',
                         'pattern': TASK_NAME_PATTERN},
-                    'type': {'enum': ['puppet', 'shell', 'group', 'skipped']},
+                    'type': {
+                        'enum': [
+                            'puppet',
+                            'shell',
+                            'group',
+                            'skipped',
+                            'copy_files',
+                            'sync',
+                            'upload_file',
+                            'stage',
+                            'reboot']},
                     'required_for': self.task_group,
                     'requires': self.task_group}}
         }
