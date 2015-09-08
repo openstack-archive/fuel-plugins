@@ -161,6 +161,46 @@ class SchemaV3(SchemaV2):
         }
 
     @property
+    def copy_files(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'type': {'enum': ['copy_files']}}
+        }
+
+    @property
+    def sync(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'type': {'enum': ['sync']}}
+        }
+
+    @property
+    def upload_file(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'type': {'enum': ['upload_file']}}
+        }
+
+    @property
+    def stage(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'type': {'enum': ['stage']}}
+        }
+
+    @property
+    def reboot(self):
+        return {
+            'type': 'object',
+            'properties': {
+                'type': {'enum': ['reboot']}}
+        }
+
+    @property
     def deployment_task_schema(self):
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
@@ -172,7 +212,17 @@ class SchemaV3(SchemaV2):
                     'id': {
                         'type': 'string',
                         'pattern': TASK_NAME_PATTERN},
-                    'type': {'enum': ['puppet', 'shell', 'group', 'skipped']},
+                    'type': {
+                        'enum': [
+                            'puppet',
+                            'shell',
+                            'group',
+                            'skipped',
+                            'copy_files',
+                            'sync',
+                            'upload_file',
+                            'stage',
+                            'reboot']},
                     'required_for': self.task_group,
                     'requires': self.task_group}}
         }

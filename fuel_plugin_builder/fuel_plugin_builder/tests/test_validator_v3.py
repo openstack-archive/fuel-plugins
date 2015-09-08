@@ -251,22 +251,6 @@ class TestValidatorV3(BaseValidator):
             self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_puppet_type_deployment_task(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
-            'id': 'plugin_name',
-            'type': 'puppet'}]
-
-        self.validator.check_deployment_tasks()
-
-    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_skipped_type_deployment_task(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
-            'id': 'plugin_name',
-            'type': 'skipped'}]
-
-        self.validator.check_deployment_tasks()
-
-    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(
             self, utils_mock):
         utils_mock.parse_yaml.return_value = [{
@@ -305,6 +289,21 @@ class TestValidatorV3(BaseValidator):
             {'id': 'plugin_name', 'type': 'skipped', 'role': []},
             {'id': 'plugin_name', 'type': 'skipped', 'role': ['a', 'b']},
             {'id': 'plugin_name', 'type': 'skipped', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'copy_files', 'role': []},
+            {'id': 'plugin_name', 'type': 'copy_files', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'copy_files', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'sync', 'role': []},
+            {'id': 'plugin_name', 'type': 'sync', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'sync', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'upload_file', 'role': []},
+            {'id': 'plugin_name', 'type': 'upload_file', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'upload_file', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'stage', 'role': []},
+            {'id': 'plugin_name', 'type': 'stage', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'stage', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'reboot', 'role': []},
+            {'id': 'plugin_name', 'type': 'reboot', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'reboot', 'role': '*'},
         ]
 
         self.validator.check_deployment_tasks()
