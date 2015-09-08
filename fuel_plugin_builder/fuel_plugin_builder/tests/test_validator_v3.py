@@ -217,18 +217,17 @@ class TestValidatorV3(BaseValidator):
         )
 
         for fuel_version in fuel_version_checks:
-            version_in_msg = fuel_version[0]
-            utils_mock.parse_yaml.return_value = {
+            mock_data = {
                 'fuel_version': fuel_version,
                 'package_version': '3.0.0'}
+            err_msg = 'Current plugin format 3.0.0 is not compatible with ' \
+                      '{0} Fuel release. Fuel version must be 7.0 or higher.' \
+                      ' Please remove {0} version from metadata.yaml file or' \
+                      ' downgrade package_version.'.format(fuel_version[0])
 
-            with self.assertRaisesRegexp(
-                    errors.ValidationError,
-                    'Current plugin format 3.0.0 is not compatible with {0}'
-                    ' Fuel release. Fuel version must be 7.0 or higher.'
-                    ' Please remove {0} version from metadata.yaml file or'
-                    ' downgrade package_version.'.format(version_in_msg)):
-                self.validator.check_compatibility()
+            self._check_raised_exception(
+                utils_mock, mock_data,
+                err_msg, self.validator.check_compatibility)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility_passed(self, utils_mock):
@@ -238,33 +237,142 @@ class TestValidatorV3(BaseValidator):
         self.validator.check_compatibility()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_group_type_deployment_task(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
-            'id': 'plugin_name',
-            'type': 'group',
-            'groups': ['plugin_name']}]
+    def test_role_attribute_is_required_for_deployment_task_types(
+            self, utils_mock):
+        deployment_task_types = [
+            'group', 'shell', 'copy_files', 'sync', 'upload_file']
 
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/deployment_tasks.yaml', "
-                "'role' is a required property, value path '0'"):
-            self.validator.check_deployment_tasks()
-
-    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_puppet_type_deployment_task(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
-            'id': 'plugin_name',
-            'type': 'puppet'}]
-
-        self.validator.check_deployment_tasks()
+        for task_type in deployment_task_types:
+            mock_data = [{
+                'id': 'plugin_name',
+                'type': task_type}]
+            err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                      "'role' is a required property, value path '0'"
+            self._check_raised_exception(
+                utils_mock, mock_data,
+                err_msg, self.validator.check_deployment_tasks)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_skipped_type_deployment_task(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
-            'id': 'plugin_name',
-            'type': 'skipped'}]
+    def test_parameters_attribute_is_required_for_deployment_task_types(
+            self, utils_mock):
+        deployment_task_types = ['copy_files', 'sync', 'upload_file']
 
-        self.validator.check_deployment_tasks()
+        for task_type in deployment_task_types:
+            mock_data = [{
+                'id': 'plugin_name',
+                'type': task_type,
+                'role': '*'}]
+            err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                      "'parameters' is a required property, value path '0'"
+            self._check_raised_exception(
+                utils_mock, mock_data,
+                err_msg, self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_files_attribute_is_required_for_copy_files_task_type(
+            self, utils_mock):
+        mock_data = [{
+            'id': 'plugin_name',
+            'type': 'copy_files',
+            'role': '*',
+            'parameters': {}}]
+        err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                  "'files' is a required property, value path '0 " \
+                  "-> parameters'"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_files_should_contain_at_least_one_item_for_copy_files_task_type(
+            self, utils_mock):
+        mock_data = [{
+            'id': 'plugin_name',
+            'type': 'copy_files',
+            'role': '*',
+            'parameters': {'files': []}}]
+        err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                  "\[\] is too short, value path '0 -> parameters -> files'"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_src_and_dst_attributes_are_required_for_copy_files_task_type(
+            self, utils_mock):
+        data_to_check = [
+            ([{
+                'id': 'plugin_name',
+                'type': 'copy_files',
+                'role': '*',
+                'parameters': {
+                    'files': [{}]}
+            }], 'src'),
+            ([{
+                'id': 'plugin_name',
+                'type': 'copy_files',
+                'role': '*',
+                'parameters': {
+                    'files': [{'src': 'some_source'}]}
+            }], 'dst')]
+
+        for mock_data, key in data_to_check:
+            err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                      "'{0}' is a required property, value path '0 " \
+                      "-> parameters -> files -> 0'".format(key)
+            self._check_raised_exception(
+                utils_mock, mock_data,
+                err_msg, self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_src_and_dst_attributes_are_required_for_sync_task_type(
+            self, utils_mock):
+        data_to_check = [
+            ([{
+                'id': 'plugin_name',
+                'type': 'sync',
+                'role': '*',
+                'parameters': {}
+            }], 'src'),
+            ([{
+                'id': 'plugin_name',
+                'type': 'sync',
+                'role': '*',
+                'parameters': {'src': 'some_source'}
+            }], 'dst')]
+
+        for mock_data, key in data_to_check:
+            err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                      "'{0}' is a required property, value path '0 " \
+                      "-> parameters'".format(key)
+            self._check_raised_exception(
+                utils_mock, mock_data,
+                err_msg, self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_path_and_data_attributes_are_required_for_upload_file_task_type(
+            self, utils_mock):
+        data_to_check = [
+            ([{
+                'id': 'plugin_name',
+                'type': 'upload_file',
+                'role': '*',
+                'parameters': {}
+            }], 'path'),
+            ([{
+                'id': 'plugin_name',
+                'type': 'upload_file',
+                'role': '*',
+                'parameters': {'path': 'some_path'}
+            }], 'data')]
+
+        for mock_data, key in data_to_check:
+            err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                      "'{0}' is a required property, value path '0 " \
+                      "-> parameters'".format(key)
+            self._check_raised_exception(
+                utils_mock, mock_data,
+                err_msg, self.validator.check_deployment_tasks)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(
@@ -279,16 +387,15 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_deployment_task_role_failed(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
+        mock_data = [{
             'id': 'plugin_name',
             'type': 'group',
             'role': ['plugin_n@me']}]
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/deployment_tasks.yaml',"
-                " 'plugin_n@me' does not match"):
-            self.validator.check_deployment_tasks()
+        err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml'," \
+                  " 'plugin_n@me' does not match"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_deployment_task_role(self, utils_mock):
@@ -302,25 +409,46 @@ class TestValidatorV3(BaseValidator):
             {'id': 'plugin_name', 'type': 'shell', 'role': []},
             {'id': 'plugin_name', 'type': 'shell', 'role': ['a', 'b']},
             {'id': 'plugin_name', 'type': 'shell', 'role': '*'},
-            {'id': 'plugin_name', 'type': 'skipped', 'role': []},
-            {'id': 'plugin_name', 'type': 'skipped', 'role': ['a', 'b']},
-            {'id': 'plugin_name', 'type': 'skipped', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'skipped'},
+            {'id': 'plugin_name', 'type': 'stage'},
+            {'id': 'plugin_name', 'type': 'reboot'},
+            {
+                'id': 'plugin_name',
+                'type': 'copy_files',
+                'role': '*',
+                'parameters': {
+                    'files': [
+                        {'src': 'some_source', 'dst': 'some_destination'}]}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'sync',
+                'role': '*',
+                'parameters': {
+                    'src': 'some_source', 'dst': 'some_destination'}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'upload_file',
+                'role': '*',
+                'parameters': {
+                    'path': 'some_path', 'data': 'some_data'}
+            },
         ]
 
         self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_deployment_task_id(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
+        mock_data = [{
             'id': 'plugin_n@me',
             'type': 'group',
             'role': ['plugin_name']}]
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/deployment_tasks.yaml',"
-                " 'plugin_n@me' does not match"):
-            self.validator.check_deployment_tasks_schema()
+        err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml'," \
+                  " 'plugin_n@me' does not match"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks_schema)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_deployment_task_valid_dependencies(self, utils_mock):
@@ -334,42 +462,39 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_deployment_task_invalid_dependencies(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
+        mock_data = [{
             'id': 'plugin_name',
             'type': 'group',
             'role': ['plugin_name'],
             'requires': ['dependency_1', 'dependency_#']}]
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/deployment_tasks.yaml',"
-                " 'dependency_#' does not match"):
-            self.validator.check_deployment_tasks_schema()
+        err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml'," \
+                  " 'dependency_#' does not match"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks_schema)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_node_roles_have_correct_name(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        mock_data = {
             'plug$n_n@me': {
                 'name': 'test_plugin',
                 'description': 'test plugin'}}
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/node_roles.yaml', Additional"
-                " properties are not allowed"):
-            self.validator.check_node_roles_schema()
+        err_msg = "File '/tmp/plugin_path/node_roles.yaml', Additional" \
+                  " properties are not allowed"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_node_roles_schema)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_node_role_should_has_name(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        mock_data = {
             'plugin_name': {
                 'description': 'test plugin'}}
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/node_roles.yaml', 'name' is"
-                " a required property, value path 'plugin_name'"):
-            self.validator.check_node_roles_schema()
+        err_msg = "File '/tmp/plugin_path/node_roles.yaml', 'name' is" \
+                  " a required property, value path 'plugin_name'"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_node_roles_schema)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_valid_volumes_roles_mapping_name(self, utils_mock):
@@ -382,16 +507,15 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_invalid_volumes_roles_mapping_name(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        mock_data = {
             'volumes_roles_mapping': {
                 'm@pping_name': [{'allocate_size': 'min', 'id': 'test'}]},
             'volumes': []}
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/volumes.yaml', Additional"
-                " properties are not allowed"):
-            self.validator.check_volumes_schema()
+        err_msg = "File '/tmp/plugin_path/volumes.yaml', Additional" \
+                  " properties are not allowed"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_volumes_schema)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_valid_network_roles(self, utils_mock):
@@ -409,7 +533,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_network_roles_vip_have_invalid_name(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
+        mock_data = [{
             "id": "example_net_role",
             "default_mapping": "public",
             "properties": {
@@ -418,16 +542,15 @@ class TestValidatorV3(BaseValidator):
                 "vip": [{
                     "name": "vip@name",
                     "namespace": "haproxy"}]}}]
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/network_roles.yaml',"
-                " 'vip@name' does not match"):
-            self.validator.check_network_roles_schema()
+        err_msg = "File '/tmp/plugin_path/network_roles.yaml'," \
+                  " 'vip@name' does not match"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_network_roles_schema)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_network_roles_vip_have_invalid_namespace(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
+        mock_data = [{
             "id": "example_net_role",
             "default_mapping": "public",
             "properties": {
@@ -436,9 +559,16 @@ class TestValidatorV3(BaseValidator):
                 "vip": [{
                     "name": "vip_name",
                     "namespace": "hap roxy"}]}}]
+        err_msg = "File '/tmp/plugin_path/network_roles.yaml'," \
+                  " 'hap roxy' does not match"
+        self._check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_network_roles_schema)
 
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path/network_roles.yaml',"
-                " 'hap roxy' does not match"):
-            self.validator.check_network_roles_schema()
+    def _check_raised_exception(self, mock_obj, mock_data,
+                                err_msg, executed_method,
+                                err_type=errors.ValidationError):
+        mock_obj.parse_yaml.return_value = mock_data
+
+        with self.assertRaisesRegexp(err_type, err_msg):
+            executed_method()
