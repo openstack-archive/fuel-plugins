@@ -110,7 +110,12 @@ class SchemaV3(SchemaV2):
                         'puppet_modules': {
                             'type': 'string'},
                         'timeout': {
-                            'type': 'integer'}}}}
+                            'type': 'integer'},
+                        'retries': {
+                            'type': 'integer'},
+                    }
+                }
+            }
         }
 
     @property
@@ -375,3 +380,9 @@ class SchemaV3(SchemaV2):
                             'type': {
                                 'type': 'string'}}}}}
         }
+
+    @property
+    def task_base_parameters(self):
+        schema = super(SchemaV3, self).task_base_parameters
+        schema['properties']['retries'] = self.positive_integer
+        return schema

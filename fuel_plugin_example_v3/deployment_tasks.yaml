@@ -29,7 +29,7 @@
     puppet_manifest: "deploy.pp"
     puppet_modules: ""
     timeout: 3600
-
+    retries: 10
 
 - id: fuel_plugin_example_v3-post-deployment-sh
   type: shell
