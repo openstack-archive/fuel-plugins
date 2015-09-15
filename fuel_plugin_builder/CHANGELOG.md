@@ -1,6 +1,27 @@
 # Changelog
 
-## 2.0.5 (UNRELEASED)
+## 3.0.0 (2014-09-16)
+
+New package version "3.0.0" that includes the following features:
+
+- New "node_roles.yaml" file that allows to add new node roles.
+- New "volumes.yaml" file that allows to add new volumes and/or define
+  "node roles <-> volumes" mapping.
+- New "deployment_tasks.yaml" file that allows to declare pre/post- and
+  regular deployment tasks for any node role. Unlike "tasks.yaml", the
+  tasks go through global deployment graph and that enables to execute
+  task at any place during deployment, or overwrite/skip already
+  existing ones.
+- New "network_roles.yaml" file that allows to add new network roles
+  and reserve some VIPs, to be proceed by plugin.
+
+Bugfixes:
+
+- Fix executing of "deploy.sh" deployment script
+  https://bugs.launchpad.net/fuel/+bug/1463441
+- Remove "Origin" field from Ubuntu's Release file in order to reduce
+  probability of broken apt pinning
+  https://bugs.launchpad.net/fuel/+bug/1475665
 
 ## 2.0.4 (2014-06-23)
 
