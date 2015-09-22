@@ -16,6 +16,7 @@
 
 import datetime
 import hashlib
+import io
 import logging
 import os
 import shutil
@@ -172,10 +173,16 @@ def render_to_file(src, dst, params):
     logger.debug(u'Render template from {0} to {1} with params: {2}'.format(
         src, dst, params))
 
-    with open(src, 'r') as f:
+    # NOTE(aroma): we use io.open because sometimes we ended up with
+    # non-ascii chars in rendered template so must explicitly
+    # converse content to 'utf-8' encoding before writing
+
+    with io.open(src, 'r', encoding='utf-8') as f:
         template_file = f.read()
 
-    with open(dst, 'w') as f:
+    with io.open(dst, 'w', encoding='utf-8') as f:
+        # NOTE(aroma): 'render' in such configuration always
+        # return unicode object as the result
         rendered_file = Template(template_file).render(**params)
         f.write(rendered_file)
 
