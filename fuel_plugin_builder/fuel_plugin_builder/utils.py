@@ -171,10 +171,18 @@ def render_to_file(src, dst, params):
     """
     logger.debug('Render template from {0} to {1} with params: {2}'.format(
         src, dst, params))
-    with open(src, 'r') as f:
+
+    # the function can perform converse of the content while
+    # reading/writing files. It is needed as sometimes we get
+    # non-ascii chars in rendered file
+    from io import open
+
+    with open(src, 'r', encoding='utf-8') as f:
         template_file = f.read()
 
-    with open(dst, 'w') as f:
+    with open(dst, 'w', encoding='utf-8') as f:
+        # NOTE(aroma): 'render' in such configuration always
+        # return unicode object as the result
         rendered_file = Template(template_file).render(**params)
         f.write(rendered_file)
 
