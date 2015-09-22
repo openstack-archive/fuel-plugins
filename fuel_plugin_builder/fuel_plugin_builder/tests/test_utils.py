@@ -15,7 +15,9 @@
 #    under the License.
 
 import os
+import shutil
 import subprocess
+import tempfile
 
 import mock
 from mock import patch
@@ -27,6 +29,20 @@ from fuel_plugin_builder import utils
 
 
 class TestUtils(BaseTestCase):
+
+    def setUp(self):
+        super(TestUtils, self).setUp()
+
+        # test may create temporary directory
+        # so this attribute will store path to it in order
+        # to perform proper cleanup in tearDown
+        self.temp_dir = None
+
+    def tearDown(self):
+        super(TestUtils, self).tearDown()
+
+        if self.temp_dir:
+            shutil.rmtree(self.temp_dir)
 
     @mock.patch('fuel_plugin_builder.utils.os.path.isfile', return_value=True)
     @mock.patch('fuel_plugin_builder.utils.os.access', return_value=True)
@@ -240,6 +256,26 @@ class TestUtils(BaseTestCase):
         utils.parse_yaml(path)
         open_mock.assert_called_once_with(path)
         yaml_mock.load.assert_called_once_with(file_mock)
+
+    def test_render_to_file_unicode_handling(self):
+        expected = u'тест'
+        params = {'vendors': expected}
+        template_content = "${vendors}"
+
+        # removing of the temp dir and all of its content
+        # will be done in tearDown method
+        self.temp_dir = tempfile.mkdtemp()
+        src_file = os.path.join(self.temp_dir, 'test_template')
+        dst_file = os.path.join(self.temp_dir, 'test_rendered')
+
+        with open(src_file, 'w') as f:
+            f.write(template_content)
+
+        utils.render_to_file(src=src_file, dst=dst_file, params=params)
+
+        with open(dst_file, 'rb') as f:
+            actual = f.read()
+            self.assertEqual(expected, actual.decode('utf-8'))
 
     @mock.patch('fuel_plugin_builder.utils.copy_file_permissions')
     @mock.patch('fuel_plugin_builder.utils.render_to_file')
