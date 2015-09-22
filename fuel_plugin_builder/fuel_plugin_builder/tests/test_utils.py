@@ -15,7 +15,9 @@
 #    under the License.
 
 import os
+import shutil
 import subprocess
+import tempfile
 
 import mock
 from mock import patch
@@ -240,6 +242,27 @@ class TestUtils(BaseTestCase):
         utils.parse_yaml(path)
         open_mock.assert_called_once_with(path)
         yaml_mock.load.assert_called_once_with(file_mock)
+
+    def test_render_to_file_unicode_handling(self):
+        expected = u'тест'
+        params = {'vendors': expected}
+        template_content = "${vendors}"
+
+        temp_dir = tempfile.mkdtemp()
+
+        src_file = os.path.join(temp_dir, 'test_template')
+        dst_file = os.path.join(temp_dir, 'test_rendered')
+
+        with open(src_file, 'w') as f:
+            f.write(template_content)
+
+        utils.render_to_file(src=src_file, dst=dst_file, params=params)
+
+        with open(dst_file, 'rb') as f:
+            actual = f.read()
+            self.assertEqual(expected, actual.decode('utf-8'))
+
+        shutil.rmtree(temp_dir)
 
     @mock.patch('fuel_plugin_builder.utils.copy_file_permissions')
     @mock.patch('fuel_plugin_builder.utils.render_to_file')
