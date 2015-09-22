@@ -172,10 +172,17 @@ def render_to_file(src, dst, params):
     logger.debug('Render template from {0} to {1} with params: {2}'.format(
         src, dst, params))
     with open(src, 'r') as f:
-        template_file = f.read()
+        # lets operate on unicode object
+        template_file = unicode(f.read(), 'utf-8')
 
+    #import ipdb; ipdb.set_trace()
     with open(dst, 'w') as f:
         rendered_file = Template(template_file).render(**params)
+        # convert unicode object to utf-8 encoded string explicitly
+        # to eliminate possible errors with the default encoding
+        # in case rendered_file contains characters non-convertable
+        # by it
+        rendered_file = rendered_file.encode('utf-8')
         f.write(rendered_file)
 
 

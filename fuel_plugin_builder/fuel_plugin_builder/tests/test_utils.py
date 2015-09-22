@@ -241,6 +241,19 @@ class TestUtils(BaseTestCase):
         open_mock.assert_called_once_with(path)
         yaml_mock.load.assert_called_once_with(file_mock)
 
+    def test_render_to_file_unicode_handling(self):
+        expected = u'тест'
+        params = {'vendors': expected}
+        template_content = "${vendors}"
+
+        m_open = mock.mock_open(read_data=template_content)
+        with mock.patch('__builtin__.open', new=m_open):
+            utils.render_to_file(src='', dst='', params=params)
+
+        handle = m_open()
+        written_value = handle.write.call_args[0][0]
+        self.assertEqual(expected, written_value.decode('utf-8'))
+
     @mock.patch('fuel_plugin_builder.utils.copy_file_permissions')
     @mock.patch('fuel_plugin_builder.utils.render_to_file')
     @mock.patch('fuel_plugin_builder.utils.remove')
