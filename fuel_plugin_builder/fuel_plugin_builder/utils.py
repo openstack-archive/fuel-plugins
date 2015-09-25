@@ -169,8 +169,9 @@ def render_to_file(src, dst, params):
     :param src: path to template
     :param dst: path where rendered template will be saved
     """
-    logger.debug('Render template from {0} to {1} with params: {2}'.format(
+    logger.debug(u'Render template from {0} to {1} with params: {2}'.format(
         src, dst, params))
+
     with open(src, 'r') as f:
         template_file = f.read()
 

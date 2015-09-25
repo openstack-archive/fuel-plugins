@@ -49,16 +49,21 @@ class BaseBuildPlugin(BaseAction):
         """
 
     def __init__(self, plugin_path):
-        self.plugin_path = plugin_path
-        self.pre_build_hook_path = join_path(plugin_path, 'pre_build_hook')
-        self.meta = utils.parse_yaml(join_path(plugin_path, 'metadata.yaml'))
-        self.build_dir = join_path(plugin_path, '.build')
-        self.build_src_dir = join_path(self.build_dir, 'src')
-        self.checksums_path = join_path(self.build_src_dir, 'checksums.sha1')
+        # in case path to plugin contains non-ascii chars
+        self.plugin_path = plugin_path.decode('utf-8')
+
+        self.pre_build_hook_path = join_path(self.plugin_path,
+                                             u'pre_build_hook')
+        self.meta = utils.parse_yaml(
+            join_path(self.plugin_path, u'metadata.yaml')
+        )
+        self.build_dir = join_path(self.plugin_path, u'.build')
+        self.build_src_dir = join_path(self.build_dir, u'src')
+        self.checksums_path = join_path(self.build_src_dir, u'checksums.sha1')
         self.name = self.meta['name']
 
     def run(self):
-        logger.debug('Start plugin building "%s"', self.plugin_path)
+        logger.debug(u'Start plugin building "%s"', self.plugin_path)
         self.clean()
         self.run_pre_build_hook()
         self.check()
@@ -108,7 +113,7 @@ class BaseBuildPlugin(BaseAction):
             utils.move_files_in_dir(
                 join_path(repo_path, '*.rpm'),
                 repo_packages)
-            utils.exec_cmd('createrepo -o {0} {0}'.format(repo_path))
+            utils.exec_cmd(u'createrepo -o {0} {0}'.format(repo_path))
 
     def check(self):
         self._check_requirements()
@@ -158,8 +163,10 @@ class BuildPluginV2(BaseBuildPlugin):
 
         self.plugin_version, self.full_version = utils.version_split_name_rpm(
             self.meta['version'])
+
         self.rpm_path = os.path.abspath(
             join_path(self.plugin_path, '.build', 'rpm'))
+
         self.rpm_src_path = join_path(self.rpm_path, 'SOURCES')
         self.full_name = '{0}-{1}'.format(
             self.meta['name'], self.plugin_version)
@@ -168,12 +175,15 @@ class BuildPluginV2(BaseBuildPlugin):
         self.tar_path = join_path(self.rpm_src_path, tar_name)
 
         fpb_dir = join_path(os.path.dirname(__file__), '..')
+
         self.spec_src = os.path.abspath(join_path(
             fpb_dir, self.rpm_spec_src_path))
+
         self.release_tmpl_src = os.path.abspath(join_path(
             fpb_dir, self.release_tmpl_src_path))
 
         self.spec_dst = join_path(self.rpm_path, 'plugin_rpm.spec')
+
         self.rpm_packages_mask = join_path(
             self.rpm_path, 'RPMS', 'noarch', '*.rpm')
 
@@ -194,8 +204,8 @@ class BuildPluginV2(BaseBuildPlugin):
             self._make_data_for_template())
 
         utils.exec_cmd(
-            'rpmbuild -vv --nodeps --define "_topdir {0}" '
-            '-bb {1}'.format(self.rpm_path, self.spec_dst))
+            u'rpmbuild -vv --nodeps --define "_topdir {0}" '
+            u'-bb {1}'.format(self.rpm_path, self.spec_dst))
         utils.copy_files_in_dir(self.rpm_packages_mask, self.plugin_path)
 
     def _make_data_for_template(self):
