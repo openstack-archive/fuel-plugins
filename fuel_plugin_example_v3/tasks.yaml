@@ -28,6 +28,15 @@
     timeout: 42
 
 - role: '*'
+  stage: pre_deployment/-101
+  type: puppet
+  parameters:
+    puppet_manifest: "deploy.pp"
+    puppet_modules: ""
+    timeout: 3600
+    retries: 2
+
+- role: '*'
   stage: pre_deployment
   type: reboot
   parameters:
