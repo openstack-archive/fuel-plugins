@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import unicode_literals
+
 import mock
 import os
 
@@ -42,11 +44,13 @@ class BaseBuild(BaseTestCase):
     def setUp(self):
         self.plugins_name = 'fuel_plugin'
         self.plugin_path = '/tmp/{0}'.format(self.plugins_name)
+        self.builder = self.create_builder(self.plugin_path)
 
+    def create_builder(self, plugin_path):
         with mock.patch(
                 'fuel_plugin_builder.actions.build.utils.parse_yaml',
                 return_value=self.meta):
-            self.builder = self.builder_class(self.plugin_path)
+            return self.builder_class(plugin_path)
 
     def test_run(self):
         mocked_methods = [
@@ -199,19 +203,24 @@ class TestBaseBuildV2(BaseBuild):
         'homepage': 'url'
     }
 
-    def path_from_plugin(self, path):
-        return join_path(self.plugin_path, path)
+    def path_from_plugin(self, plugin_path, path):
+        return join_path(plugin_path, path)
 
     @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_make_package(self, utils_mock):
+    def check_make_package(self, builder, plugin_path, utils_mock):
+        plugin_path = plugin_path
+
         utils_mock.get_current_year.return_value = '2014'
-        self.builder.make_package()
-        rpm_src_path = self.path_from_plugin('.build/rpm/SOURCES')
+        builder.make_package()
+        rpm_src_path = self.path_from_plugin(plugin_path,
+                                             '.build/rpm/SOURCES')
         utils_mock.create_dir.assert_called_once_with(rpm_src_path)
 
-        fp_dst = self.path_from_plugin('.build/rpm/SOURCES/plugin_name-1.2.fp')
+        fp_dst = self.path_from_plugin(
+            plugin_path, '.build/rpm/SOURCES/plugin_name-1.2.fp')
+
         utils_mock.make_tar_gz.assert_called_once_with(
-            self.path_from_plugin('.build/src'),
+            self.path_from_plugin(plugin_path, '.build/src'),
             fp_dst,
             'plugin_name-1.2')
 
@@ -220,7 +229,7 @@ class TestBaseBuildV2(BaseBuild):
             self.builder.rpm_spec_src_path))
         utils_mock.render_to_file.assert_called_once_with(
             spec_src,
-            join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
+            join_path(plugin_path, '.build/rpm/plugin_rpm.spec'),
             {'vendor': 'author1, author2',
              'description': 'Description',
              'license': 'Apache and BSD',
@@ -233,12 +242,25 @@ class TestBaseBuildV2(BaseBuild):
         utils_mock.exec_cmd.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
             '{1}'.format(
-                self.path_from_plugin('.build/rpm'),
-                self.path_from_plugin('.build/rpm/plugin_rpm.spec')))
+                self.path_from_plugin(plugin_path, '.build/rpm'),
+                self.path_from_plugin(plugin_path,
+                                      '.build/rpm/plugin_rpm.spec')))
 
         utils_mock.copy_files_in_dir.assert_called_once_with(
-            self.path_from_plugin('.build/rpm/RPMS/noarch/*.rpm'),
-            self.plugin_path)
+            self.path_from_plugin(plugin_path,
+                                  '.build/rpm/RPMS/noarch/*.rpm'),
+            plugin_path
+        )
+
+    def test_make_package(self):
+        self.check_make_package(self.builder, self.plugin_path)
+
+    def test_make_package_with_non_ascii_chars_in_path(self):
+        plugin_path = '/tmp/тест/' + self.plugins_name
+
+        builder = self.create_builder(plugin_path)
+
+        self.check_make_package(builder, plugin_path)
 
     @mock.patch('fuel_plugin_builder.actions.build.utils.which',
                 return_value=False)

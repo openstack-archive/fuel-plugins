@@ -52,6 +52,12 @@ def handle_exception(exc):
     sys.exit(-1)
 
 
+def decode_string(string):
+    """Custom type for add_argument method
+    """
+    return unicode(string, 'utf-8')
+
+
 def parse_args():
     """Parse arguments and return them
     """
@@ -66,13 +72,13 @@ def parse_args():
 
     group.add_argument(
         '--create', help='create a plugin skeleton',
-        type=str, metavar='plugin_name')
+        type=decode_string, metavar='plugin_name')
     group.add_argument(
         '--build', help='build a plugin',
-        type=str, metavar='path_to_directory')
+        type=decode_string, metavar='path_to_directory')
     group.add_argument(
         '--check', help='check that plugin is valid',
-        type=str, metavar='path_to_directory')
+        type=decode_string, metavar='path_to_directory')
 
     parser.add_argument(
         '--debug', help='enable debug mode',
@@ -80,7 +86,7 @@ def parse_args():
 
     parser.add_argument(
         '--package-version', help='which package version to use',
-        type=str)
+        type=decode_string)
 
     result = parser.parse_args()
     package_version_check(result, parser)

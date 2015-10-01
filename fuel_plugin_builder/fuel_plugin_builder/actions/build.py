@@ -14,6 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from __future__ import unicode_literals
+
 import abc
 import logging
 import os
@@ -50,9 +52,13 @@ class BaseBuildPlugin(BaseAction):
 
     def __init__(self, plugin_path):
         self.plugin_path = plugin_path
-        self.pre_build_hook_path = join_path(plugin_path, 'pre_build_hook')
-        self.meta = utils.parse_yaml(join_path(plugin_path, 'metadata.yaml'))
-        self.build_dir = join_path(plugin_path, '.build')
+
+        self.pre_build_hook_path = join_path(self.plugin_path,
+                                             'pre_build_hook')
+        self.meta = utils.parse_yaml(
+            join_path(self.plugin_path, 'metadata.yaml')
+        )
+        self.build_dir = join_path(self.plugin_path, '.build')
         self.build_src_dir = join_path(self.build_dir, 'src')
         self.checksums_path = join_path(self.build_src_dir, 'checksums.sha1')
         self.name = self.meta['name']
@@ -158,8 +164,10 @@ class BuildPluginV2(BaseBuildPlugin):
 
         self.plugin_version, self.full_version = utils.version_split_name_rpm(
             self.meta['version'])
+
         self.rpm_path = os.path.abspath(
             join_path(self.plugin_path, '.build', 'rpm'))
+
         self.rpm_src_path = join_path(self.rpm_path, 'SOURCES')
         self.full_name = '{0}-{1}'.format(
             self.meta['name'], self.plugin_version)
@@ -168,12 +176,15 @@ class BuildPluginV2(BaseBuildPlugin):
         self.tar_path = join_path(self.rpm_src_path, tar_name)
 
         fpb_dir = join_path(os.path.dirname(__file__), '..')
+
         self.spec_src = os.path.abspath(join_path(
             fpb_dir, self.rpm_spec_src_path))
+
         self.release_tmpl_src = os.path.abspath(join_path(
             fpb_dir, self.release_tmpl_src_path))
 
         self.spec_dst = join_path(self.rpm_path, 'plugin_rpm.spec')
+
         self.rpm_packages_mask = join_path(
             self.rpm_path, 'RPMS', 'noarch', '*.rpm')
 
