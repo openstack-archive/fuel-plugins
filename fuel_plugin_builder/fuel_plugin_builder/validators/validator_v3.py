@@ -42,7 +42,7 @@ class ValidatorV3(ValidatorV2):
 
     @property
     def basic_version(self):
-        return '7.0'
+        return '8.0'
 
     def validate(self):
         super(ValidatorV3, self).validate()
