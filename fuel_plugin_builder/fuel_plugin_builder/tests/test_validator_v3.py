@@ -234,8 +234,8 @@ class TestValidatorV3(BaseValidator):
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility_failed(self, utils_mock):
         fuel_version_checks = (
-            (['6.0', '6.1', '7.0']),
-            (['6.1', '7.0']),
+            (['6.0', '6.1', '7.0', '8.0']),
+            (['6.1', '7.0', '8.0']),
         )
 
         for fuel_version in fuel_version_checks:
