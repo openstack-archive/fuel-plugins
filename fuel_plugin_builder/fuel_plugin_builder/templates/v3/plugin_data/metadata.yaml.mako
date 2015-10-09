@@ -25,6 +25,12 @@ releases:
     mode: ['ha']
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/ubuntu
+releases:
+  - os: ubuntu
+    version: 2015.1.0-8.0
+    mode: ['ha']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
 
 # Version of plugin package
 package_version: '3.0.0'
