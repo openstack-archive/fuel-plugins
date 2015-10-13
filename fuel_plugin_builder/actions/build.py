@@ -263,6 +263,10 @@ class BuildPluginV3(BuildPluginV2):
         return data
 
 
+class BuildPluginV4(BuildPluginV3):
+    pass
+
+
 def make_builder(plugin_path):
     """Creates build object
 
