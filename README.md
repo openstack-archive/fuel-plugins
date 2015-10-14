@@ -27,8 +27,8 @@ You can find Fuel Plugins documentation in the following sources:
 * Development issues - [ Plugins ](http://wiki.openstack.org/Fuel/Plugins "Plugins") wiki page
 
 * Common installation instructions -
-  [ Install Fuel Plugins ](http://docs.mirantis.com/openstack/fuel/master/user-guide.html#install-fuel-plugins "Install Fuel Plugins")
-  and [ CLI command reference ](http://docs.mirantis.com/openstack/fuel/master/user-guide.html#install-fuel-plugins "CLI command reference") sections in the User Guide
+  [ Install Fuel Plugins ](http://docs.mirantis.com/openstack/fuel/fuel-7.0/user-guide.html#install-fuel-plugins "Install Fuel Plugins")
+  and [ CLI command reference ](http://docs.mirantis.com/openstack/fuel/fuel-7.0/user-guide.html#fuel-plugins-cli "CLI command reference") sections in the User Guide
 
 * Specific installation instructions -
   [ Fuel Plugins Catalog ](https://software.mirantis.com/download-mirantis-openstack-fuel-plug-ins/ "Fuel Plugins Catalog").
