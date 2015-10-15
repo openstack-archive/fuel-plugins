@@ -7,6 +7,9 @@
 # Copyright (c) ${ year }, ${ license }, ${ vendor }
 #
 
+# Ignore parsing auto-requirements from installed files
+%%global __requires_exclude_from ^/var/www/nailgun/plugins/.*$
+
 Name:           ${ name }
 Version:        ${ version }
 Url:            ${ homepage }
