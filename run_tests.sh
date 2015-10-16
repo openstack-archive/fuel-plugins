@@ -104,7 +104,7 @@ function run_cleanup {
 function run_fpb {
   local result=0
 
-  pushd "${ROOT}/fuel_plugin_builder" >> /dev/null
+  pushd "${ROOT}" >> /dev/null
   tox || result=1
   popd >> /dev/null
 
@@ -121,7 +121,7 @@ function run_build {
   set +u
 
   source $FPB_VENV_PATH/bin/activate || return 1
-  fpb_path="${ROOT}/fuel_plugin_builder/"
+  fpb_path="${ROOT}"
   pushd $fpb_path
   python setup.py install
   popd
@@ -131,7 +131,7 @@ function run_build {
   rm -f $BUILT_PLUGINS_PATH/*.rpm
 
   # Find plugins
-  for dir in $ROOT/*/metadata.yaml;
+  for dir in $ROOT/examples/*/metadata.yaml;
   do
     plugin_dir=$(dirname "${dir}");
     pushd "${plugin_dir}"

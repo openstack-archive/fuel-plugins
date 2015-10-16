@@ -42,7 +42,7 @@ setup(
     author_email='product@mirantis.com',
     url='http://mirantis.com',
     keywords='fuel plugins plugin',
-    packages=find_packages(),
+    packages=find_packages(exclude=("examples",)),
     zip_safe=False,
     install_requires=find_requires(),
     include_package_data=True,

@@ -5,5 +5,8 @@
 .idea
 .venv
 .build
+build
+dist
+fpb_venv
 *.rpm
 *.deb
