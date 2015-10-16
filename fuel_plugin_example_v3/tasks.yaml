@@ -27,12 +27,12 @@
     cmd: echo all > /tmp/plugin-100.all
     timeout: 42
 
-- role: '*'
+- role: [compute]
   stage: pre_deployment/-101
   type: puppet
   parameters:
     puppet_manifest: "deploy.pp"
-    puppet_modules: ""
+    puppet_modules: "."
     timeout: 3600
     retries: 2
 

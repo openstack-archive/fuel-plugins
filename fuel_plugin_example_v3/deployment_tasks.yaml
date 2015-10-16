@@ -17,7 +17,7 @@
   requires: [netconfig, deploy_start]
   parameters:
     puppet_manifest: "deploy.pp"
-    puppet_modules: ""
+    puppet_modules: "."
     timeout: 3600
 
 - id: fuel_plugin_example_v3-deployment
@@ -27,7 +27,7 @@
   requires: [deploy_start]
   parameters:
     puppet_manifest: "deploy.pp"
-    puppet_modules: ""
+    puppet_modules: "."
     timeout: 3600
     retries: 10
 

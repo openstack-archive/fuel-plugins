@@ -12,7 +12,7 @@
   requires: [deploy_start]
   parameters:
     puppet_manifest: "deploy.pp"
-    puppet_modules: ""
+    puppet_modules: "."
     timeout: 3600
 
 #- id: ${plugin_name}-post-deployment-sh
