@@ -18,6 +18,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Group:          Development/Libraries
 Release:        1
 BuildArch:      noarch
+AutoReq:        no
 
 %%description
 ${ description }
