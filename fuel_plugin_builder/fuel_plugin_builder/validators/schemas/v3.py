@@ -106,9 +106,11 @@ class SchemaV3(SchemaV2):
                         'puppet_manifest', 'puppet_modules', 'timeout'],
                     'properties': {
                         'puppet_manifest': {
-                            'type': 'string'},
+                            'type': 'string',
+                            'minLength': 1},
                         'puppet_modules': {
-                            'type': 'string'},
+                            'type': 'string',
+                            'minLength': 1},
                         'timeout': {
                             'type': 'integer'},
                         'retries': {
