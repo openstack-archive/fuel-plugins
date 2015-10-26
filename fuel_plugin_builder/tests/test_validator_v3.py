@@ -608,11 +608,3 @@ class TestValidatorV3(BaseValidator):
         self._check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_network_roles_schema)
-
-    def _check_raised_exception(self, mock_obj, mock_data,
-                                err_msg, executed_method,
-                                err_type=errors.ValidationError):
-        mock_obj.parse_yaml.return_value = mock_data
-
-        with self.assertRaisesRegexp(err_type, err_msg):
-            executed_method()
