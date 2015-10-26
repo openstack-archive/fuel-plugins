@@ -76,8 +76,7 @@ class BaseValidator(object):
     def validate_file_by_schema(self, schema, file_path,
                                 check_file_exists=True):
         if not check_file_exists and not utils.exists(file_path):
-            logger.debug('No file "%s". Skipping check.',
-                         self.network_roles_path)
+            logger.debug('No file "%s". Skipping check.', file_path)
             return
 
         if not utils.exists(file_path):

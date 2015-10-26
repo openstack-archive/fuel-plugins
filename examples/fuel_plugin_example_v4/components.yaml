@@ -1,0 +1,11 @@
+- name: network:network_plugin_v4_component
+  label: "Title for network_plugin_v4_component component."
+  description: "Description for network_plugin_v4_component component."
+  compatible:
+    - name: "hypervisor:XXX"
+  requires:
+    - name: "hypervisor:XXX"
+      message: "network_plugin_v4_component requires XXX compute."
+  incompatible:
+    - name: "network:*"
+      message: "network_plugin_v4_component incompatible with other networks."
