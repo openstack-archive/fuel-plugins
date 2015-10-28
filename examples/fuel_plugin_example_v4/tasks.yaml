@@ -1,0 +1,43 @@
+# This tasks will be applied on controller nodes
+- role: ['primary-controller', 'controller']
+  stage: post_deployment
+  type: shell
+  parameters:
+    cmd: bash deploy.sh
+    timeout: 42
+
+- role: '*'
+  stage: pre_deployment/100
+  type: shell
+  parameters:
+    cmd: echo all > /tmp/plugin+100.all
+    timeout: 42
+
+- role: '*'
+  stage: pre_deployment/+101.0
+  type: shell
+  parameters:
+    cmd: echo all > /tmp/plugin+100.0.all
+    timeout: 42
+
+- role: '*'
+  stage: pre_deployment/-100
+  type: shell
+  parameters:
+    cmd: echo all > /tmp/plugin-100.all
+    timeout: 42
+
+- role: [compute]
+  stage: pre_deployment/-101
+  type: puppet
+  parameters:
+    puppet_manifest: "deploy.pp"
+    puppet_modules: "."
+    timeout: 3600
+    retries: 2
+
+- role: '*'
+  stage: pre_deployment
+  type: reboot
+  parameters:
+    timeout: 600

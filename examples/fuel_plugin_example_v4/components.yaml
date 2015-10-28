@@ -1,0 +1,7 @@
+- name: network_fuel_plugin_example_v4
+  type: network
+  compatible:
+    hypervisors: ['libvirt:kvm', 'vmware']
+    networks: []
+    storages: ['*']
+    additional_services: ['*']
