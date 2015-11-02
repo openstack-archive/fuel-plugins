@@ -67,19 +67,14 @@ This will:
 * clone the fuel_plugin_example plugin with the name fuel_plugin_name
 * build the plugin .rpm package.
 
-Plugins
+Examples
 -------
 
-The following is a list of plugins in this repository. Build Artifacts,
-including per-change built packages of these plugins can be found at
-[Fuel CI job]( https://fuel-jenkins.mirantis.com/job/stackforge-master-fuel-plugins/ "Fuel CI job")
-
-* **[fuel_plugin_example](fuel_plugin_example)** - simple Fuel plugin example
-that shows how you can create a plugin. It deploys a simple service on your Controller nodes.
+Simple Fuel plugin examples you can find [here](https://github.com/openstack/fuel-plugins/tree/master/examples).
 
 Other Plugin repositories
 -------------------------
 Other locations known to have Fuel plugins. *Note, these may not be supported
 by the Fuel team*
 
-* [Community Plugins](https://github.com/stackforge/?query=fuel-plugin "Community Plugins")
+* [Community Plugins](https://github.com/openstack/?query=fuel-plugin "Community Plugins")
