@@ -83,7 +83,7 @@ class SchemaV2(BaseSchema):
                 'role': {
                     'oneOf': [
                         self.list_of_strings,
-                        {'enum': ['*']}]}}
+                        {'enum': ['*', 'master']}]}}
         }
 
     @property

@@ -149,7 +149,7 @@ class BaseSchema(object):
                 'role': {
                     'oneOf': [
                         self.list_of_strings,
-                        {'enum': ['*']}]}}
+                        {'enum': ['*', 'master']}]}}
         }
 
     @property

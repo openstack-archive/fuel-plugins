@@ -210,6 +210,17 @@ class TestValidatorV3(BaseValidator):
                     'stage': 'post_deployment',
                     'role': '*'
                 },
+                {
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'retries': 10,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': 'master'
+                },
             ]
         ]
 
