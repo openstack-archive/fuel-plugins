@@ -29,7 +29,7 @@ class SchemaV3(SchemaV2):
         return {
             'oneOf': [
                 self.task_group,
-                {'enum': ['*']}
+                {'enum': ['*', 'master']}
             ]
         }
 
