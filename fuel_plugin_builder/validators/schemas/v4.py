@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2014 Mirantis, Inc.
+#    Copyright 2015 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,9 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuel_plugin_builder.validators.manager import ValidatorManager
-from fuel_plugin_builder.validators.validator_v1 import ValidatorV1
-from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
-from fuel_plugin_builder.validators.validator_v3 import ValidatorV3
-from fuel_plugin_builder.validators.validator_v4 import ValidatorV4
-from fuel_plugin_builder.validators.base import BaseValidator
+from fuel_plugin_builder.validators.schemas import SchemaV3
+
+
+class SchemaV4(SchemaV3):
+
+    @property
+    def task_base_parameters(self):
+        schema = super(SchemaV4, self).task_base_parameters
+        schema['properties']['retries'] = self.positive_integer
+        return schema
