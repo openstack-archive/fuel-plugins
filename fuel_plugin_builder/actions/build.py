@@ -263,8 +263,14 @@ class BuildPluginV3(BuildPluginV2):
         return data
 
 
+class BuildPluginV4(BuildPluginV3):
+
+    rpm_spec_src_path = 'templates/v4/build/plugin_rpm.spec.mako'
+    release_tmpl_src_path = 'templates/v4/build/Release.mako'
+
+
 def make_builder(plugin_path):
-    """Creates build object
+    """Creates build object.
 
     :param str plugin_path: path to the plugin
     :returns: specific version of builder object
