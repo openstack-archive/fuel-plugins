@@ -280,7 +280,7 @@ class TestValidatorV3(BaseValidator):
                       ' Please remove {0} version from metadata.yaml file or' \
                       ' downgrade package_version.'.format(fuel_version[0])
 
-            self._check_raised_exception(
+            self.check_raised_exception(
                 utils_mock, mock_data,
                 err_msg, self.validator.check_compatibility)
 
@@ -303,7 +303,7 @@ class TestValidatorV3(BaseValidator):
                 'type': task_type}]
             err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
                       "'role' is a required property, value path '0'"
-            self._check_raised_exception(
+            self.check_raised_exception(
                 utils_mock, mock_data,
                 err_msg, self.validator.check_deployment_tasks)
 
@@ -319,7 +319,7 @@ class TestValidatorV3(BaseValidator):
                 'role': '*'}]
             err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
                       "'parameters' is a required property, value path '0'"
-            self._check_raised_exception(
+            self.check_raised_exception(
                 utils_mock, mock_data,
                 err_msg, self.validator.check_deployment_tasks)
 
@@ -334,7 +334,7 @@ class TestValidatorV3(BaseValidator):
         err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
                   "'files' is a required property, value path '0 " \
                   "-> parameters'"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_deployment_tasks)
 
@@ -348,7 +348,7 @@ class TestValidatorV3(BaseValidator):
             'parameters': {'files': []}}]
         err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
                   "\[\] is too short, value path '0 -> parameters -> files'"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_deployment_tasks)
 
@@ -375,7 +375,7 @@ class TestValidatorV3(BaseValidator):
             err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
                       "'{0}' is a required property, value path '0 " \
                       "-> parameters -> files -> 0'".format(key)
-            self._check_raised_exception(
+            self.check_raised_exception(
                 utils_mock, mock_data,
                 err_msg, self.validator.check_deployment_tasks)
 
@@ -400,7 +400,7 @@ class TestValidatorV3(BaseValidator):
             err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
                       "'{0}' is a required property, value path '0 " \
                       "-> parameters'".format(key)
-            self._check_raised_exception(
+            self.check_raised_exception(
                 utils_mock, mock_data,
                 err_msg, self.validator.check_deployment_tasks)
 
@@ -425,7 +425,7 @@ class TestValidatorV3(BaseValidator):
             err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
                       "'{0}' is a required property, value path '0 " \
                       "-> parameters'".format(key)
-            self._check_raised_exception(
+            self.check_raised_exception(
                 utils_mock, mock_data,
                 err_msg, self.validator.check_deployment_tasks)
 
@@ -448,7 +448,7 @@ class TestValidatorV3(BaseValidator):
             'role': ['plugin_n@me']}]
         err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml'," \
                   " 'plugin_n@me' does not match"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_deployment_tasks)
 
@@ -501,7 +501,7 @@ class TestValidatorV3(BaseValidator):
             'role': ['plugin_name']}]
         err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml'," \
                   " 'plugin_n@me' does not match"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_deployment_tasks_schema)
 
@@ -524,7 +524,7 @@ class TestValidatorV3(BaseValidator):
             'requires': ['dependency_1', 'dependency_#']}]
         err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml'," \
                   " 'dependency_#' does not match"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_deployment_tasks_schema)
 
@@ -536,7 +536,7 @@ class TestValidatorV3(BaseValidator):
                 'description': 'test plugin'}}
         err_msg = "File '/tmp/plugin_path/node_roles.yaml', Additional" \
                   " properties are not allowed"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_node_roles_schema)
 
@@ -547,7 +547,7 @@ class TestValidatorV3(BaseValidator):
                 'description': 'test plugin'}}
         err_msg = "File '/tmp/plugin_path/node_roles.yaml', 'name' is" \
                   " a required property, value path 'plugin_name'"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_node_roles_schema)
 
@@ -568,7 +568,7 @@ class TestValidatorV3(BaseValidator):
             'volumes': []}
         err_msg = "File '/tmp/plugin_path/volumes.yaml', Additional" \
                   " properties are not allowed"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_volumes_schema)
 
@@ -599,7 +599,7 @@ class TestValidatorV3(BaseValidator):
                     "namespace": "haproxy"}]}}]
         err_msg = "File '/tmp/plugin_path/network_roles.yaml'," \
                   " 'vip@name' does not match"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_network_roles_schema)
 
@@ -616,14 +616,6 @@ class TestValidatorV3(BaseValidator):
                     "namespace": "hap roxy"}]}}]
         err_msg = "File '/tmp/plugin_path/network_roles.yaml'," \
                   " 'hap roxy' does not match"
-        self._check_raised_exception(
+        self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_network_roles_schema)
-
-    def _check_raised_exception(self, mock_obj, mock_data,
-                                err_msg, executed_method,
-                                err_type=errors.ValidationError):
-        mock_obj.parse_yaml.return_value = mock_data
-
-        with self.assertRaisesRegexp(err_type, err_msg):
-            executed_method()

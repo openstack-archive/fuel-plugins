@@ -70,7 +70,7 @@ This will:
 Examples
 -------
 
-Simple Fuel plugin examples you can find [here](https://github.com/openstack/fuel-plugins/tree/master/examples).
+Simple Fuel plugin examples you can find [here](https://github.com/stackforge/fuel-plugins/tree/master/examples).
 
 Other Plugin repositories
 -------------------------
