@@ -3,3 +3,4 @@ six>=1.5.2
 Mako==0.9.1
 PyYAML==3.10
 jsonschema==2.4.0
+unittest2==1.1.0

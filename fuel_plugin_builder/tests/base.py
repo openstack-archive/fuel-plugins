@@ -220,3 +220,11 @@ class BaseValidator(BaseTestCase):
                 "of type 'string', value path "
                 "'attributes -> key1 -> restrictions -> 1 -> condition"):
             self.validator.check_env_config_attrs()
+
+    def _check_raised_exception(self, mock_obj, mock_data,
+                                err_msg, executed_method,
+                                err_type=errors.ValidationError):
+        mock_obj.parse_yaml.return_value = mock_data
+
+        with self.assertRaisesRegexp(err_type, err_msg):
+            executed_method()
