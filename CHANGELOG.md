@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.0 (2015-11-23)
+
+New package version "4.0.0" includes the following features:
+
+- [Dashboard links](https://blueprints.launchpad.net/fuel/+spec/external-dashboard-links-in-fuel-dashboard)
+  for plug-ins support.
+
 ## 3.0.0 (2014-09-16)
 
 New package version "3.0.0" includes the following features:

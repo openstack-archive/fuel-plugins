@@ -5,7 +5,7 @@ title: Title for ${plugin_name} plugin
 # Plugin version
 version: '1.0.0'
 # Description
-description: Enable to use plugin X for Neutron
+description: Please describe your plugin here
 # Required fuel version
 fuel_version: ['7.0', '8.0']
 # Specify license of your plugin

@@ -7,29 +7,24 @@ version: '1.0.0'
 # Description
 description: Please describe your plugin here
 # Required fuel version
-fuel_version: ['6.1']
+fuel_version: ['8.0']
 # Specify license of your plugin
 licenses: ['Apache License Version 2.0']
 # Specify author or company name
 authors: ['Specify author or company name']
 # A link to the plugin's page
-homepage: 'https://github.com/stackforge/fuel-plugins'
+homepage: 'https://github.com/openstack/fuel-plugins'
 # Specify a group which your plugin implements, possible options:
-# network, storage, storage::cinder, storage::glance, hypervisor
+# network, storage, storage::cinder, storage::glance, hypervisor, equipment
 groups: []
 
 # The plugin is compatible with releases in the list
 releases:
   - os: ubuntu
-    version: 2014.2-6.1
-    mode: ['ha', 'multinode']
+    version: 2015.1-8.0
+    mode: ['ha']
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/ubuntu
-  - os: centos
-    version: 2014.2-6.1
-    mode: ['ha', 'multinode']
-    deployment_scripts_path: deployment_scripts/
-    repository_path: repositories/centos
 
 # Version of plugin package
-package_version: '2.0.0'
+package_version: '4.0.0'
