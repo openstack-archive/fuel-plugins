@@ -220,3 +220,19 @@ class BaseValidator(BaseTestCase):
                 "of type 'string', value path "
                 "'attributes -> key1 -> restrictions -> 1 -> condition"):
             self.validator.check_env_config_attrs()
+
+    def check_raised_exception(self, utils_mock, mock_data,
+                               err_msg, executed_method,
+                               err_type=errors.ValidationError):
+        """Check if the given error with given type was raised.
+
+        :param obj utils_mock: fuel_plugin_builder.utils mock
+        :param List[dict] mock_data: mock data
+        :param str err_msg: what error message is expected
+        :param function executed_method: what method should be executed
+        :param Exception err_type: what error type is expected
+        """
+        utils_mock.parse_yaml.return_value = mock_data
+
+        with self.assertRaisesRegexp(err_type, err_msg):
+            executed_method()

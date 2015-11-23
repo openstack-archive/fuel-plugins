@@ -1,5 +1,7 @@
 # Changelog
 
+## 4.0.0 (2015-11-30)
+
 ## 3.0.0 (2014-09-16)
 
 New package version "3.0.0" includes the following features:
