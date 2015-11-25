@@ -25,3 +25,9 @@ class ValidatorV4(ValidatorV3):
     @property
     def basic_version(self):
         return '8.0'
+
+    def check_metadata_schema(self):
+        self.validate_file_by_schema(
+            self.schema.metadata_schema,
+            self.meta_path,
+            check_file_exists=False)

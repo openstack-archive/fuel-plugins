@@ -22,3 +22,10 @@ class SchemaV4(SchemaV3):
     @property
     def package_version(self):
         return {'enum': ['4.0.0']}
+
+    @property
+    def metadata_schema(self):
+        schema = super(SchemaV4, self).metadata_schema
+        schema['required'].append('is_hotpluggable')
+        schema['properties']['is_hotpluggable'] = {'type': 'boolean'}
+        return schema

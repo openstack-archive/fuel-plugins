@@ -16,52 +16,16 @@
 
 import mock
 
-from fuel_plugin_builder.tests.base import BaseValidator
+from fuel_plugin_builder.tests.test_validator_v3 import TestValidatorV3
 from fuel_plugin_builder.validators.schemas import SchemaV4
 from fuel_plugin_builder.validators.validator_v4 import ValidatorV4
 
 
-class TestValidatorV4(BaseValidator):
+class TestValidatorV4(TestValidatorV3):
 
     __test__ = True
     validator_class = ValidatorV4
     schema_class = SchemaV4
-
-    def test_validate(self):
-        mocked_methods = ['check_deployment_tasks']
-        super(TestValidatorV4, self).test_validate(
-            additional_mocked_methods=mocked_methods)
-
-        self.validator.check_deployment_tasks.assert_called_once_with()
-
-    # copy-pasted from tests v3 to
-    # - override invalid base validator
-    # - make additional validator class integrity smoke-test
-
-    def test_check_schemas(self):
-        mocked_methods = [
-            'check_env_config_attrs',
-            'validate_file_by_schema',
-            'check_deployment_tasks_schema',
-            'check_network_roles_schema',
-            'check_node_roles_schema',
-            'check_volumes_schema'
-        ]
-        self.mock_methods(self.validator, mocked_methods)
-        self.validator.check_schemas()
-
-        self.assertEqual(
-            [mock.call(self.schema_class().metadata_schema,
-                       self.validator.meta_path),
-             mock.call(self.schema_class().tasks_schema,
-                       self.validator.tasks_path, check_file_exists=False)],
-            self.validator.validate_file_by_schema.call_args_list)
-
-        self.validator.check_env_config_attrs.assert_called_once_with()
-        self.validator.check_deployment_tasks_schema.assert_called_once_with()
-        self.validator.check_network_roles_schema.assert_called_once_with()
-        self.validator.check_node_roles_schema.assert_called_once_with()
-        self.validator.check_volumes_schema.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility_failed(self, utils_mock):
@@ -91,3 +55,30 @@ class TestValidatorV4(BaseValidator):
             'fuel_version': ['8.0'],
             'package_version': '4.0.0'}
         self.validator.check_compatibility()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_is_hotpluggable_flag(self, utils_mock):
+        mock_data = {
+            'name': 'plugin_name-12',
+            'title': 'plugin_name-12',
+            'version': '1.2.3',
+            'package_version': '4.0.0',
+            'description': 'Description',
+            'fuel_version': ['8.0.0'],
+            'licenses': ['Apache', 'BSD'],
+            'authors': ['Author1', 'Author2'],
+            'homepage': 'http://test.com',
+            'releases': [
+                {
+                    "os": "ubuntu",
+                    "version": "2015.1-8.0",
+                    "mode": ['ha'],
+                    "deployment_scripts_path": "deployment_scripts/",
+                    "repository_path": "repositories/ubuntu"
+                }
+            ],
+            'groups': ['network'],
+            'is_hotpluggable': True
+        }
+        utils_mock.parse_yaml.return_value = mock_data
+        self.assertEqual(None, self.validator.check_metadata_schema())
