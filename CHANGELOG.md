@@ -2,6 +2,11 @@
 
 ## 4.0.0 (2015-11-30)
 
+New package version "4.0.0" includes the following features:
+
+- New flag `hotplug` in `metadata.yaml` that allows to install and use
+  plugin on previously deployed environments.
+
 ## 3.0.0 (2014-09-16)
 
 New package version "3.0.0" includes the following features:
