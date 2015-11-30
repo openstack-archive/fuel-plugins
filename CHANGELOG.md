@@ -1,11 +1,13 @@
 # Changelog
 
-## 4.0.0 (2015-11-30)
+## 4.0.0 (2015-12-02)
 
 New package version "4.0.0" includes the following features:
 
 - New flag `is_hotpluggable` in `metadata.yaml` that allows to install and use
   plugin on previously deployed environments.
+- [Dashboard links](https://blueprints.launchpad.net/fuel/+spec/external-dashboard-links-in-fuel-dashboard)
+  for plug-ins support.
 
 ## 3.0.0 (2014-09-16)
 
