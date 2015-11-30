@@ -59,6 +59,7 @@ class SchemaV2(BaseSchema):
                              'storage',
                              'storage::cinder',
                              'storage::glance',
+                             'equipment::nodes',
                              'hypervisor',
                              'monitoring']}},
                 'homepage': {'type': 'string'},
