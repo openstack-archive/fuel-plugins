@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.0.0 (2015-12-14)
+## 4.0.0 (2016-01-27)
 
 New package version "4.0.0" includes the following features:
 
@@ -8,6 +8,9 @@ New package version "4.0.0" includes the following features:
   plugin on previously deployed environments.
 - Plugin can specify settings group using "group" field in metadata in
   environment_config.yaml file.
+- [Dashboard links](https://blueprints.launchpad.net/fuel/+spec/external-dashboard-links-in-fuel-dashboard)
+  for plugins support.
+- `equipment` plugin group added.
 
 Bugfixes:
 
