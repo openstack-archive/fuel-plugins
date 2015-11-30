@@ -41,3 +41,14 @@
     retries: 3
     interval: 20
     timeout: 180
+
+- id: fuel_plugin_example_v4-cluster-link-sh
+  type: shell
+  role: [fuel_plugin_example_v4]
+  required_for: [post_deployment_end]
+  requires: [post_deployment_start]
+  parameters:
+    cmd: bash cluster-link.sh
+    retries: 3
+    interval: 20
+    timeout: 180
