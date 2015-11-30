@@ -28,6 +28,31 @@ class TestValidatorV4(TestValidatorV3):
     validator_class = ValidatorV4
     schema_class = SchemaV4
 
+    def setUp(self):
+        super(TestValidatorV4, self).setUp()
+        self.meta_mock_data = {
+            'name': 'plugin_name-12',
+            'title': 'plugin_name-12',
+            'version': '1.2.3',
+            'package_version': '4.0.0',
+            'description': 'Description',
+            'fuel_version': ['8.0.0'],
+            'licenses': ['Apache', 'BSD'],
+            'authors': ['Author1', 'Author2'],
+            'homepage': 'http://test.com',
+            'releases': [
+                {
+                    "os": "ubuntu",
+                    "version": "2015.1-8.0",
+                    "mode": ['ha'],
+                    "deployment_scripts_path": "deployment_scripts/",
+                    "repository_path": "repositories/ubuntu"
+                }
+            ],
+            'groups': [],
+            'is_hotpluggable': False
+        }
+
     def test_check_schemas(self):
         mocked_methods = [
             'check_env_config_attrs',
@@ -82,29 +107,8 @@ class TestValidatorV4(TestValidatorV3):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_is_hotpluggable_flag(self, utils_mock):
-        mock_data = {
-            'name': 'plugin_name-12',
-            'title': 'plugin_name-12',
-            'version': '1.2.3',
-            'package_version': '4.0.0',
-            'description': 'Description',
-            'fuel_version': ['8.0.0'],
-            'licenses': ['Apache', 'BSD'],
-            'authors': ['Author1', 'Author2'],
-            'homepage': 'http://test.com',
-            'releases': [
-                {
-                    "os": "ubuntu",
-                    "version": "2015.1-8.0",
-                    "mode": ['ha'],
-                    "deployment_scripts_path": "deployment_scripts/",
-                    "repository_path": "repositories/ubuntu"
-                }
-            ],
-            'groups': ['network'],
-            'is_hotpluggable': True
-        }
-        utils_mock.parse_yaml.return_value = mock_data
+        self.meta_mock_data['is_hotpluggable'] = True
+        utils_mock.parse_yaml.return_value = self.meta_mock_data
         self.assertEqual(None, self.validator.check_metadata_schema())
 
     def test_check_components_schema_validation_failed(self):
@@ -227,3 +231,20 @@ class TestValidatorV4(TestValidatorV3):
             for data in data_sets:
                 mock_utils.parse_yaml.return_value = [data]
                 self.validator.check_components_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_groups(self, utils_mock):
+        groups_data = [
+            ["network"],
+            ["storage"],
+            ["storage::cinder"],
+            ["storage::glance"],
+            ["hypervisor"],
+            ["equipment"],
+            ["storage::cinder", "equipment"],
+            []
+        ]
+        for gd in groups_data:
+            self.meta_mock_data['groups'] = gd
+            utils_mock.parse_yaml.return_value = self.meta_mock_data
+            self.assertEqual(None, self.validator.check_metadata_schema())
