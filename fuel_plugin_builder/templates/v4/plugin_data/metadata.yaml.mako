@@ -15,7 +15,8 @@ authors: ['Specify author or company name']
 # A link to the plugin's page
 homepage: 'https://github.com/openstack/fuel-plugins'
 # Specify a group which your plugin implements, possible options:
-# network, storage, storage::cinder, storage::glance, hypervisor, equipment
+# network, storage, storage::cinder, storage::glance, hypervisor,
+# equipment::nodes
 groups: []
 
 # The plugin is compatible with releases in the list
