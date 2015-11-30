@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.0.0 (2015-12-14)
+## 4.0.0 (unreleased)
 
 New package version "4.0.0" includes the following features:
 
@@ -8,6 +8,7 @@ New package version "4.0.0" includes the following features:
   plugin on previously deployed environments.
 - Plugin can specify settings group using "group" field in metadata in
   environment_config.yaml file.
+- `equipment` plugin group added to groups validation.
 
 Bugfixes:
 
