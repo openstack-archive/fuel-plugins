@@ -36,6 +36,7 @@ class SchemaV4(SchemaV3):
         schema = super(SchemaV4, self).metadata_schema
         schema['required'].append('is_hotpluggable')
         schema['properties']['is_hotpluggable'] = {'type': 'boolean'}
+        schema['properties']['groups']['items']['enum'].append('equipment')
         return schema
 
     @property
