@@ -1,4 +1,8 @@
 attributes:
+  metadata:
+    # Settings group can be one of "general", "security", "compute", "network",
+    # "storage", "logging", "openstack_services" and "other".
+    group: 'other'
   fuel_plugin_example_v4_text:
     value: 'Set default value'
     label: 'Text field'
