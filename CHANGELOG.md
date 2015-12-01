@@ -6,6 +6,8 @@ New package version "4.0.0" includes the following features:
 
 - New flag `is_hotpluggable` in `metadata.yaml` that allows to install and use
   plugin on previously deployed environments.
+- Plugin can specify settings group using "group" field in metadata in
+  environment_config.yaml file.
 
 ## 3.0.0 (2014-09-16)
 

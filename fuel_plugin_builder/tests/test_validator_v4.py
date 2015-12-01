@@ -107,6 +107,27 @@ class TestValidatorV4(TestValidatorV3):
         utils_mock.parse_yaml.return_value = mock_data
         self.assertEqual(None, self.validator.check_metadata_schema())
 
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_environment_config_settings_groups(self, utils_mock):
+        mock_data = {'attributes': {}}
+        utils_mock.parse_yaml.return_value = mock_data
+        self.assertEqual(None, self.validator.check_env_config_attrs())
+
+        mock_data = {'attributes': {'metadata': {}}}
+        utils_mock.parse_yaml.return_value = mock_data
+        self.assertEqual(None, self.validator.check_env_config_attrs())
+
+        mock_data = {'attributes': {'metadata': {'group': 'network'}}}
+        utils_mock.parse_yaml.return_value = mock_data
+        self.assertEqual(None, self.validator.check_env_config_attrs())
+
+        mock_data = {'attributes': {'metadata': {'group': 'unknown'}}}
+        utils_mock.parse_yaml.return_value = mock_data
+        self.assertRaises(
+            errors.ValidationError,
+            self.validator.check_env_config_attrs
+        )
+
     def test_check_components_schema_validation_failed(self):
         data_sets = [
             {
