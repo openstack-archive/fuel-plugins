@@ -39,6 +39,26 @@ class SchemaV4(SchemaV3):
         return schema
 
     @property
+    def attr_root_schema(self):
+        schema = super(SchemaV4, self).attr_root_schema
+        schema['properties']['attributes']['properties'] = {
+            'metadata': {
+                'type': 'object',
+                'properties': {
+                    'group': {
+                        'enum': [
+                            'general', 'security',
+                            'compute', 'network',
+                            'storage', 'logging',
+                            'openstack_services', 'other'
+                        ]
+                    }
+                }
+            }
+        }
+        return schema
+
+    @property
     def components_items(self):
         return {
             'type': 'array',
