@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Workflow+1: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Code-Review+1: Bulat Gaifullin <bgaifullin@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 02 Dec 2015 09:55:17 +0000
+Reviewed-on: https://review.openstack.org/249787
+Project: openstack/fuel-plugins
+Branch: refs/heads/master
