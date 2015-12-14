@@ -4,6 +4,9 @@
 - id: ${plugin_name}
   type: group
   role: [${plugin_name}]
+  parameters:
+    strategy:
+      type: parallel
 
 - id: ${plugin_name}-deployment-puppet
   type: puppet
