@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.0.0 (2015-11-30)
+## 4.0.0 (2015-12-14)
 
 New package version "4.0.0" includes the following features:
 
@@ -8,6 +8,11 @@ New package version "4.0.0" includes the following features:
   plugin on previously deployed environments.
 - Plugin can specify settings group using "group" field in metadata in
   environment_config.yaml file.
+
+Bugfixes:
+
+- Fix of missing strategy parameter in V3 and V4 deployment tasks
+  [LP1522785](https://bugs.launchpad.net/fuel/+bug/1522785)
 
 ## 3.0.0 (2014-09-16)
 
