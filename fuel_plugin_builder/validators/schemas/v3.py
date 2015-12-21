@@ -157,7 +157,7 @@ class SchemaV3(SchemaV2):
                             'type': 'object',
                             'properties': {
                                 'type': {
-                                    'enum': ['parallel', 'one_by_one']}}}}}}
+                                    'enum': ['parallel', 'one-by-one']}}}}}}
         }
 
     @property
