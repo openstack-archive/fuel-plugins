@@ -35,7 +35,8 @@ class TestValidatorV3(BaseValidator):
 
         self.validator.check_deployment_tasks.assert_called_once_with()
 
-    def test_check_tasks_schema_validation_failed(self):
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_check_tasks_schema_validation_failed(self, utils_mock, *args):
         data_sets = [
             {
                 'type': 'shell',
@@ -107,14 +108,13 @@ class TestValidatorV3(BaseValidator):
             }
         ]
 
-        with mock.patch('fuel_plugin_builder.validators.validator_v3.utils') \
-                as mock_utils:
-            for data in data_sets:
-                mock_utils.parse_yaml.return_value = [data]
-                self.assertRaises(errors.ValidationError,
-                                  self.validator.check_deployment_tasks)
+        for data in data_sets:
+            utils_mock.parse_yaml.return_value = [data]
+            self.assertRaises(errors.ValidationError,
+                              self.validator.check_deployment_tasks)
 
-    def test_check_tasks_schema_validation_passed(self):
+    @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
+    def test_check_tasks_schema_validation_passed(self, utils_mock, *args):
         data_sets = [
             [
                 {
@@ -224,15 +224,13 @@ class TestValidatorV3(BaseValidator):
             ]
         ]
 
-        with mock.patch('fuel_plugin_builder.validators.validator_v3.utils') \
-                as mock_utils:
-            for data in data_sets:
-                mock_utils.parse_yaml.return_value = data
-                self.validator.check_deployment_tasks()
+        for data in data_sets:
+            utils_mock.parse_yaml.return_value = data
+            self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
-    def test_check_tasks_no_file(self, exists_mock, utils_mock):
+    def test_check_tasks_no_file(self, exists_mock, utils_mock, *args):
         mocked_methods = ['validate_schema']
         self.mock_methods(self.validator, mocked_methods)
         exists_mock.return_value = False
@@ -293,7 +291,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_role_attribute_is_required_for_deployment_task_types(
-            self, utils_mock):
+            self, utils_mock, *args):
         deployment_task_types = [
             'group', 'shell', 'copy_files', 'sync', 'upload_file']
 
@@ -309,7 +307,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_parameters_attribute_is_required_for_deployment_task_types(
-            self, utils_mock):
+            self, utils_mock, *args):
         deployment_task_types = ['copy_files', 'sync', 'upload_file']
 
         for task_type in deployment_task_types:
@@ -325,7 +323,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_files_attribute_is_required_for_copy_files_task_type(
-            self, utils_mock):
+            self, utils_mock, *args):
         mock_data = [{
             'id': 'plugin_name',
             'type': 'copy_files',
@@ -340,7 +338,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_files_should_contain_at_least_one_item_for_copy_files_task_type(
-            self, utils_mock):
+            self, utils_mock, *args):
         mock_data = [{
             'id': 'plugin_name',
             'type': 'copy_files',
@@ -354,7 +352,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_src_and_dst_attributes_are_required_for_copy_files_task_type(
-            self, utils_mock):
+            self, utils_mock, *args):
         data_to_check = [
             ([{
                 'id': 'plugin_name',
@@ -381,7 +379,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_src_and_dst_attributes_are_required_for_sync_task_type(
-            self, utils_mock):
+            self, utils_mock, *args):
         data_to_check = [
             ([{
                 'id': 'plugin_name',
@@ -406,7 +404,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_path_and_data_attributes_are_required_for_upload_file_task_type(
-            self, utils_mock):
+            self, utils_mock, *args):
         data_to_check = [
             ([{
                 'id': 'plugin_name',
@@ -431,7 +429,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(
-            self, utils_mock):
+            self, utils_mock, *args):
         utils_mock.parse_yaml.return_value = [{
             'id': 'plugin_name',
             'type': 'group',
@@ -441,7 +439,7 @@ class TestValidatorV3(BaseValidator):
         self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_deployment_task_role_failed(self, utils_mock):
+    def test_check_deployment_task_role_failed(self, utils_mock, *args):
         mock_data = [{
             'id': 'plugin_name',
             'type': 'group',
@@ -453,7 +451,7 @@ class TestValidatorV3(BaseValidator):
             err_msg, self.validator.check_deployment_tasks)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
-    def test_check_deployment_task_role(self, utils_mock):
+    def test_check_deployment_task_role(self, utils_mock, *args):
         utils_mock.parse_yaml.return_value = [
             {'id': 'plugin_name', 'type': 'group', 'role': []},
             {'id': 'plugin_name', 'type': 'group', 'role': ['a', 'b']},
