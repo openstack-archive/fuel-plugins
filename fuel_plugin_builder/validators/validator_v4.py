@@ -14,10 +14,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 from os.path import join as join_path
 
+from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.schemas import SchemaV4
 from fuel_plugin_builder.validators import ValidatorV3
+
+logger = logging.getLogger(__name__)
 
 
 class ValidatorV4(ValidatorV3):
@@ -46,3 +50,27 @@ class ValidatorV4(ValidatorV3):
         self.validate_file_by_schema(self.schema.components_schema,
                                      self.components_path,
                                      check_file_exists=False)
+
+    def check_deployment_tasks(self):
+        logger.debug(
+            'Start deployment tasks checking "%s"',
+            self.deployment_tasks_path)
+
+        deployment_tasks = utils.parse_yaml(self.deployment_tasks_path)
+        schemas = {
+            'puppet': self.schema.puppet_task,
+            'shell': self.schema.shell_task,
+            'group': self.schema.group_task,
+            'skipped': self.schema.skipped_task,
+            'copy_files': self.schema.copy_files_task,
+            'sync': self.schema.sync_task,
+            'upload_file': self.schema.upload_file_task,
+            'stage': self.schema.stage_task,
+            'reboot': self.schema.reboot_task}
+
+        for idx, deployment_task in enumerate(deployment_tasks):
+            self.validate_schema(
+                deployment_task,
+                schemas[deployment_task['type']],
+                self.deployment_tasks_path,
+                value_path=[idx])

@@ -12,7 +12,7 @@
 
 - id: fuel_plugin_example_v4-controller-deployment
   type: puppet
-  groups: [primary-controller, controller]
+  role: [primary-controller, controller]
   required_for: [connectivity_tests, deploy_end]
   requires: [netconfig, deploy_start]
   parameters:
@@ -22,7 +22,7 @@
 
 - id: fuel_plugin_example_v4-deployment
   type: puppet
-  groups: [fuel_plugin_example_v4]
+  role: [fuel_plugin_example_v4]
   required_for: [deploy_end]
   requires: [deploy_start]
   parameters:
