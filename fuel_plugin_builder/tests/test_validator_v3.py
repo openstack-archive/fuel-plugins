@@ -242,13 +242,13 @@ class TestValidatorV3(BaseValidator):
     def test_check_schemas(self):
         mocked_methods = [
             'check_env_config_attrs',
-            'validate_file_by_schema',
             'check_deployment_tasks_schema',
             'check_network_roles_schema',
             'check_node_roles_schema',
             'check_volumes_schema'
         ]
         self.mock_methods(self.validator, mocked_methods)
+        self.mock_methods(self.validator, ['validate_file_by_schema'])
         self.validator.check_schemas()
 
         self.assertEqual(
@@ -258,11 +258,8 @@ class TestValidatorV3(BaseValidator):
                        self.validator.tasks_path, check_file_exists=False)],
             self.validator.validate_file_by_schema.call_args_list)
 
-        self.validator.check_env_config_attrs.assert_called_once_with()
-        self.validator.check_deployment_tasks_schema.assert_called_once_with()
-        self.validator.check_network_roles_schema.assert_called_once_with()
-        self.validator.check_node_roles_schema.assert_called_once_with()
-        self.validator.check_volumes_schema.assert_called_once_with()
+        for method in mocked_methods:
+            getattr(self.validator, method).assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility_failed(self, utils_mock):
