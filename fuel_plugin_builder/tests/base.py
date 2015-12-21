@@ -95,21 +95,14 @@ class BaseValidator(BaseTestCase):
         self.plugin_path = '/tmp/plugin_path'
         self.validator = self.validator_class(self.plugin_path)
 
-    def test_validate(self, _, additional_mocked_methods=None):
+    def test_validate(self, _):
         mocked_methods = [
             'check_schemas',
             'check_tasks',
             'check_releases_paths',
             'check_compatibility',
         ]
-        mocked_methods.extend(additional_mocked_methods or [])
-        self.mock_methods(self.validator, mocked_methods)
-        self.validator.validate()
-
-        self.validator.check_tasks.assert_called_once_with()
-        self.validator.check_schemas.assert_called_once_with()
-        self.validator.check_releases_paths.assert_called_once_with()
-        self.validator.check_compatibility.assert_called_once_with()
+        self.check_validate(mocked_methods)
 
     def test_check_schemas(self, _):
         mocked_methods = [
@@ -120,13 +113,12 @@ class BaseValidator(BaseTestCase):
         self.validator.check_schemas()
 
         self.assertEqual(
-            [mock.call(
-                self.schema_class().metadata_schema,
-                self.validator.meta_path),
-             mock.call(
-                 self.schema_class().tasks_schema,
-                 self.validator.tasks_path)],
+            [mock.call(self.schema_class().metadata_schema,
+                       self.validator.meta_path),
+             mock.call(self.schema_class().tasks_schema,
+                       self.validator.tasks_path)],
             self.validator.validate_file_by_schema.call_args_list)
+
         self.validator.check_env_config_attrs.assert_called_once_with()
 
     def test_check_releases_paths(self, utils_mock):
@@ -236,3 +228,10 @@ class BaseValidator(BaseTestCase):
 
         with self.assertRaisesRegexp(err_type, err_msg):
             executed_method()
+
+    def check_validate(self, mocked_methods=[]):
+        self.mock_methods(self.validator, mocked_methods)
+        self.validator.validate()
+
+        for method in mocked_methods:
+            getattr(self.validator, method).assert_called_once_with()

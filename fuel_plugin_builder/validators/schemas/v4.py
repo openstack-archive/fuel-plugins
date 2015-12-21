@@ -32,6 +32,22 @@ class SchemaV4(SchemaV3):
         return {'enum': ['4.0.0']}
 
     @property
+    def task_reexecute(self):
+        return {
+            'type': 'array',
+            'items': {
+                'type': 'string',
+                'enum': ['deploy_changes']
+            }
+        }
+
+    @property
+    def deployment_task_schema(self):
+        schema = super(SchemaV4, self).deployment_task_schema
+        schema['items']['properties']['reexecute_on'] = self.task_reexecute
+        return schema
+
+    @property
     def metadata_schema(self):
         schema = super(SchemaV4, self).metadata_schema
         schema['required'].append('is_hotpluggable')

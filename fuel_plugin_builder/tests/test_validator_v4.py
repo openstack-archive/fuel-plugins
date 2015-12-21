@@ -128,7 +128,8 @@ class TestValidatorV4(TestValidatorV3):
             self.validator.check_env_config_attrs
         )
 
-    def test_check_components_schema_validation_failed(self):
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_components_schema_validation_failed(self, utils_mock):
         data_sets = [
             {
                 'name': 'test_additional_item',
@@ -187,14 +188,13 @@ class TestValidatorV4(TestValidatorV3):
             }
         ]
 
-        with mock.patch('fuel_plugin_builder.validators.base.utils') as \
-                mock_utils:
-            for data in data_sets:
-                mock_utils.parse_yaml.return_value = [data]
-                self.assertRaises(errors.ValidationError,
-                                  self.validator.check_components_schema)
+        for data in data_sets:
+            utils_mock.parse_yaml.return_value = [data]
+            self.assertRaises(errors.ValidationError,
+                              self.validator.check_components_schema)
 
-    def test_check_components_schema_validation_passed(self):
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_components_schema_validation_passed(self, utils_mock):
         data_sets = [
             {
                 'name': 'network:test_name',
@@ -243,8 +243,19 @@ class TestValidatorV4(TestValidatorV3):
             }
         ]
 
-        with mock.patch('fuel_plugin_builder.validators.base.utils') \
-                as mock_utils:
-            for data in data_sets:
-                mock_utils.parse_yaml.return_value = [data]
-                self.validator.check_components_schema()
+        for data in data_sets:
+            utils_mock.parse_yaml.return_value = [data]
+            self.validator.check_components_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_deployment_task_reexecute_on(self, utils_mock):
+        mock_data = [{
+            'id': 'plugin_task',
+            'type': 'puppet',
+            'group': ['controller'],
+            'reexecute_on': ['bla']}]
+        err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                  "'bla' is not one of"
+        self.check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks_schema)
