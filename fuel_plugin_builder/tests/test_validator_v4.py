@@ -233,6 +233,7 @@ class TestValidatorV4(TestValidatorV3):
             {
                 'name': 'additional_service:ironic-new',
                 'label': 'Ironic New',
+                'bind': [('some_key', 'some_val')],
                 'incompatible': [{
                     'name': 'additional_service:*',
                     'message': 'Alert message'

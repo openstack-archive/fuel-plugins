@@ -93,7 +93,8 @@ class SchemaV4(SchemaV3):
                     'description': {'type': 'string'},
                     'compatible': self.components_items,
                     'requires': self.components_items,
-                    'incompatible': self.components_items
+                    'incompatible': self.components_items,
+                    'bind': {'type': 'array'}
                 }
             }
         }
