@@ -20,4 +20,4 @@ For instructions on installing your plugin, see <link>
 
 For production plugin versions, see <link>
 
-For built development plugin versions, see [Fuel CI job]( https://fuel-jenkins.mirantis.com/job/stackforge-master-fuel-plugins/ "Fuel CI job")
+For built development plugin versions, see [Fuel CI job]( https://fuel-jenkins.mirantis.com/job/openstack-master-fuel-plugins/ "Fuel CI job")
