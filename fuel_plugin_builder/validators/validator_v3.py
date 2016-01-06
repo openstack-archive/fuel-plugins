@@ -105,6 +105,10 @@ class ValidatorV3(ValidatorV2):
             'reboot': self.schema.reboot}
 
         for idx, deployment_task in enumerate(deployment_tasks):
+            if deployment_task['type'] not in schemas:
+                error_msg = 'There is no such task type:' \
+                            '{0}'.format(deployment_task['type'])
+                raise errors.ValidationError(error_msg)
             self.validate_schema(
                 deployment_task,
                 schemas[deployment_task['type']],

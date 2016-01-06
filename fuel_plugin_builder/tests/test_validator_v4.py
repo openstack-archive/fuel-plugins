@@ -260,3 +260,130 @@ class TestValidatorV4(TestValidatorV3):
         self.check_raised_exception(
             utils_mock, mock_data,
             err_msg, self.validator.check_deployment_tasks_schema)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_role_attribute_is_required_for_deployment_task_types(
+            self, utils_mock, *args):
+        deployment_tasks_data = [
+            {
+                'id': 'plugin_name',
+                'type': 'group'
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'shell'
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'copy_files',
+                'parameters': {
+                    'files': [{'src': '/dev/null', 'dst': '/dev/null'}]
+                }
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'sync',
+                'parameters': {'src': '/dev/null', 'dst': '/dev/null'}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'upload_file',
+                'parameters': {
+                    'path': 'http://test.com',
+                    'data': 'VGVzdERhdGE='
+                }
+            }
+        ]
+
+        err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
+                  "'role' is a required property, value path '0'"
+        for task in deployment_tasks_data:
+            self.check_raised_exception(
+                utils_mock, [task],
+                err_msg, self.validator.check_deployment_tasks)
+
+    # This is the section of tests inherited from the v3 validator
+    # where decorators is re-defined for module v4
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_role(self, utils_mock, *args):
+        super(TestValidatorV4, self).test_check_deployment_task_role(
+            utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
+    def test_check_tasks_no_file(self, exists_mock, utils_mock, *args):
+        super(TestValidatorV4, self).test_check_deployment_task_role(
+            exists_mock, utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_role_failed(self, utils_mock, *args):
+        super(TestValidatorV4, self).test_check_deployment_task_role_failed(
+            utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_group_type_deployment_task_does_not_contain_manifests(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_check_group_type_deployment_task_does_not_contain_manifests(
+            utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_files_attribute_is_required_for_copy_files_task_type(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_files_attribute_is_required_for_copy_files_task_type(
+            utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_files_should_contain_at_least_one_item_for_copy_files_task_type(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_files_should_contain_at_least_one_item_for_copy_files_task_type(
+            utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_parameters_attribute_is_required_for_deployment_task_types(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_parameters_attribute_is_required_for_deployment_task_types(
+            utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_path_and_data_attributes_are_required_for_upload_file_task_type(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_path_and_data_attributes_are_required_for_upload_file_task_type(
+            utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_src_and_dst_attributes_are_required_for_copy_files_task_type(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_src_and_dst_attributes_are_required_for_copy_files_task_type(
+            utils_mock)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_src_and_dst_attributes_are_required_for_sync_task_type(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_src_and_dst_attributes_are_required_for_sync_task_type(
+            utils_mock)
+
+    # todo(ikutukov): validation for old-style tasks.yaml without
+    # id and normal dependencies. Have to find out what to do with them.
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_tasks_schema_validation_failed(self, utils_mock, *args):
+        pass
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_tasks_schema_validation_passed(self, utils_mock, *args):
+        pass
