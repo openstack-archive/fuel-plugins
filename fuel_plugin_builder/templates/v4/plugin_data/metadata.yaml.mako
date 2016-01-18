@@ -24,7 +24,7 @@ is_hotpluggable: false
 # The plugin is compatible with releases in the list
 releases:
   - os: ubuntu
-    version: 2015.1-8.0
+    version: liberty-8.0
     mode: ['ha']
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/ubuntu
