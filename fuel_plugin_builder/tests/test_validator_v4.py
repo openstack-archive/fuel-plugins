@@ -30,7 +30,9 @@ class TestValidatorV4(TestValidatorV3):
 
     def test_check_schemas(self):
         mocked_methods = [
+            'check_metadata_schema',
             'check_env_config_attrs',
+            'check_tasks_schema',
             'check_deployment_tasks_schema',
             'check_network_roles_schema',
             'check_node_roles_schema',
@@ -40,13 +42,6 @@ class TestValidatorV4(TestValidatorV3):
         self.mock_methods(self.validator, mocked_methods)
         self.mock_methods(self.validator, ['validate_file_by_schema'])
         self.validator.check_schemas()
-
-        self.assertEqual(
-            [mock.call(self.schema_class().metadata_schema,
-                       self.validator.meta_path),
-             mock.call(self.schema_class().tasks_schema,
-                       self.validator.tasks_path, check_file_exists=False)],
-            self.validator.validate_file_by_schema.call_args_list)
 
         for method in mocked_methods:
             getattr(self.validator, method).assert_called_once_with()
