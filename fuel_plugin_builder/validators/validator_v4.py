@@ -41,16 +41,30 @@ class ValidatorV4(ValidatorV3):
         self.validate_file_by_schema(
             self.schema.metadata_schema,
             self.meta_path,
-            check_file_exists=False)
+            allow_not_exists=False)
+
+    def check_tasks_schema(self):
+        self.validate_file_by_schema(
+            self.schema.tasks_schema,
+            self.tasks_path,
+            allow_empty=True
+        )
 
     def check_schemas(self):
-        super(ValidatorV4, self).check_schemas()
+        logger.debug('Start schema checking "%s"', self.plugin_path)
+        self.check_metadata_schema()
+        self.check_tasks_schema()
+        self.check_env_config_attrs()
+        self.check_deployment_tasks_schema()
+        self.check_network_roles_schema()
+        self.check_node_roles_schema()
+        self.check_volumes_schema()
         self.check_components_schema()
 
     def check_components_schema(self):
         self.validate_file_by_schema(self.schema.components_schema,
                                      self.components_path,
-                                     check_file_exists=False)
+                                     allow_not_exists=False)
 
     def check_deployment_tasks(self):
         logger.debug(
@@ -79,3 +93,22 @@ class ValidatorV4(ValidatorV3):
                 schemas[deployment_task['type']],
                 self.deployment_tasks_path,
                 value_path=[idx])
+
+    def check_tasks(self):
+        """Check legacy tasks.yaml."""
+        logger.debug('Start tasks checking "%s"', self.tasks_path)
+        if utils.exists(self.tasks_path):
+            tasks = utils.parse_yaml(self.tasks_path)
+
+            schemas = {
+                'puppet': self.schema.puppet_parameters,
+                'shell': self.schema.shell_parameters}
+
+            for idx, task in enumerate(tasks):
+                self.validate_schema(
+                    task.get('parameters'),
+                    schemas[task['type']],
+                    self.tasks_path,
+                    value_path=[idx, 'parameters'])
+        else:
+            logger.debug('File "%s" doesn\'t exist', self.tasks_path)
