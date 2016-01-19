@@ -1,0 +1,69 @@
+# These tasks will be merged into deployment graph. Here you
+# can specify new tasks for any roles, even built-in ones.
+#
+# Experimental task-based orchestrator is introduced in Fuel v8.0.0 and planned
+# to be default in the Fuel v9.0.0.
+#
+# We highly recommend to use tasks v2.0.0 with directives for the task-based
+# orchestrator for the next releases.
+#
+# Plugins package v4.0.0 allows to specify tasks v2.0.0 as well as v1.0.0
+# but mixing different tasks versions inside one plugin package is not recommended.
+
+
+- id: fuel_plugin_example_v4_role
+  # `version` is not required for the `type: group`, see `version` description below.
+  type: group
+  role: [fuel_plugin_example_v4_role]
+  tasks:
+    - hiera
+    - globals
+  # `required_for` and `required` should not be used for `type: group`
+  # parameters -> strategy -> type: parallel is deprecated for `type: group`
+
+- id: fuel_plugin_example_v4-controller-deployment
+  version: 2.0.0        # Task version telling that this task is targeted to the
+                        # with the task-based deployment suppport.
+                        # Please, don't mix v1.0.0 and v2.0.0 tasks version in
+                        # a single plugin.
+  type: puppet
+  role: [primary-controller, controller]  # groups is deprecated, use `role` instead
+  cross-depends:        # what tasks should be executed before this one
+    - name: netconfig
+    - name: deploy_start
+  cross-depended-by:    # what tasks could be executed only after this one is done
+    - name: connectivity_tests
+    - name: deploy_end
+  # `required_for` and `requires` is also suitable for v2.0.0 tasks
+  parameters:
+    puppet_manifest: "deploy.pp"
+    puppet_modules: "."
+    timeout: 3600
+
+- id: fuel_plugin_example_v4-deployment
+  version: 2.0.0
+  type: puppet
+  role: [fuel_plugin_example_v4_role]
+  cross-depended-by:
+    - name: pre_deployment_end
+  cross-depends:
+    - name: example_v5_tasks_group
+  parameters:
+    puppet_manifest: "deploy.pp"
+    puppet_modules: "."
+    timeout: 3600
+    retries: 10
+
+- id: fuel_plugin_example_v4-post-deployment-sh
+  version: 2.0.0
+  type: shell
+  role: [fuel_plugin_example_v4_role]
+  cross-depended-by:
+    - name: post_deployment_end
+  cross-depends:
+    - name: post_deployment_start
+  parameters:
+    cmd: bash deploy.sh
+    retries: 3
+    interval: 20
+    timeout: 180
