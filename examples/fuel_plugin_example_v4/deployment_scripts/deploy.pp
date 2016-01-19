@@ -1,3 +1,5 @@
+# This puppet manifest creating example file in /tmp folder.
+
 notice('PLUGIN: fuel_plugin_example_v4 - deploy.pp')
 
 class fuel_plugin_example_v4 {

@@ -1,5 +1,8 @@
+# `network_roles.yaml` file is used to declare VIP addresses and link
+# them with networks and nodes.
+
 # Unique network role name
-- id: "fuel_plugin_example_v4"
+- id: "fuel_plugin_example_v4_network_role"
   # Role mapping to network
   default_mapping: "public"
   properties:
@@ -18,4 +21,4 @@
          # Optional node role list to map VIP to (defaults to
          # primary-controller and controller)
          node_roles:
-           - "fuel_plugin_example_v4"
+           - "fuel_plugin_example_v4_role"
