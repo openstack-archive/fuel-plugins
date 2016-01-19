@@ -256,7 +256,7 @@ class TestValidatorV3(BaseValidator):
             [mock.call(self.schema_class().metadata_schema,
                        self.validator.meta_path),
              mock.call(self.schema_class().tasks_schema,
-                       self.validator.tasks_path, check_file_exists=False)],
+                       self.validator.tasks_path, allow_not_exists=True)],
             self.validator.validate_file_by_schema.call_args_list)
 
         for method in mocked_methods:

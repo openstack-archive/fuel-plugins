@@ -74,20 +74,32 @@ class BaseValidator(object):
         return error_msg
 
     def validate_file_by_schema(self, schema, file_path,
-                                check_file_exists=True):
-        if not check_file_exists and not utils.exists(file_path):
-            logger.debug('No file "%s". Skipping check.', file_path)
-            return
+                                allow_not_exists=False, allow_empty=False):
+        """Validate file with given JSON schema.
 
+        :param schema: object dict
+        :type schema: object
+        :param file_path: path to the file
+        :type file_path: basestring
+        :param allow_not_exists: if true don't raise error on missing file
+        :type allow_not_exists: bool
+        :param allow_empty: allow file to contain no json
+        :type allow_empty: bool
+        :return:
+        """
         if not utils.exists(file_path):
-            raise errors.FileDoesNotExist(file_path)
+            if allow_not_exists:
+                logger.debug('No file "%s". Skipping check.', file_path)
+                return
+            else:
+                raise errors.FileDoesNotExist(file_path)
 
         data = utils.parse_yaml(file_path)
-
-        if data is None:
-            raise errors.FileIsEmpty(file_path)
-
-        self.validate_schema(data, schema, file_path)
+        if data is not None:
+            self.validate_schema(data, schema, file_path)
+        else:
+            if not allow_empty:
+                raise errors.FileIsEmpty(file_path)
 
     @abc.abstractmethod
     def validate(self):
