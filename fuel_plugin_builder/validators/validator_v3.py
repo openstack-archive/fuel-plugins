@@ -56,7 +56,7 @@ class ValidatorV3(ValidatorV2):
         self.validate_file_by_schema(
             self.schema.tasks_schema,
             self.tasks_path,
-            check_file_exists=False
+            allow_not_exists=True
         )
         self.check_env_config_attrs()
         self.check_deployment_tasks_schema()
@@ -73,19 +73,19 @@ class ValidatorV3(ValidatorV2):
         self.validate_file_by_schema(
             self.schema.network_roles_schema,
             self.network_roles_path,
-            check_file_exists=False)
+            allow_not_exists=True)
 
     def check_node_roles_schema(self):
         self.validate_file_by_schema(
             self.schema.node_roles_schema,
             self.node_roles_path,
-            check_file_exists=False)
+            allow_not_exists=True)
 
     def check_volumes_schema(self):
         self.validate_file_by_schema(
             self.schema.volume_schema,
             self.volumes_path,
-            check_file_exists=False)
+            allow_not_exists=True)
 
     def check_deployment_tasks(self):
         logger.debug(

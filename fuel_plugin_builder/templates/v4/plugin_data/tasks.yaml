@@ -1,0 +1,26 @@
+# WARNING: `tasks.yaml` will be deprecated in further releases.
+# Please, use `deployment_tasks.yaml` to describe tasks istead.
+
+# This tasks will be applied on controller nodes,
+# here you can also specify several roles, for example
+# ['cinder', 'compute'] will be applied only on
+# cinder and compute nodes
+- role: ['controller']
+  stage: post_deployment
+  type: shell
+  parameters:
+    cmd: bash deploy.sh
+    timeout: 42
+# Task is applied for all roles
+- role: '*'
+  stage: pre_deployment
+  type: shell
+  parameters:
+    cmd: echo all > /tmp/plugin.all
+    timeout: 42
+# "reboot" task reboots the nodes and waits until they get back online
+# - role: '*'
+#   stage: pre_deployment
+#   type: reboot
+#   parameters:
+#     timeout: 600
