@@ -109,15 +109,29 @@ class TestBaseValidator(BaseTestCase):
         validate_mock(self.data, self.schema, self.plugin_path)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
-    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
-    def test_error_message_on_empty_file(self, exists_mock, utils_mock):
+    @mock.patch(
+        'fuel_plugin_builder.validators.base.BaseValidator.validate_schema')
+    def test_validate_file_by_schema_empty_file_passes(
+            self, validate_mock, utils_mock):
         utils_mock.parse_yaml.return_value = None
-        exists_mock.return_value = True
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                "File '/tmp/plugin_path' is empty"):
+        self.validator.validate_file_by_schema(
+            self.schema,
+            self.plugin_path,
+            allow_empty=True)
+        utils_mock.parse_yaml.assert_called_once_with(self.plugin_path)
+        validate_mock(self.data, self.schema, self.plugin_path)
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
+    @mock.patch(
+        'fuel_plugin_builder.validators.base.BaseValidator.validate_schema')
+    def test_validate_file_by_schema_empty_file_fails(
+            self, validate_mock, utils_mock):
+        utils_mock.parse_yaml.return_value = None
+        with self.assertRaises(errors.FileIsEmpty):
             self.validator.validate_file_by_schema(
-                self.schema, self.plugin_path)
+                self.schema,
+                self.plugin_path,
+                allow_empty=False)
 
     def test_validate_schema_with_subschemas(self):
         schema_object = {
