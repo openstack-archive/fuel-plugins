@@ -1,0 +1,10 @@
+# WARNING: `tasks.yaml` will be deprecated in further releases.
+# Please, use `deployment_tasks.yaml` to describe tasks instead.
+
+## This tasks will be applied on controller nodes
+#- role: ['primary-controller', 'controller']
+#  stage: post_deployment
+#  type: shell
+#  parameters:
+#    cmd: bash deploy.sh
+#    timeout: 42

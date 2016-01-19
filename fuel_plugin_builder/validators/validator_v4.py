@@ -79,3 +79,22 @@ class ValidatorV4(ValidatorV3):
                 schemas[deployment_task['type']],
                 self.deployment_tasks_path,
                 value_path=[idx])
+
+    def check_tasks(self):
+        """Check legacy tasks.yaml."""
+        logger.debug('Start tasks checking "%s"', self.tasks_path)
+        if utils.exists(self.tasks_path):
+            tasks = utils.parse_yaml(self.tasks_path)
+
+            schemas = {
+                'puppet': self.schema.puppet_parameters,
+                'shell': self.schema.shell_parameters}
+
+            for idx, task in enumerate(tasks):
+                self.validate_schema(
+                    task.get('parameters'),
+                    schemas[task['type']],
+                    self.tasks_path,
+                    value_path=[idx, 'parameters'])
+        else:
+            logger.debug('File "%s" doesn\'t exist', self.tasks_path)
