@@ -1,0 +1,3 @@
+# WARNING: `tasks.yaml` file is deprecated since plugin package v5.0
+# and you could just delete it.
+# Use `deployment_tasks.yaml` file instead.
