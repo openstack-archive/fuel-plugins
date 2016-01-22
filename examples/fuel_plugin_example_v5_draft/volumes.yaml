@@ -1,0 +1,6 @@
+# Set here new volumes for your node role
+volumes: []
+volumes_roles_mapping:
+  example_v5_node_role:
+    # Default role mapping
+    - {allocate_size: "min", id: "os"}
