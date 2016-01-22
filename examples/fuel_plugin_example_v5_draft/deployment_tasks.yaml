@@ -1,0 +1,72 @@
+# Warning: Tasks v2.0.0 and plugins packages v5.0.0 have the experimental
+# support in Fuel 8.x and available only if task-based deployment is enabled
+# for the environment (disabled by default).
+
+# Tasks with `type: group` is not required and recommended to use
+# in the packages v5.0.0.
+
+- id: example_v5_controller_deployment
+  version: 2.0.0      # task version v2.0.0 is required
+  type: puppet        # task type is puppet task
+  role: [primary-controller, controller] # target node roles
+
+  cross-depends:      # what tasks should be executed before this one
+    - name: netconfig
+    - name: deploy_start
+  cross-depended-by:  # what tasks could be executed only after this one is done
+    - name: connectivity_tests
+    - name: deploy_end
+
+  # You still could use `required_for` and `requires` to declare dependencies
+  # of tasks running within the single node.
+
+  # Type specific parameters for type: puppet it's a puppet manifest name,
+  # puppet modules and execution directives.
+  parameters:
+    puppet_manifest: "deploy.pp"
+    puppet_modules: "."
+    timeout: 3600
+
+
+- id: example_v5_deployment
+  version: 2.0.0
+  type: puppet
+  role: [example_v5_node_role]
+  cross-depended-by:
+    - name: pre_deployment_end
+  cross-depends:
+    - name: example_v5_tasks_group
+  parameters:
+    puppet_manifest: "deploy.pp"
+    puppet_modules: "."
+    timeout: 3600
+    retries: 10
+
+
+- id: example_v5_post_deployment_sh
+  version: 2.0.0
+  type: shell     # This is a shell script task script will
+                  # be executed at specified node.
+  role: [example_v5_node_role]
+  cross-depended-by:
+    - name: post_deployment_end
+  cross-depends:
+    - name: post_deployment_start
+  parameters:
+    cmd: "bash deploy.sh"     # cmd is required for the type:shell
+    timeout: 180
+    retries: 3
+    interval: 20
+
+
+- id: example_v5_reboot
+  version: 2.0.0
+  type: reboot    # Reboot type is a special task type for node reboot
+                  # use this type instead of shell reboot tasks.
+  role: '*'
+  cross-depended-by:
+    - name: pre_deployment_end
+  cross-depends:
+    - name: pre_deployment_start
+  parameters:
+    timeout: 600

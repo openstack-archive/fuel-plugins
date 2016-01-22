@@ -1,0 +1,13 @@
+example_v5_node_role:
+  name: "Set here the name for the role. This name will be displayed in the Fuel web UI."
+  description: "Write description for your role"
+  has_primary: false                # whether has primary role or not
+  public_ip_required: false         # whether requires public net or not
+  weight: 100                       # weight that will be used for ordering on
+                                    # fuel UI
+  # You could optionally define tasks that will run on described role.
+  # It convenient when you want to run Fuel library tasks that could not be
+  # modified in the scope of plugin.
+  tasks:
+    - hiera
+    - globals

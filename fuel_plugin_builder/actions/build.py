@@ -267,6 +267,10 @@ class BuildPluginV4(BuildPluginV3):
     pass
 
 
+class BuildPluginV5(BuildPluginV4):
+    pass
+
+
 def make_builder(plugin_path):
     """Creates build object.
 
