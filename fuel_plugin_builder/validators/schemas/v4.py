@@ -53,6 +53,16 @@ class SchemaV4(SchemaV3):
         }
 
     @property
+    def _roles(self):
+        return {
+            'type': 'array',
+            'items': {
+                'type': 'string',
+                'pattern': TASK_ROLE_PATTERN
+            }
+        }
+
+    @property
     def _task_role(self):
         return {
             'oneOf': [
@@ -60,13 +70,7 @@ class SchemaV4(SchemaV3):
                     'type': 'string',
                     'enum': ['*', 'master', 'self']
                 },
-                {
-                    'type': 'array',
-                    'items': {
-                        'type': 'string',
-                        'pattern': TASK_ROLE_PATTERN
-                    }
-                }
+                self._roles
             ]
         }
 

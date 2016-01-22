@@ -47,7 +47,15 @@ def get_mapping():
              'templates/v3/plugin_data/',
              'templates/v4/plugin_data/'],
          'validator': validators.ValidatorV4,
-         'builder': build.BuildPluginV4}]
+         'builder': build.BuildPluginV4},
+        {'version': '5.0.0',
+         'templates': [
+             'templates/base',
+             'templates/v3/plugin_data/',
+             'templates/v4/plugin_data/',
+             'templates/v5/plugin_data/'],
+         'validator': validators.ValidatorV5,
+         'builder': build.BuildPluginV5}]
 
 
 def get_plugin_for_version(version):
