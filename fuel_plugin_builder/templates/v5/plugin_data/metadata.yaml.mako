@@ -1,13 +1,13 @@
 # Plugin name
-name: fuel_plugin_example_v4
+name: ${plugin_name}
 # Human-readable name for your plugin
-title: Title for fuel_plugin_example_v4 plugin
+title: Title for ${plugin_name} plugin
 # Plugin version
-version: '4.0.0'
+version: '1.0.0'
 # Description
 description: Please describe your plugin here
 # Required fuel version
-fuel_version: ['8.0']
+fuel_version: ['8.0', '9.0']
 # Specify license of your plugin
 licenses: ['Apache License Version 2.0']
 # Specify author or company name
@@ -30,4 +30,4 @@ releases:
     repository_path: repositories/ubuntu
 
 # Version of plugin package
-package_version: '4.0.0'
+package_version: '5.0.0'
