@@ -4,6 +4,9 @@
   tasks:
     - hiera
     - globals
+    # task was introduced to make plugin's example operational for 8.0 release
+    # ML - http://lists.openstack.org/pipermail/openstack-dev/2016-January/084608.html
+    - setup_repositories
   required_for: [deploy_end]
   requires: [deploy_start]
   parameters:
