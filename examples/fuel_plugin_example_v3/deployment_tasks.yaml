@@ -4,6 +4,7 @@
   tasks:
     - hiera
     - globals
+    - setup_repositories
   required_for: [deploy_end]
   requires: [deploy_start]
   parameters:
