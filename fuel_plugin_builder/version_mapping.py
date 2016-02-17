@@ -84,7 +84,7 @@ def get_version_mapping_from_plugin(plugin_path):
         errors.WrongPluginDirectoryError(
             'Wrong path to the plugin, cannot find "%s" file', meta_path)
 
-    meta = utils.parse_yaml(meta_path)
+    meta = utils.parse_yaml_file(meta_path)
     package_version = meta.get('package_version')
 
     return get_plugin_for_version(package_version)

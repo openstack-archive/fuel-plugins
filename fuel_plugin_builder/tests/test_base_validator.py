@@ -18,13 +18,13 @@ import mock
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
-from fuel_plugin_builder.validators import BaseValidator
+from fuel_plugin_builder.validators import LegacyBaseValidator
 
 
-class TestBaseValidator(BaseTestCase):
+class LegacyBaseValidatorTestCase(BaseTestCase):
 
     def setUp(self):
-        class NewValidator(BaseValidator):
+        class NewValidator(LegacyBaseValidator):
 
             @property
             def basic_version(self):
@@ -90,9 +90,10 @@ class TestBaseValidator(BaseTestCase):
                 data, schema, 'file_path', value_path=[0, 'path2'])
 
     @mock.patch(
-        'fuel_plugin_builder.validators.base.BaseValidator.validate_schema')
+        'fuel_plugin_builder.validators.base.'
+        'LegacyBaseValidator.validate_schema')
     def test_validate_file_by_schema_failed(self, utils_mock):
-        utils_mock.parse_yaml.return_value = self.data
+        utils_mock.parse_yaml_file.return_value = self.data
         with self.assertRaisesRegexp(
                 errors.FileDoesNotExist,
                 "File '/tmp/plugin_path' does not exist"):
@@ -101,31 +102,35 @@ class TestBaseValidator(BaseTestCase):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     @mock.patch(
-        'fuel_plugin_builder.validators.base.BaseValidator.validate_schema')
+        'fuel_plugin_builder.validators.base.'
+        'LegacyBaseValidator.validate_schema')
     def test_validate_file_by_schema(self, validate_mock, utils_mock):
-        utils_mock.parse_yaml.return_value = self.data
+        utils_mock.parse_yaml_file.return_value = self.data
         self.validator.validate_file_by_schema(self.schema, self.plugin_path)
-        utils_mock.parse_yaml.assert_called_once_with(self.plugin_path)
+        utils_mock.parse_yaml_file.assert_called_once_with(self.plugin_path)
         validate_mock(self.data, self.schema, self.plugin_path)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     @mock.patch(
-        'fuel_plugin_builder.validators.base.BaseValidator.validate_schema')
+        'fuel_plugin_builder.validators.base.'
+        'LegacyBaseValidator.validate_schema')
     def test_validate_file_by_schema_empty_file_passes(
             self, validate_mock, utils_mock):
-        utils_mock.parse_yaml.return_value = None
+        utils_mock.parse_yaml_file.return_value = None
         self.validator.validate_file_by_schema(
             self.schema,
             self.plugin_path,
             allow_empty=True)
-        utils_mock.parse_yaml.assert_called_once_with(self.plugin_path)
+        utils_mock.parse_yaml_file.assert_called_once_with(self.plugin_path)
+        validate_mock(self.data, self.schema, self.plugin_path)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     @mock.patch(
-        'fuel_plugin_builder.validators.base.BaseValidator.validate_schema')
+        'fuel_plugin_builder.validators.base.'
+        'LegacyBaseValidator.validate_schema')
     def test_validate_file_by_schema_empty_file_fails(
             self, validate_mock, utils_mock):
-        utils_mock.parse_yaml.return_value = None
+        utils_mock.parse_yaml_file.return_value = None
         with self.assertRaises(errors.FileIsEmpty):
             self.validator.validate_file_by_schema(
                 self.schema,

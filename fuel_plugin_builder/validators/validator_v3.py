@@ -92,7 +92,7 @@ class ValidatorV3(ValidatorV2):
             'Start deployment tasks checking "%s"',
             self.deployment_tasks_path)
 
-        deployment_tasks = utils.parse_yaml(self.deployment_tasks_path)
+        deployment_tasks = utils.parse_yaml_file(self.deployment_tasks_path)
         schemas = {
             'puppet': self.schema.puppet_task,
             'shell': self.schema.shell_task,
@@ -117,7 +117,7 @@ class ValidatorV3(ValidatorV2):
 
     def _parse_tasks(self):
         if utils.exists(self.tasks_path):
-            tasks = utils.parse_yaml(self.tasks_path)
+            tasks = utils.parse_yaml_file(self.tasks_path)
             # Tasks schema is not checked in check_schemas, thus
             # we perform manual check on parsing tasks file
             if tasks is None:
