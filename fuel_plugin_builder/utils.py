@@ -15,6 +15,9 @@
 #    under the License.
 
 import datetime
+from distutils import dir_util
+from distutils.version import StrictVersion
+from glob import glob
 import hashlib
 import io
 import logging
@@ -22,13 +25,9 @@ import os
 import shutil
 import subprocess
 import tarfile
-import yaml
-
-from distutils import dir_util
-from distutils.version import StrictVersion
-from glob import glob
 
 from mako.template import Template
+import yaml
 
 from fuel_plugin_builder import errors
 
@@ -153,6 +152,24 @@ def exists(path):
     :returns: True if file is exist, Flase if is not
     """
     return os.path.lexists(path)
+
+
+def isfile(path):
+    """Checks if path is file.
+
+    :param path: path
+    :type path: basestring
+    """
+    return os.path.isfile(path)
+
+
+def isdir(path):
+    """Checks if path is directory.
+
+    :param path: path
+    :type path: basestring
+    """
+    return os.path.isdir(path)
 
 
 def basename(path):
@@ -287,7 +304,7 @@ def make_tar_gz(dir_path, tar_path, files_prefix):
     tar.close()
 
 
-def parse_yaml(path):
+def parse_yaml_file(path):
     """Parses yaml file
 
     :param str path: path to the file
@@ -385,3 +402,33 @@ def read_if_exist(filename):
     with open(filename) as f:
         logger.debug('Reading file {0}'.format(filename))
         return f.read()
+
+
+def files_in_path(path, followlinks=False):
+    """Walks dir and return list of found files or list with given path if
+    given path is not a folder.
+
+    :param followlinks: follow links while walking
+    :type followlinks: bool
+    :param path: path
+    :type path: str
+    :return: list[str]
+    """
+    matches = []
+    if os.path.exists(path):
+        if os.path.isdir(path):
+            for root, dir_names, file_names in os.walk(
+                    path, followlinks=followlinks):
+                for filename in file_names:
+                    matches.append(os.path.join(root, filename))
+        else:
+            matches.append(path)
+    return matches
+
+
+def make_schema(required, properties):
+    return {
+        '$schema': 'http://json-schema.org/draft-04/schema#',
+        'type': 'object',
+        'required': required,
+        'properties': properties}

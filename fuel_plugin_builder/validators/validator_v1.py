@@ -18,14 +18,14 @@ import logging
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators.base import BaseValidator
+from fuel_plugin_builder.validators.base import LegacyBaseValidator
 from fuel_plugin_builder.validators.schemas import SchemaV1
 
 
 logger = logging.getLogger(__name__)
 
 
-class ValidatorV1(BaseValidator):
+class ValidatorV1(LegacyBaseValidator):
 
     schema = SchemaV1()
 
@@ -52,7 +52,7 @@ class ValidatorV1(BaseValidator):
         and shell task is correct too
         """
         logger.debug('Start tasks checking "%s"', self.tasks_path)
-        tasks = utils.parse_yaml(self.tasks_path)
+        tasks = utils.parse_yaml_file(self.tasks_path)
 
         schemas = {
             'puppet': self.schema.puppet_parameters,

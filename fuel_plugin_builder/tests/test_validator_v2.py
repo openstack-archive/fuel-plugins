@@ -17,12 +17,12 @@
 import mock
 
 from fuel_plugin_builder import errors
-from fuel_plugin_builder.tests.base import BaseValidator
+from fuel_plugin_builder.tests.base import BaseLegacyValidatorTest
 from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
 from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
 
 
-class TestValidatorV2(BaseValidator):
+class TestValidatorV2(BaseLegacyValidatorTest):
 
     __test__ = True
     validator_class = ValidatorV2
@@ -34,7 +34,7 @@ class TestValidatorV2(BaseValidator):
             'validate_schema'
         ]
         self.mock_methods(self.validator, mocked_methods)
-        utils_mock.parse_yaml.return_value = [
+        utils_mock.parse_yaml_file.return_value = [
             {'type': 'puppet', 'parameters': 'param1'},
             {'type': 'shell', 'parameters': 'param2'},
             {'type': 'reboot', 'parameters': 'param3'}]
@@ -55,7 +55,7 @@ class TestValidatorV2(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        utils_mock.parse_yaml_file.return_value = {
             'fuel_version': ['6.0', '6.1'],
             'package_version': '2.0.0'}
 
@@ -73,7 +73,7 @@ class TestValidatorV2(BaseValidator):
             'validate_schema'
         ]
         self.mock_methods(self.validator, mocked_methods)
-        utils_mock.parse_yaml.return_value = [
+        utils_mock.parse_yaml_file.return_value = [
             {'type': 'puppet'},
         ]
 

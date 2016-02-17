@@ -18,14 +18,14 @@ import logging
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators.base import BaseValidator
+from fuel_plugin_builder.validators.base import LegacyBaseValidator
 from fuel_plugin_builder.validators.schemas import SchemaV2
 
 
 logger = logging.getLogger(__name__)
 
 
-class ValidatorV2(BaseValidator):
+class ValidatorV2(LegacyBaseValidator):
 
     schema = SchemaV2()
 
@@ -47,7 +47,7 @@ class ValidatorV2(BaseValidator):
         self.check_compatibility()
 
     def _parse_tasks(self):
-        return utils.parse_yaml(self.tasks_path)
+        return utils.parse_yaml_file(self.tasks_path)
 
     def check_tasks(self):
         """Json schema doesn't have any conditions, so we have

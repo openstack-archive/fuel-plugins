@@ -85,7 +85,7 @@ class BaseTestCase(TestCase):
 
 
 @mock.patch('fuel_plugin_builder.validators.base.utils')
-class BaseValidator(BaseTestCase):
+class BaseLegacyValidatorTest(BaseTestCase):
 
     __test__ = False
     validator_class = None
@@ -122,7 +122,7 @@ class BaseValidator(BaseTestCase):
         self.validator.check_env_config_attrs.assert_called_once_with()
 
     def test_check_releases_paths(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        utils_mock.parse_yaml_file.return_value = {
             'releases': [{
                 'deployment_scripts_path': '/tmp/deployment_scripts_path',
                 'repository_path': '/tmp/repository_path'}]}
@@ -135,7 +135,7 @@ class BaseValidator(BaseTestCase):
              mock.call('/tmp/repository_path')])
 
     def test_check_releases_paths_error(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        utils_mock.parse_yaml_file.return_value = {
             'releases': [{
                 'deployment_scripts_path': '/tmp/deployment_scripts_path',
                 'repository_path': '/tmp/repository_path'}]}
@@ -148,11 +148,11 @@ class BaseValidator(BaseTestCase):
             self.validator.check_releases_paths()
 
     def test_check_env_config_attrs_do_not_fail_if_empty(self, utils_mock):
-        utils_mock.parse_yaml.return_value = None
+        utils_mock.parse_yaml_file.return_value = None
         self.validator.check_env_config_attrs()
 
     def test_check_env_config_attrs_fail_if_none(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {'attributes': None}
+        utils_mock.parse_yaml_file.return_value = {'attributes': None}
         with self.assertRaisesRegexp(
                 errors.ValidationError,
                 "File '/tmp/plugin_path/environment_config.yaml', None "
@@ -160,7 +160,7 @@ class BaseValidator(BaseTestCase):
             self.validator.check_env_config_attrs()
 
     def test_check_env_config_attrs_checks_metadata(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        utils_mock.parse_yaml_file.return_value = {
             'attributes': {'metadata': []}}
 
         with self.assertRaisesRegexp(
@@ -170,7 +170,7 @@ class BaseValidator(BaseTestCase):
             self.validator.check_env_config_attrs()
 
     def test_check_env_config_attrs_checks_attrs(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        utils_mock.parse_yaml_file.return_value = {
             'attributes': {
                 'key1': {
                     'type': True,
@@ -185,7 +185,7 @@ class BaseValidator(BaseTestCase):
             self.validator.check_env_config_attrs()
 
     def test_check_env_config_attrs_restriction_fails(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        utils_mock.parse_yaml_file.return_value = {
             'attributes': {
                 'key1': {
                     'type': 'text',
@@ -224,7 +224,7 @@ class BaseValidator(BaseTestCase):
         :param function executed_method: what method should be executed
         :param Exception err_type: what error type is expected
         """
-        utils_mock.parse_yaml.return_value = mock_data
+        utils_mock.parse_yaml_file.return_value = mock_data
 
         with self.assertRaisesRegexp(err_type, err_msg):
             executed_method()
