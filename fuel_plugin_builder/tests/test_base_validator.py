@@ -122,6 +122,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
             self.plugin_path,
             allow_empty=True)
         utils_mock.parse_yaml.assert_called_once_with(self.plugin_path)
+        validate_mock(self.data, self.schema, self.plugin_path)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     @mock.patch(
