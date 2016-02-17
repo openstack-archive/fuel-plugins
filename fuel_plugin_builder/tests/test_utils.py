@@ -372,3 +372,38 @@ class TestUtils(BaseTestCase):
         with mock.patch('__builtin__.open', self.mock_open("foo")):
             self.assertEqual(utils.read_if_exist(file_path), "")
         utils_exists.assert_called_once_with(file_path)
+
+    @mock.patch('fuel_plugin_builder.utils.os')
+    def test_files_in_path_exist_file(self, os_m):
+        os_m.path.isdir.return_value = False
+        os_m.path.exists.return_value = True
+        files = utils.files_in_path('/file.yaml')
+        self.assertEqual(files, ['/file.yaml'])
+
+    @mock.patch('fuel_plugin_builder.utils.os')
+    def test_files_in_path_non_exist_file(self, os_m):
+        os_m.path.isdir.return_value = False
+        os_m.path.exists.return_value = False
+        files = utils.files_in_path('/file.yaml')
+        self.assertEqual(files, [])
+
+    @mock.patch('fuel_plugin_builder.utils.os.walk')
+    @mock.patch('fuel_plugin_builder.utils.os.path.exists')
+    @mock.patch('fuel_plugin_builder.utils.os.path.isdir')
+    def test_files_in_path_folder(self, isdir_m, exists_m, walk_m):
+        isdir_m.return_value = True
+        exists_m.return_value = True
+        walk_m.return_value = [
+            ('/root_dir', ('d1', 'd2'), ('file1.yaml', 'file2.yaml'),),
+            ('/root_dir/d1', (), ('file3.yaml',),),
+        ]
+
+        files = utils.files_in_path('/root_dir')
+        self.assertItemsEqual(
+            files,
+            [
+                '/root_dir/file1.yaml',
+                '/root_dir/file2.yaml',
+                '/root_dir/d1/file3.yaml'
+            ]
+        )

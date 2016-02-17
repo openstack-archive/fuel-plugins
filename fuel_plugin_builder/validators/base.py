@@ -15,22 +15,54 @@
 #    under the License.
 
 import abc
+from distutils.version import StrictVersion
 import logging
+import os
+import sys
 
+import collections
 import jsonschema
 import six
 
-from distutils.version import StrictVersion
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
-from os.path import join as join_path
+
+# There is two base validators:
+#
+# LegacyBaseValidator is used for v1..v3 plugin package version validation.
+#
+# New BaseValidator targeted to plugin package version=<4.0.0 is using
+# Inspections/Checks to describe custom logic and providing output based on
+# ReportNode class.
+#
+# Check is a basic logic unit that performing validations with
+# 1. path
+# 2. all files in given path
+# and returning ReportNode that contain all messages and errors.
+#
+# Inspection is sequentially running group of Checks against given path and
+# also returning ReportNode.
+#
+# You are free to use nested checks and inspections inside checks.
+#
+# Validator (BaseValidator) is running inspections from the inspections
+# property that is supposed to be main and only customisation area.
+#
+# Its not recommended to inherit Validators other than BaseValidator from each
+# other creating multiple levels of inheritance because it makes hard to trace,
+# test and debug where and what checks is applied.
+
+# size of the new level text indent when rendering report
+REPORT_INDENT_SIZE = 4
+# symbol to mark error nodes when rendering report
+REPORT_FAILURE_POINTER = '> '
 
 logger = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
 class LegacyBaseValidator(object):
-
+    """This class is deprecated, please, use BaseValidator instead."""
     @abc.abstractproperty
     def basic_version(self):
         pass
@@ -150,10 +182,10 @@ class LegacyBaseValidator(object):
     def check_releases_paths(self):
         meta = utils.parse_yaml(self.meta_path)
         for release in meta['releases']:
-            scripts_path = join_path(
+            scripts_path = os.path.join(
                 self.plugin_path,
                 release['deployment_scripts_path'])
-            repo_path = join_path(
+            repo_path = os.path.join(
                 self.plugin_path,
                 release['repository_path'])
 
@@ -184,3 +216,247 @@ class LegacyBaseValidator(object):
                         meta['package_version'],
                         self.basic_version,
                         fuel_release))
+
+
+@six.add_metaclass(abc.ABCMeta)
+class BaseValidator(object):
+    """Validator based on Check/Inspection/ReportNode entities."""
+    def __init__(self, plugin_path):
+        """Initialise.
+
+        :param plugin_path: plugin path
+        :type plugin_path: basestring
+        """
+        self.plugin_path = plugin_path
+
+    @abc.abstractproperty
+    def inspections(self):
+        """List of Inspection.
+
+        :return: list of inspections
+        :rtype: list[Inspection]
+        """
+        return []
+
+    def get_absolute_path(self, path='.'):
+        """Get absolute path from the relative to the plugins folder.
+
+        :param path: relative path
+        :type path: basestring
+        :return: path string
+        :rtype: basestring
+        """
+        return os.path.join(self.plugin_path, path)
+
+    def validate(self):
+        """Perform validation and write result to the stdout."""
+
+        # create root ReportNode and place all inspections results under it
+        report = ReportNode('Validating: {0}'.format(self.plugin_path))
+
+        for inspection in self.inspections:
+            report.add_nodes(inspection.check())
+
+        sys.stdout.write(report.render())
+        failures_count = report.count_failures()
+
+        if failures_count:
+            msg = '\n'.join([
+                '',
+                'VALIDATION FAILED!',
+                'Please fix {0} errors listed above.'.format(failures_count)])
+            sys.stdout.write(msg)
+            # sys.stderr.write(msg)
+        else:
+            sys.stdout.write('\n\nValidation successful!')
+
+        return not failures_count
+
+
+class Inspection(object):
+    """Inspection is running named set of checks against given path."""
+    def __init__(self, checks, name="", path="."):
+        """Initialise inspection.
+
+        :param checks: list of checks that will run sequentially.
+        :type checks: list[BaseCheck]
+        :param name: inspection name that will be used in report.
+        :type name: basestring
+        :param path: path to be inspected
+        :type path: basestring
+        """
+        if checks:
+            self.checks = checks
+        else:
+            raise errors.InspectionConfigurationError("No checks provided")
+        self.name = name
+        self.path = path
+
+    def check(self):
+        """Check inspection paths.
+
+        Run all inspection checks against inspection target path and return
+        the report.
+        For every check:
+            check_path will be called for inspection path
+            check_file will be called for every file found in this path
+
+        :raises: errors.InspectionConfigurationError
+        :return: report node
+        :rtype: ReportNode
+        """
+        if not self.checks:
+            raise errors.InspectionConfigurationError("No checks defined")
+
+        # combine all check reports by path
+        reports_by_path = collections.defaultdict(list)
+
+        for check in self.checks:
+            # check path
+            check_result = check.check_path(self.path)
+            reports_by_path[self.path].append(check_result)
+
+            # check every file in path
+            for file_path in utils.files_in_path(self.path):
+                check_result = check.check_file(file_path)
+                reports_by_path[file_path].append(check_result)
+
+        # merge result to report tree grouping by paths
+        inspection_report = ReportNode(text="Inspection: " + self.name)
+        for path, path_reports in sorted(reports_by_path.items()):
+            path_report = ReportNode(path)
+            path_report.add_nodes(*path_reports)
+            inspection_report.add_nodes(path_report)
+
+        return inspection_report
+
+
+class ReportNode(object):
+
+    def __init__(self, text=None, children=None, failed=False):
+        """Create basic unit of report tree.
+        There is no Report class because i'ts redundant and
+        any root ReportNode could be considered as report.
+
+        :param text: node text
+        :type text: basestring
+        :param children: list of child ReportNodes
+        :type children: list[ReportNode]
+        :param failed: failure flag that affects rendering
+        :type failed: boolean
+        """
+        self.text = text
+        self.children = children or []
+        self.failed = failed
+
+    def add_nodes(self, *nodes):
+        """Add single node or several nodes.
+
+        :param nodes: one or several report nodes
+        :type nodes: list[ReportNode]
+        :raises: InspectionConfigurationError
+        """
+        for node in nodes:
+            if not isinstance(node, ReportNode):
+                raise errors.InspectionConfigurationError(
+                    "This value is not ReportNode {0}".format(node))
+            self.children.append(node)
+
+    def error(self, msg):
+        """Add error message child ReportNode.
+
+        :param msg: text
+        :type msg: basestring
+        """
+        self.add_nodes(ReportNode('ERROR: ' + msg, failed=True))
+
+    def warning(self, msg):
+        """Add warning message child ReportNode.
+
+        :param msg: text
+        :type msg: basestring
+        """
+        self.add_nodes(ReportNode('WARNING: ' + msg, failed=False))
+
+    def info(self, msg):
+        """Add info message child ReportNode.
+
+        :param msg: text
+        :type msg: basestring
+        """
+        self.add_nodes(ReportNode('INFO: ' + msg, failed=False))
+
+    def _render(self, level=0):
+        """Render report tree to the validation result and messages list.
+
+        :param level: indent level
+        :type level: int
+        :return: failed flag and list of message strings
+        :rtype: (list[str], bool)
+        """
+        indent_size = REPORT_INDENT_SIZE * level
+        error_indent_size = max(indent_size - len(REPORT_FAILURE_POINTER), 0)
+        indent = indent_size * ' '
+        error_indent = error_indent_size * ' '
+
+        strings = []
+        failed = self.failed
+        # no indent is required if we have no output on this level
+        next_level = level + (1 if self.text else 0)
+        for child in self.children:
+            child_strings, child_failed = child._render(next_level)
+            failed = child_failed or failed
+            strings.extend(child_strings)
+
+        if self.text:
+            output = ''.join([
+                error_indent if failed else indent,
+                REPORT_FAILURE_POINTER if failed else '',
+                self.text
+            ])
+            strings.insert(0, output)
+        return strings, failed
+
+    def render(self):
+        """Render report tree to the text."""
+        strings, _ = self._render()
+        return "\n".join(strings)
+
+    def count_failures(self, start_from=0):
+        """Count failures.
+
+        :param start_from: start count from
+        :type start_from: int
+        :return: errors count
+        :rtype: int
+        """
+        count = start_from
+        if self.failed:
+            count += 1
+        for child in self.children:
+            count = child.count_failures(count)
+        return count
+
+
+class BaseCheck(object):
+
+    def check_path(self, path):
+        """Check of any path, use for all common path checks like naming,
+        files/folders structure e.t.c.
+
+        :param path: path to file or folder
+        :type path: basestring
+        :returns: result
+        :rtype: fuel_plugin_builder.validators.base.CheckResult
+        """
+        return ReportNode()
+
+    def check_file(self, path):
+        """Check file with given path.
+
+        :param path: path to file
+        :type path: basestring
+        :returns: result
+        :rtype: fuel_plugin_builder.validators.base.CheckResult
+        """
+        return ReportNode()
