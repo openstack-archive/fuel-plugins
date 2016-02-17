@@ -55,7 +55,7 @@ class BaseBuildPlugin(BaseAction):
 
         self.pre_build_hook_path = join_path(self.plugin_path,
                                              'pre_build_hook')
-        self.meta = utils.parse_yaml(
+        self.meta = utils.parse_yaml_file(
             join_path(self.plugin_path, 'metadata.yaml')
         )
         self.build_dir = join_path(self.plugin_path, '.build')

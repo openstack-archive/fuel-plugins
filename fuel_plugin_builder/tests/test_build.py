@@ -48,7 +48,7 @@ class BaseBuild(BaseTestCase):
 
     def create_builder(self, plugin_path):
         with mock.patch(
-                'fuel_plugin_builder.actions.build.utils.parse_yaml',
+                'fuel_plugin_builder.actions.build.utils.parse_yaml_file',
                 return_value=self.meta):
             return self.builder_class(plugin_path)
 

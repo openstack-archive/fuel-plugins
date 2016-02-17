@@ -17,12 +17,12 @@
 import mock
 
 from fuel_plugin_builder import errors
-from fuel_plugin_builder.tests.base import BaseValidator
+from fuel_plugin_builder.tests.base import BaseLegacyValidatorTest
 from fuel_plugin_builder.validators.schemas import SchemaV3
 from fuel_plugin_builder.validators.validator_v3 import ValidatorV3
 
 
-class TestValidatorV3(BaseValidator):
+class TestValidatorV3(BaseLegacyValidatorTest):
 
     __test__ = True
     validator_class = ValidatorV3
@@ -112,7 +112,7 @@ class TestValidatorV3(BaseValidator):
         ]
 
         for data in data_sets:
-            utils_mock.parse_yaml.return_value = [data]
+            utils_mock.parse_yaml_file.return_value = [data]
             self.assertRaises(errors.ValidationError,
                               self.validator.check_deployment_tasks)
 
@@ -228,7 +228,7 @@ class TestValidatorV3(BaseValidator):
         ]
 
         for data in data_sets:
-            utils_mock.parse_yaml.return_value = data
+            utils_mock.parse_yaml_file.return_value = data
             self.validator.check_deployment_tasks()
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
@@ -284,7 +284,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility_passed(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        utils_mock.parse_yaml_file.return_value = {
             'fuel_version': ['7.0'],
             'package_version': '3.0.0'}
         self.validator.check_compatibility()
@@ -430,7 +430,7 @@ class TestValidatorV3(BaseValidator):
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(
             self, utils_mock, *args):
-        utils_mock.parse_yaml.return_value = [{
+        utils_mock.parse_yaml_file.return_value = [{
             'id': 'plugin_name',
             'type': 'group',
             'role': ['plugin_name'],
@@ -452,7 +452,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v3.utils')
     def test_check_deployment_task_role(self, utils_mock, *args):
-        utils_mock.parse_yaml.return_value = [
+        utils_mock.parse_yaml_file.return_value = [
             {'id': 'plugin_name', 'type': 'group', 'role': []},
             {'id': 'plugin_name', 'type': 'group', 'role': ['a', 'b']},
             {'id': 'plugin_name', 'type': 'group', 'role': '*'},
@@ -505,7 +505,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_deployment_task_valid_dependencies(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
+        utils_mock.parse_yaml_file.return_value = [{
             'id': 'plugin_name',
             'type': 'group',
             'role': ['plugin_name'],
@@ -551,7 +551,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_valid_volumes_roles_mapping_name(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
+        utils_mock.parse_yaml_file.return_value = {
             'volumes_roles_mapping': {
                 'mapping_name': [{'allocate_size': 'min', 'id': 'test'}]},
             'volumes': []}
@@ -572,7 +572,7 @@ class TestValidatorV3(BaseValidator):
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_valid_network_roles(self, utils_mock):
-        utils_mock.parse_yaml.return_value = [{
+        utils_mock.parse_yaml_file.return_value = [{
             "id": "example_net_role",
             "default_mapping": "public",
             "properties": {

@@ -22,6 +22,8 @@ import os
 import shutil
 import subprocess
 import tarfile
+
+import six
 import yaml
 
 from distutils import dir_util
@@ -153,6 +155,15 @@ def exists(path):
     :returns: True if file is exist, Flase if is not
     """
     return os.path.lexists(path)
+
+
+def isfile(path):
+    """Checks if path is file.
+
+    :param path: path
+    :type path: basestring
+    """
+    return os.path.isfile(path)
 
 
 def basename(path):
@@ -287,7 +298,7 @@ def make_tar_gz(dir_path, tar_path, files_prefix):
     tar.close()
 
 
-def parse_yaml(path):
+def parse_yaml_file(path):
     """Parses yaml file
 
     :param str path: path to the file
@@ -385,3 +396,66 @@ def read_if_exist(filename):
     with open(filename) as f:
         logger.debug('Reading file {0}'.format(filename))
         return f.read()
+
+
+def files_in_path(path, followlinks=False):
+    """Walks dir and return list of found files or list with given path if
+    given path is not a folder.
+
+    :param followlinks: follow links while walking
+    :type followlinks: bool
+    :param path: path
+    :type path: str
+    :return: list[str]
+    """
+    matches = []
+    if os.path.exists(path):
+        if os.path.isdir(path):
+            for root, dir_names, file_names in os.walk(
+                    path, followlinks=followlinks):
+                for filename in file_names:
+                    matches.append(os.path.join(root, filename))
+        else:
+            matches.append(path)
+    return matches
+
+
+def format_json_schema_error(exc, value_path=None):
+    """Format JSON Schema error output.
+
+    :param exc: Exception
+    :type exc: Exception
+    :param value_path: path to the wrong value inside parent schema
+    :type value_path: basestring
+    :return: message
+    :rtype: basestring
+    """
+    if value_path is None:
+        value_path = []
+
+    if exc.absolute_path:
+        value_path.extend(exc.absolute_path)
+
+    if exc.context:
+        sub_exceptions = sorted(
+            exc.context, key=lambda e: len(e.schema_path), reverse=True)
+        sub_message = sub_exceptions[0]
+        value_path.extend(list(sub_message.absolute_path)[2:])
+        message = sub_message.message
+    else:
+        message = exc.message
+
+    if value_path:
+        value_path = ' -> '.join(map(six.text_type, value_path))
+        message = '{0}, {1}'.format(
+            message, "value path '{0}'".format(value_path))
+
+    return message
+
+
+def make_schema(required, properties):
+    return {
+        '$schema': 'http://json-schema.org/draft-04/schema#',
+        'type': 'object',
+        'required': required,
+        'properties': properties}
