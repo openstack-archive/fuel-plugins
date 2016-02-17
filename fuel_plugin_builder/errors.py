@@ -57,3 +57,7 @@ class ReleasesDirectoriesError(FuelPluginException):
 
 class WrongPluginDirectoryError(FuelPluginException):
     pass
+
+
+class CheckConfigurationError(FuelPluginException):
+    pass
