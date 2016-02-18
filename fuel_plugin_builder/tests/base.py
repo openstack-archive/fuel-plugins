@@ -85,7 +85,7 @@ class BaseTestCase(TestCase):
 
 
 @mock.patch('fuel_plugin_builder.validators.base.utils')
-class BaseValidator(BaseTestCase):
+class LegacyBaseValidatorTestCase(BaseTestCase):
 
     __test__ = False
     validator_class = None
