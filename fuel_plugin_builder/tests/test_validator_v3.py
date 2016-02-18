@@ -17,12 +17,12 @@
 import mock
 
 from fuel_plugin_builder import errors
-from fuel_plugin_builder.tests.base import BaseValidator
+from fuel_plugin_builder.tests.base import LegacyBaseValidatorTestCase
 from fuel_plugin_builder.validators.schemas import SchemaV3
 from fuel_plugin_builder.validators.validator_v3 import ValidatorV3
 
 
-class TestValidatorV3(BaseValidator):
+class TestValidatorV3(LegacyBaseValidatorTestCase):
 
     __test__ = True
     validator_class = ValidatorV3
