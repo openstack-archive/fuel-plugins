@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
-class BaseValidator(object):
+class LegacyBaseValidator(object):
 
     @abc.abstractproperty
     def basic_version(self):
