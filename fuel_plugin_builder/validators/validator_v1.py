@@ -18,14 +18,14 @@ import logging
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators.base import BaseValidator
+from fuel_plugin_builder.validators.base import LegacyBaseValidator
 from fuel_plugin_builder.validators.schemas import SchemaV1
 
 
 logger = logging.getLogger(__name__)
 
 
-class ValidatorV1(BaseValidator):
+class ValidatorV1(LegacyBaseValidator):
 
     schema = SchemaV1()
 
