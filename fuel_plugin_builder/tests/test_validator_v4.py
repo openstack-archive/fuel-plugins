@@ -49,8 +49,8 @@ class TestValidatorV4(TestValidatorV3):
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility_failed(self, utils_mock):
         fuel_version_checks = (
-            (['6.0', '6.1', '7.0', '8.0']),
-            (['6.1', '7.0', '8.0']),
+            (['6.0', '6.1', '7.0', '8.0', '9.0']),
+            (['6.1', '7.0', '8.0', '9.0']),
             (['6.0', '6.1', '7.0']),
             (['6.1', '7.0']),
         )
@@ -71,7 +71,7 @@ class TestValidatorV4(TestValidatorV3):
     @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_compatibility_passed(self, utils_mock):
         utils_mock.parse_yaml.return_value = {
-            'fuel_version': ['8.0'],
+            'fuel_version': ['8.0', '9.0'],
             'package_version': '4.0.0'}
         self.validator.check_compatibility()
 
@@ -91,6 +91,13 @@ class TestValidatorV4(TestValidatorV3):
                 {
                     "os": "ubuntu",
                     "version": "liberty-8.0",
+                    "mode": ['ha'],
+                    "deployment_scripts_path": "deployment_scripts/",
+                    "repository_path": "repositories/ubuntu"
+                },
+                {
+                    "os": "ubuntu",
+                    "version": "mitaka-9.0",
                     "mode": ['ha'],
                     "deployment_scripts_path": "deployment_scripts/",
                     "repository_path": "repositories/ubuntu"

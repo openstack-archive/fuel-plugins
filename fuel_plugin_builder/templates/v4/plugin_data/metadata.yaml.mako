@@ -7,7 +7,7 @@ version: '1.0.0'
 # Description
 description: Please describe your plugin here
 # Required fuel version
-fuel_version: ['8.0']
+fuel_version: ['8.0', '9.0']
 # Specify license of your plugin
 licenses: ['Apache License Version 2.0']
 # Specify author or company name
@@ -25,6 +25,11 @@ is_hotpluggable: false
 releases:
   - os: ubuntu
     version: liberty-8.0
+    mode: ['ha']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+  - os: ubuntu
+    version: mitaka-9.0
     mode: ['ha']
     deployment_scripts_path: deployment_scripts/
     repository_path: repositories/ubuntu
