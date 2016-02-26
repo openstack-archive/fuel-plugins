@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.0.0 (unreleased)
+## 4.0.0 (2016-02-26)
 
 New package version "4.0.0" includes the following features:
 
@@ -9,6 +9,7 @@ New package version "4.0.0" includes the following features:
 - Plugin can specify settings group using "group" field in metadata in
   environment_config.yaml file.
 - New group `equipment` added to groups list in `metadata.yaml`.
+- New `components.yaml` file that allows to declare new components.
 
 Bugfixes:
 
