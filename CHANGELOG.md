@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.0.0 (unreleased)
+## 4.0.0 (2016-02-26)
 
 New package version "4.0.0" includes the following features:
 
