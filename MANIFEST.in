@@ -1,2 +1,0 @@
-include *.txt *.ini
-recursive-include fuel_plugin_builder/templates *
