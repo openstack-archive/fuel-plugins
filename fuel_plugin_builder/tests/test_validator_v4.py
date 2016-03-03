@@ -47,6 +47,13 @@ class TestValidatorV4(TestValidatorV3):
                     "mode": ['ha'],
                     "deployment_scripts_path": "deployment_scripts/",
                     "repository_path": "repositories/ubuntu"
+                },
+                {
+                    "os": "ubuntu",
+                    "version": "mitaka-9.0",
+                    "mode": ['ha'],
+                    "deployment_scripts_path": "deployment_scripts/",
+                    "repository_path": "repositories/ubuntu"
                 }
             ],
             'groups': [],
@@ -116,6 +123,13 @@ class TestValidatorV4(TestValidatorV3):
                 {
                     "os": "ubuntu",
                     "version": "liberty-8.0",
+                    "mode": ['ha'],
+                    "deployment_scripts_path": "deployment_scripts/",
+                    "repository_path": "repositories/ubuntu"
+                },
+                {
+                    "os": "ubuntu",
+                    "version": "mitaka-9.0",
                     "mode": ['ha'],
                     "deployment_scripts_path": "deployment_scripts/",
                     "repository_path": "repositories/ubuntu"
