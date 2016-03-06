@@ -46,7 +46,7 @@ class ValidatorV4(ValidatorV3):
     def check_tasks_schema(self):
         self.validate_file_by_schema(
             self.schema.tasks_schema,
-            self.tasks_path,
+            self.deployment_tasks_path,
             allow_empty=True
         )
 
@@ -95,11 +95,11 @@ class ValidatorV4(ValidatorV3):
                 value_path=[idx])
 
     def check_tasks(self):
-        """Check legacy tasks.yaml."""
-        logger.debug('Start tasks checking "%s"', self.tasks_path)
-        if utils.exists(self.tasks_path):
+        """Check legacy deployment_tasks.yaml."""
+        logger.debug('Start tasks checking "%s"', self.deployment_tasks_path)
+        if utils.exists(self.deployment_tasks_path):
             # todo(ikutukov): remove self._check_tasks
-            tasks = utils.parse_yaml(self.tasks_path)
+            tasks = utils.parse_yaml(self.deployment_tasks_path)
             if tasks is None:
                 return
 
@@ -112,7 +112,8 @@ class ValidatorV4(ValidatorV3):
                 self.validate_schema(
                     task.get('parameters'),
                     schemas[task['type']],
-                    self.tasks_path,
+                    self.deployment_tasks_path,
                     value_path=[idx, 'parameters'])
         else:
-            logger.debug('File "%s" doesn\'t exist', self.tasks_path)
+            logger.debug('File "%s" doesn\'t exist',
+                         self.deployment_tasks_path)
