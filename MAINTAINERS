@@ -32,10 +32,6 @@ maintainers:
       email:  apopovych@mirantis.com
       IRC:    apopovych
 
-    - name:   Ivan Kliuk
-      email:  ikliuk@mirantis.com
-      IRC:    ivankliuk
-
-    - name:   Sebastian Kalinowski
-      email:  skalinowski@mirantis.com
-      IRC:    prmtl
+    - name:   Ilya Kutukov
+      email:  ikutukov@mirantis.com
+      IRC:    ikutukov
