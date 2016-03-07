@@ -339,6 +339,27 @@ class TestValidatorV4(TestValidatorV3):
                 utils_mock, [task],
                 err_msg, self.validator.check_deployment_tasks)
 
+    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
+    def test_validate_file_by_schema_no_file_exists_passes(
+            self, exists_mock):
+        exists_mock.return_value = False
+        self.validator.validate_file_by_schema(
+            self.schema_class().tasks_schema,
+            self.validator.tasks_path,
+            allow_not_exists=True)
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
+    def test_validate_file_by_schema_no_file_exists_fails(
+            self, exists_mock):
+        exists_mock.return_value = False
+        with self.assertRaisesRegexp(
+                errors.FileDoesNotExist,
+                "File '/tmp/plugin_path/tasks.yaml' does not exist"):
+            self.validator.validate_file_by_schema(
+                self.schema_class().tasks_schema,
+                self.validator.tasks_path,
+                allow_not_exists=False)
+
     # This is the section of tests inherited from the v3 validator
     # where decorators is re-defined for module v4
 
