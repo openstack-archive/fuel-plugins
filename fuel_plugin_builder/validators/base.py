@@ -266,7 +266,6 @@ class BaseValidator(object):
                 'VALIDATION FAILED!',
                 'Please fix {0} errors listed above.'.format(failures_count)])
             sys.stdout.write(msg)
-            # sys.stderr.write(msg)
         else:
             sys.stdout.write('\n\nValidation successful!')
 
