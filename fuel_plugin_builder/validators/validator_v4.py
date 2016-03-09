@@ -46,7 +46,7 @@ class ValidatorV4(BaseValidator):
                 ]
             ),
             Inspection(
-                name='env_conf',
+                name='env conf',
                 path=self.get_absolute_path('environment_config.yaml'),
                 checks=[
                     IsFile(),
@@ -55,7 +55,7 @@ class ValidatorV4(BaseValidator):
                 ]
             ),
             Inspection(
-                name='tasks',
+                name='deployment tasks',
                 path=self.get_absolute_path('deployment_tasks.yaml'),
                 checks=[
                     IsFile(),
@@ -74,7 +74,7 @@ class ValidatorV4(BaseValidator):
                 ]
             ),
             Inspection(
-                name='network_roles',
+                name='network roles',
                 path=self.get_absolute_path('network_roles.yaml'),
                 checks=[
                     IsFile(required=False),
@@ -90,10 +90,10 @@ class ValidatorV4(BaseValidator):
                 ]
             ),
             Inspection(
-                name='legacy_tasks',
+                name='legacy tasks',
                 path=self.get_absolute_path('tasks.yaml'),
                 checks=[
-                    IsFile(required=False),
+                    IsFile(required=True),
                     JSONSchemaIsValid(self.schema_v3.tasks_schema)
                 ]
             ),
