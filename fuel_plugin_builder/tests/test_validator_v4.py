@@ -354,6 +354,15 @@ class TestValidatorV4(TestValidatorV3):
             exists_mock, utils_mock)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
+    def test_check_tasks_no_file(self, exists_mock, utils_mock, *args):
+        mocked_methods = ['validate_schema']
+        self.mock_methods(self.validator, mocked_methods)
+        exists_mock.return_value = False
+        self.validator.check_tasks_schema()
+        self.assertFalse(self.validator.validate_schema.called)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_deployment_task_role_failed(self, utils_mock, *args):
         super(TestValidatorV4, self).test_check_deployment_task_role_failed(
             utils_mock)
