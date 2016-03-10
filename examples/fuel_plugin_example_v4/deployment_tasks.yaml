@@ -12,6 +12,7 @@
 
 - id: fuel_plugin_example_v4-controller-deployment
   type: puppet
+  version: 2.0.0
   groups: [primary-controller, controller]
   required_for: [connectivity_tests, deploy_end]
   requires: [netconfig, deploy_start]
@@ -22,6 +23,7 @@
 
 - id: fuel_plugin_example_v4-deployment
   type: puppet
+  version: 2.0.0
   groups: [fuel_plugin_example_v4]
   required_for: [deploy_end]
   requires: [deploy_start]
@@ -33,6 +35,7 @@
 
 - id: fuel_plugin_example_v4-post-deployment-sh
   type: shell
+  version: 2.0.0
   role: [fuel_plugin_example_v4]
   required_for: [post_deployment_end]
   requires: [post_deployment_start]
