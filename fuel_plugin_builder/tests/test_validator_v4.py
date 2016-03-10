@@ -424,3 +424,11 @@ class TestValidatorV4(TestValidatorV3):
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_tasks_schema_validation_passed(self, utils_mock, *args):
         pass
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
+    def test_check_tasks_schema_validation_no_file(self, exists_mock, *args):
+        mocked_methods = ['validate_schema']
+        self.mock_methods(self.validator, mocked_methods)
+        exists_mock.return_value = False
+        self.validator.check_tasks_schema()
+        self.assertFalse(self.validator.validate_schema.called)

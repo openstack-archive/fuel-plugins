@@ -47,6 +47,7 @@ class ValidatorV4(ValidatorV3):
         self.validate_file_by_schema(
             self.schema.tasks_schema,
             self.tasks_path,
+            allow_not_exists=True,
             allow_empty=True
         )
 
