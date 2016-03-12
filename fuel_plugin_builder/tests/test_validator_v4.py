@@ -308,23 +308,23 @@ class TestValidatorV4(TestValidatorV3):
                 'type': 'group'
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name1',
                 'type': 'shell'
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name2',
                 'type': 'copy_files',
                 'parameters': {
                     'files': [{'src': '/dev/null', 'dst': '/dev/null'}]
                 }
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name3',
                 'type': 'sync',
                 'parameters': {'src': '/dev/null', 'dst': '/dev/null'}
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name4',
                 'type': 'upload_file',
                 'parameters': {
                     'path': 'http://test.com',
@@ -351,17 +351,17 @@ class TestValidatorV4(TestValidatorV3):
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_deployment_task_role(self, utils_mock, *args):
         utils_mock.parse_yaml.return_value = [
-            {'id': 'plugin_name', 'type': 'group', 'groups': ['a', 'b']},
-            {'id': 'plugin_name', 'type': 'group', 'groups': '*'},
-            {'id': 'plugin_name', 'type': 'puppet', 'role': ['a', 'b']},
-            {'id': 'plugin_name', 'type': 'puppet', 'role': '*'},
-            {'id': 'plugin_name', 'type': 'shell', 'roles': ['a', 'b']},
-            {'id': 'plugin_name', 'type': 'shell', 'roles': '*'},
-            {'id': 'plugin_name', 'type': 'skipped', 'role': '/test/'},
-            {'id': 'plugin_name', 'type': 'stage'},
-            {'id': 'plugin_name', 'type': 'reboot', 'groups': 'contrail'},
+            {'id': 'plugin_name1', 'type': 'group', 'groups': ['a', 'b']},
+            {'id': 'plugin_name2', 'type': 'group', 'groups': '*'},
+            {'id': 'plugin_name3', 'type': 'puppet', 'role': ['a', 'b']},
+            {'id': 'plugin_name4', 'type': 'puppet', 'role': '*'},
+            {'id': 'plugin_name5', 'type': 'shell', 'roles': ['a', 'b']},
+            {'id': 'plugin_name6', 'type': 'shell', 'roles': '*'},
+            {'id': 'plugin_name7', 'type': 'skipped', 'role': '/test/'},
+            {'id': 'plugin_name8', 'type': 'stage'},
+            {'id': 'plugin_name9', 'type': 'reboot', 'groups': 'contrail'},
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name10',
                 'type': 'copy_files',
                 'role': '*',
                 'parameters': {
@@ -369,14 +369,14 @@ class TestValidatorV4(TestValidatorV3):
                         {'src': 'some_source', 'dst': 'some_destination'}]}
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name11',
                 'type': 'sync',
                 'role': 'plugin_name',
                 'parameters': {
                     'src': 'some_source', 'dst': 'some_destination'}
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name12',
                 'type': 'upload_file',
                 'role': '/^.*plugin\w+name$/',
                 'parameters': {
@@ -500,3 +500,10 @@ class TestValidatorV4(TestValidatorV3):
         exists_mock.return_value = False
         self.validator.check_tasks_schema()
         self.assertFalse(self.validator.validate_schema.called)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_invalid_duplicated_id(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_check_deployment_task_invalid_duplicated_id(utils_mock)
