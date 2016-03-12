@@ -307,23 +307,23 @@ class TestValidatorV4(TestValidatorV3):
                 'type': 'group'
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name1',
                 'type': 'shell'
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name2',
                 'type': 'copy_files',
                 'parameters': {
                     'files': [{'src': '/dev/null', 'dst': '/dev/null'}]
                 }
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name3',
                 'type': 'sync',
                 'parameters': {'src': '/dev/null', 'dst': '/dev/null'}
             },
             {
-                'id': 'plugin_name',
+                'id': 'plugin_name4',
                 'type': 'upload_file',
                 'parameters': {
                     'path': 'http://test.com',
@@ -424,3 +424,10 @@ class TestValidatorV4(TestValidatorV3):
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_tasks_schema_validation_passed(self, utils_mock, *args):
         pass
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_invalid_duplicated_id(
+            self, utils_mock, *args):
+        super(
+            TestValidatorV4, self
+        ).test_check_deployment_task_invalid_duplicated_id(utils_mock)

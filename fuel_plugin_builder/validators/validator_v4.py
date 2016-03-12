@@ -83,7 +83,15 @@ class ValidatorV4(ValidatorV3):
             'stage': self.schema.stage_task,
             'reboot': self.schema.reboot_task}
 
+        deployment_tasks_ids = []
+
         for idx, deployment_task in enumerate(deployment_tasks):
+            if deployment_task['id'] in deployment_tasks_ids:
+                error_msg = 'Duplicated task id: ' \
+                            '{0}'.format(deployment_task['id'])
+                raise errors.ValidationError(error_msg)
+            deployment_tasks_ids.append(deployment_task['id'])
+
             if deployment_task['type'] not in schemas:
                 error_msg = 'There is no such task type:' \
                             '{0}'.format(deployment_task['type'])
