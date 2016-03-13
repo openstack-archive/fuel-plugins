@@ -19,6 +19,8 @@ Group:          Development/Libraries
 Release:        1
 BuildArch:      noarch
 AutoReq:        no
+%%define        SESSION_ID $(date | md5sum | cut -d" " -f1)
+%%define        DST_DIR /var/www/nailgun/plugins/${ name }
 
 %%description
 ${ description }
@@ -38,13 +40,16 @@ cp -r ${ name } %{buildroot}/var/www/nailgun/plugins/
 rm -rf %{buildroot}
 
 %%pre
+export RPM_SESSION_ID=%{SESSION_ID}
 ${ preinstall_hook }
 
 %%post
+export RPM_SESSION_ID=%{SESSION_ID}
+export DST_DIR=%{DST_DIR}
 ${ postinstall_hook }
 
 %%preun
 ${ uninstall_hook }
 
 %%files
-/var/www/nailgun/plugins/${ name }
+%%{DST_DIR}
