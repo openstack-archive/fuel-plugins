@@ -41,6 +41,7 @@ rm -rf %{buildroot}
 ${ preinstall_hook }
 
 %%post
+export DST_DIR=/var/www/nailgun/plugins/${ name }
 ${ postinstall_hook }
 
 %%preun
