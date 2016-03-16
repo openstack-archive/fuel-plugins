@@ -355,8 +355,14 @@ class TestValidatorV4(TestValidatorV3):
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_deployment_task_role_failed(self, utils_mock, *args):
-        super(TestValidatorV4, self).test_check_deployment_task_role_failed(
-            utils_mock)
+        mock_data = [{
+            'id': 'plugin_name',
+            'type': 'group',
+            'role': ['plugin_n@me']}]
+        err_msg = "field should"
+        self.check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(

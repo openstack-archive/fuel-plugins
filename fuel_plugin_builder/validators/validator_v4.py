@@ -15,14 +15,47 @@
 #    under the License.
 
 import logging
-from os.path import join as join_path
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.schemas import SchemaV4
+from fuel_plugin_builder.validators.schemas import TASK_ROLE_PATTERN
 from fuel_plugin_builder.validators import ValidatorV3
+import jsonschema
+from os.path import join as join_path
+import re
+import six
 
 logger = logging.getLogger(__name__)
+
+
+class FormatCheckerV4(jsonschema.FormatChecker):
+
+    def check(self, instance, format):
+        """Check whether the instance conforms to the given format.
+
+        :argument instance: the instance to check
+        :type: any primitive type (str, number, bool)
+        :argument str format: the format that instance should conform to
+        :raises: :exc:`FormatError` if instance does not conform to format
+        """
+
+        if format not in self.checkers:
+            return
+
+        # For safety reasons custom checkers can be registered with
+        # allowed exception types. Anything else will fall into the
+        # default formatter.
+        func, raises = self.checkers[format]
+        result, cause = None, None
+
+        try:
+            result = func(instance)
+        except raises as e:
+            cause = e
+        if not result:
+            msg = "%r is not a %r" % (instance, format)
+            raise jsonschema.exceptions.FormatError(msg, cause=cause)
 
 
 class ValidatorV4(ValidatorV3):
@@ -30,7 +63,8 @@ class ValidatorV4(ValidatorV3):
     schema = SchemaV4()
 
     def __init__(self, *args, **kwargs):
-        super(ValidatorV4, self).__init__(*args, **kwargs)
+        super(ValidatorV4, self).__init__(format_checker=FormatCheckerV4(),
+                                          *args, **kwargs)
         self.components_path = join_path(self.plugin_path, 'components.yaml')
 
     @property
@@ -88,6 +122,7 @@ class ValidatorV4(ValidatorV3):
                 error_msg = 'There is no such task type:' \
                             '{0}'.format(deployment_task['type'])
                 raise errors.ValidationError(error_msg)
+            logger.debug("Checking task %s" % deployment_task.get('id'))
             self.validate_schema(
                 deployment_task,
                 schemas[deployment_task['type']],
@@ -109,6 +144,7 @@ class ValidatorV4(ValidatorV3):
                 'reboot': self.schema.reboot_parameters}
 
             for idx, task in enumerate(tasks):
+                logger.debug("Checking task %s" % task.get('id'))
                 self.validate_schema(
                     task.get('parameters'),
                     schemas[task['type']],
@@ -116,3 +152,27 @@ class ValidatorV4(ValidatorV3):
                     value_path=[idx, 'parameters'])
         else:
             logger.debug('File "%s" doesn\'t exist', self.tasks_path)
+
+
+@jsonschema.FormatChecker.cls_checks('fuel_task_role_format')
+def _validate_role(instance):
+    if isinstance(instance, six.string_types):
+        if instance.startswith('/') and instance.endswith('/'):
+            try:
+                if re.compile(instance[1:-1]):
+                    return True
+            except Exception:
+                pass
+        else:
+            try:
+                if re.match(TASK_ROLE_PATTERN, instance):
+                    return True
+            except Exception:
+                pass
+
+        raise errors.TaskFieldError("Role field should be either "
+                                    "a valid regexp enclosed "
+                                    "by slashes or a string "
+                                    "of '{0}' or an array "
+                                    "of those. Got '{1}' instead".
+                                    format(TASK_ROLE_PATTERN, instance))

@@ -27,7 +27,7 @@ COMPATIBLE_COMPONENT_NAME_PATTERN = \
     '^({0}):([0-9a-z_-]+:)*([0-9a-z_-]+|(\*)?)$'.format(COMPONENTS_TYPES_STR)
 
 
-TASK_NAME_PATTERN = TASK_ROLE_PATTERN = '^[0-9a-zA-Z_-]+$'
+TASK_NAME_PATTERN = TASK_ROLE_PATTERN = '^[0-9a-zA-Z_-]+$|^\*$'
 NETWORK_ROLE_PATTERN = '^[0-9a-z_-]+$'
 FILE_PERMISSIONS_PATTERN = '^[0-7]{4}$'
 TASK_VERSION_PATTERN = '^\d+.\d+.\d+$'
@@ -58,13 +58,13 @@ class SchemaV4(SchemaV3):
             'oneOf': [
                 {
                     'type': 'string',
-                    'enum': ['*', 'master', 'self']
+                    'format': 'fuel_task_role_format'
                 },
                 {
                     'type': 'array',
                     'items': {
                         'type': 'string',
-                        'pattern': TASK_ROLE_PATTERN
+                        'format': 'fuel_task_role_format'
                     }
                 }
             ]
