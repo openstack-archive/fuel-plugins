@@ -57,8 +57,7 @@ class SchemaV4(SchemaV3):
         return {
             'oneOf': [
                 {
-                    'type': 'string',
-                    'enum': ['*', 'master', 'self']
+                    'type': 'string'
                 },
                 {
                     'type': 'array',
