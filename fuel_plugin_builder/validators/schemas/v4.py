@@ -58,13 +58,13 @@ class SchemaV4(SchemaV3):
             'oneOf': [
                 {
                     'type': 'string',
-                    'enum': ['*', 'master', 'self']
+                    'format': 'fuel_task_role_format'
                 },
                 {
                     'type': 'array',
                     'items': {
                         'type': 'string',
-                        'pattern': TASK_ROLE_PATTERN
+                        'format': 'fuel_task_role_format'
                     }
                 }
             ]
