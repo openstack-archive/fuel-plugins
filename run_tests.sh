@@ -123,7 +123,7 @@ function run_build {
   source $FPB_VENV_PATH/bin/activate || return 1
   fpb_path="${ROOT}"
   pushd $fpb_path
-  python setup.py install
+  pip install .
   popd
 
   mkdir -p $BUILT_PLUGINS_PATH
