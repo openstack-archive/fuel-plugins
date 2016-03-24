@@ -5,6 +5,10 @@ command -v fpm >/dev/null 2>&1 || {
     echo >&2 "Install 'fpm' to build this plugin. Aborting."; exit 1;
 }
 
+ruby -e "require 'fpm'" 2>&1 || {
+    echo >&2 "'Fpm' binary file is present, but gem seems to be broken! Aborting."; exit 1;
+}
+
 ROOT=$(dirname `readlink -f $0`)
 
 UBUNTU_REPO_PATH=$ROOT/repositories/ubuntu
