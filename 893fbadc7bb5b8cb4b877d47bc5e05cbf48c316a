@@ -1,0 +1,12 @@
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Alejandro Siller Rivas <alejandro.rivas@ericsson.com>
+Code-Review+1: Ilya Kutukov <ikutukov@mirantis.com>
+Code-Review+2: Evgeniy L <eli@mirantis.com>
+Code-Review+1: Andriy Popovych <apopovych@mirantis.com>
+Workflow+1: Evgeniy L <eli@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 31 Mar 2016 09:37:26 +0000
+Reviewed-on: https://review.openstack.org/294161
+Project: openstack/fuel-plugins
+Branch: refs/heads/master
