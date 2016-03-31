@@ -326,7 +326,10 @@ class SchemaV3(SchemaV2):
                             'type': 'string',
                             'description': ('Short description of role'
                                             ' functionality')},
-                        'conflicts': self.list_of_strings,
+                        'conflicts': {
+                            'oneOf': [
+                                self.list_of_strings,
+                                {'type': 'string', 'enum': ['*']}]},
                         'has_primary': {
                             'type': 'boolean',
                             'description': ('During orchestration this role'

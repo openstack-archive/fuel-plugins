@@ -550,6 +550,24 @@ class TestValidatorV3(BaseValidator):
             err_msg, self.validator.check_node_roles_schema)
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_check_node_role_conflicts(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'plugin_name': {
+                'name': 'test_plugin',
+                'description': 'test plugin',
+                'conflicts': '*'}}
+
+        self.validator.check_node_roles_schema()
+
+        utils_mock.parse_yaml.return_value = {
+            'plugin_name': {
+                'name': 'test_plugin',
+                'description': 'test plugin',
+                'conflicts': ['some_role']}}
+
+        self.validator.check_node_roles_schema()
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_valid_volumes_roles_mapping_name(self, utils_mock):
         utils_mock.parse_yaml.return_value = {
             'volumes_roles_mapping': {
