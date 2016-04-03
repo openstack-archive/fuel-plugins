@@ -19,8 +19,10 @@ from os.path import join as join_path
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
+from fuel_plugin_builder.validators.formatchecker import FormatChecker
 from fuel_plugin_builder.validators.schemas import SchemaV4
 from fuel_plugin_builder.validators import ValidatorV3
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +32,8 @@ class ValidatorV4(ValidatorV3):
     schema = SchemaV4()
 
     def __init__(self, *args, **kwargs):
-        super(ValidatorV4, self).__init__(*args, **kwargs)
+        super(ValidatorV4, self).__init__(format_checker=FormatChecker(
+            role_patterns=[self.schema.role_pattern]), *args, **kwargs)
         self.components_path = join_path(self.plugin_path, 'components.yaml')
 
     @property
