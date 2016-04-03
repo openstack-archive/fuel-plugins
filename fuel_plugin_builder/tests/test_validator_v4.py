@@ -343,20 +343,73 @@ class TestValidatorV4(TestValidatorV3):
     # where decorators is re-defined for module v4
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
-    def test_check_deployment_task_role(self, utils_mock, *args):
-        super(TestValidatorV4, self).test_check_deployment_task_role(
-            utils_mock)
-
-    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
     def test_check_tasks_no_file(self, exists_mock, utils_mock, *args):
         super(TestValidatorV4, self).test_check_deployment_task_role(
             exists_mock, utils_mock)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_role(self, utils_mock, *args):
+        utils_mock.parse_yaml.return_value = [
+            {'id': 'plugin_name', 'type': 'group', 'role': []},
+            {'id': 'plugin_name', 'type': 'group', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'group', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'puppet', 'role': []},
+            {'id': 'plugin_name', 'type': 'puppet', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'puppet', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'shell', 'role': []},
+            {'id': 'plugin_name', 'type': 'shell', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'shell', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'skipped'},
+            {'id': 'plugin_name', 'type': 'stage'},
+            {'id': 'plugin_name', 'type': 'reboot'},
+            {
+                'id': 'plugin_name',
+                'type': 'copy_files',
+                'role': '*',
+                'parameters': {
+                    'files': [
+                        {'src': 'some_source', 'dst': 'some_destination'}]}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'sync',
+                'role': 'plugin_name',
+                'parameters': {
+                    'src': 'some_source', 'dst': 'some_destination'}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'upload_file',
+                'role': '/^.*plugin\w+name$/',
+                'parameters': {
+                    'path': 'some_path', 'data': 'some_data'}
+            },
+        ]
+
+        self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_deployment_task_role_failed(self, utils_mock, *args):
-        super(TestValidatorV4, self).test_check_deployment_task_role_failed(
-            utils_mock)
+        mock_data = [{
+            'id': 'plugin_name',
+            'type': 'group',
+            'role': ['plugin_n@me']}]
+        err_msg = "field should"
+        self.check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_role_regexp_failed(self, utils_mock, *args):
+        mock_data = [{
+            'id': 'plugin_name',
+            'type': 'group',
+            'role': '/[0-9]++/'}]
+        err_msg = "field should.*multiple repeat"
+        self.check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(
