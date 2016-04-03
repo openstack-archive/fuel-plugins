@@ -15,14 +15,28 @@
 #    under the License.
 
 import logging
+
+import jsonschema
 from os.path import join as join_path
+import re
+import six
+from sre_constants import error as sre_error
+import sys
+
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 from fuel_plugin_builder.validators.schemas import SchemaV4
+from fuel_plugin_builder.validators.schemas import TASK_ROLE_PATTERN
 from fuel_plugin_builder.validators import ValidatorV3
 
+
 logger = logging.getLogger(__name__)
+
+
+class FormatCheckerV4(jsonschema.FormatChecker):
+
+    pass
 
 
 class ValidatorV4(ValidatorV3):
@@ -30,7 +44,8 @@ class ValidatorV4(ValidatorV3):
     schema = SchemaV4()
 
     def __init__(self, *args, **kwargs):
-        super(ValidatorV4, self).__init__(*args, **kwargs)
+        super(ValidatorV4, self).__init__(format_checker=FormatCheckerV4(),
+                                          *args, **kwargs)
         self.components_path = join_path(self.plugin_path, 'components.yaml')
 
     @property
@@ -117,3 +132,25 @@ class ValidatorV4(ValidatorV3):
                     value_path=[idx, 'parameters'])
         else:
             logger.debug('File "%s" doesn\'t exist', self.tasks_path)
+
+
+@jsonschema.FormatChecker.cls_checks('fuel_task_role_format')
+def _validate_role(instance):
+    sre_msg = None
+
+    if isinstance(instance, six.string_types):
+        if instance.startswith('/') and instance.endswith('/'):
+            try:
+                if re.compile(instance[1:-1]):
+                    return True
+            except sre_error:
+                sre_msg = sys.exc_info()[1]
+        else:
+            if re.match(TASK_ROLE_PATTERN, instance):
+                return True
+        err_msg = "Role field should be either a valid regexp enclosed by " \
+                  "slashes or a string of '{0}' or an array of those. " \
+                  "Got '{1}' instead.".format(TASK_ROLE_PATTERN, instance)
+        if sre_msg:
+            err_msg += "SRE error: \"{0}\"".format(sre_msg)
+        raise errors.TaskFieldError(err_msg)
