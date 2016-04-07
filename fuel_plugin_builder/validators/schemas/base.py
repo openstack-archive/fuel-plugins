@@ -169,7 +169,12 @@ class BaseSchema(object):
             'properties': {
                 'type': {'type': 'string'},
                 'weight': {'type': 'integer'},
-                'value': {'type': ['string', 'boolean']},
+                'value': {'anyOf': [
+                    {'type': 'string'},
+                    {'type': 'boolean'},
+                    {'type': 'object',
+                     'properties': {'generator': {'type': 'string'}}}
+                ]},
                 'label': {'type': 'string'},
                 'restrictions': self.restrictions,
                 'values': {'type': 'array', 'items':
