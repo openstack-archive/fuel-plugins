@@ -1,0 +1,13 @@
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Nikita Zubkov <nzubkov@mirantis.com>
+Code-Review+1: Andriy Popovych <apopovych@mirantis.com>
+Code-Review+1: Ilya Kutukov <ikutukov@mirantis.com>
+Code-Review+1: Aleksey Kasatkin <akasatkin@mirantis.com>
+Code-Review+2: Evgeniy L <eli@mirantis.com>
+Workflow+1: Evgeniy L <eli@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 08 Apr 2016 13:00:16 +0000
+Reviewed-on: https://review.openstack.org/302867
+Project: openstack/fuel-plugins
+Branch: refs/heads/master
