@@ -44,7 +44,14 @@ ${ preinstall_hook }
 ${ postinstall_hook }
 
 %%preun
-${ uninstall_hook }
+# Values of $1:
+# install:      (N/A)
+# upgrade:      1
+# uninstall:    0
+if [ $1 -eq 0 ]; then
+    ${ uninstall_hook }
+fi
+
 
 %%files
 /var/www/nailgun/plugins/${ name }
