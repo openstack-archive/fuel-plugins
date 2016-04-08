@@ -184,6 +184,17 @@ class BaseValidator(BaseTestCase):
                 "of type 'string', value path 'attributes -> key1 -> type'"):
             self.validator.check_env_config_attrs()
 
+    def test_check_env_config_attrs_generator_value(self, utils_mock):
+        utils_mock.parse_yaml.return_value = {
+            'attributes': {
+                'key1': {
+                    'type': 'hidden',
+                    'label': '',
+                    'value': {'generator': 'password'},
+                    'weight': 1}}}
+
+        self.validator.check_env_config_attrs()
+
     def test_check_env_config_attrs_restriction_fails(self, utils_mock):
         utils_mock.parse_yaml.return_value = {
             'attributes': {
