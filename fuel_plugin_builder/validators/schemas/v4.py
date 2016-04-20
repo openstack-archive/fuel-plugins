@@ -27,22 +27,15 @@ COMPATIBLE_COMPONENT_NAME_PATTERN = \
     '^({0}):([0-9a-z_-]+:)*([0-9a-z_-]+|(\*)?)$'.format(COMPONENTS_TYPES_STR)
 
 
-TASK_NAME_PATTERN = TASK_ROLE_PATTERN = '^[0-9a-zA-Z_-]+$|^\*$'
+TASK_NAME_PATTERN = TASK_ROLE_PATTERN = '^[0-9a-zA-Z_-]+$'
 NETWORK_ROLE_PATTERN = '^[0-9a-z_-]+$'
 FILE_PERMISSIONS_PATTERN = '^[0-7]{4}$'
 TASK_VERSION_PATTERN = '^\d+.\d+.\d+$'
 STAGE_PATTERN = '^(post_deployment|pre_deployment)' \
                 '(/[-+]?([0-9]*\.[0-9]+|[0-9]+))?$'
 
-DEFAULT_TASK_ROLE_GROUP_ASSIGNMENT = ('roles', 'groups', 'role')
-TASK_OBLIGATORY_FIELDS = ['id', 'type']
-
 
 class SchemaV4(SchemaV3):
-
-    def __init__(self):
-        super(SchemaV4, self).__init__()
-        self.role_pattern = TASK_ROLE_PATTERN
 
     @property
     def _task_relation(self):
@@ -65,13 +58,13 @@ class SchemaV4(SchemaV3):
             'oneOf': [
                 {
                     'type': 'string',
-                    'format': 'fuel_task_role_format'
+                    'enum': ['*', 'master', 'self']
                 },
                 {
                     'type': 'array',
                     'items': {
                         'type': 'string',
-                        'format': 'fuel_task_role_format'
+                        'pattern': TASK_ROLE_PATTERN
                     }
                 }
             ]
@@ -102,9 +95,7 @@ class SchemaV4(SchemaV3):
             }
         }
 
-    def _gen_task_schema(self, task_types, required=None,
-                         parameters=None,
-                         required_any=DEFAULT_TASK_ROLE_GROUP_ASSIGNMENT):
+    def _gen_task_schema(self, task_types, required=None, parameters=None):
         """Generate deployment task schema using prototype.
 
         :param task_types: task types
@@ -128,21 +119,11 @@ class SchemaV4(SchemaV3):
         }
         parameters.setdefault("properties", {})
         parameters["properties"].setdefault("strategy", self._task_strategy)
-        task_specific_req_fields = list(set(TASK_OBLIGATORY_FIELDS +
-                                            (required or [])))
-        required_fields = []
 
-        # Some tasks are ephemeral, so we can leave it as is without target
-        # groups|role|roles, others must have at least one such field
-        if required_any:
-            for group_name_alias in DEFAULT_TASK_ROLE_GROUP_ASSIGNMENT:
-                required_fields.append({"required": task_specific_req_fields
-                                        + [group_name_alias]})
-        else:
-            required_fields.append({"required": task_specific_req_fields})
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'object',
+            'required': list(set(['id', 'type'] + (required or []))),
             'properties': {
                 'type': {'enum': task_types},
                 'id': {
@@ -151,8 +132,6 @@ class SchemaV4(SchemaV3):
                 'version': {
                     'type': 'string', "pattern": TASK_VERSION_PATTERN},
                 'role': self._task_role,
-                'groups': self._task_role,
-                'roles': self._task_role,
                 'required_for': self.task_group,
                 'requires': self.task_group,
                 'cross-depends': {
@@ -169,8 +148,7 @@ class SchemaV4(SchemaV3):
                         'pattern': TASK_ROLE_PATTERN}},
                 'reexecute_on': self._task_reexecute,
                 'parameters': parameters or {},
-            },
-            'anyOf': required_fields
+            }
         }
 
     @property
@@ -202,7 +180,7 @@ class SchemaV4(SchemaV3):
     def copy_files_task(self):
         return self._gen_task_schema(
             "copy_files",
-            ['parameters'],
+            ['role', 'parameters'],
             {
                 'type': 'object',
                 'required': ['files'],
@@ -225,7 +203,7 @@ class SchemaV4(SchemaV3):
 
     @property
     def group_task(self):
-        return self._gen_task_schema("group", [])
+        return self._gen_task_schema("group", ['role'])
 
     @property
     def puppet_task(self):
@@ -264,7 +242,7 @@ class SchemaV4(SchemaV3):
     def shell_task(self):
         return self._gen_task_schema(
             "shell",
-            [],
+            ['role'],
             {
                 'type': 'object',
                 'required': ['cmd'],
@@ -287,13 +265,13 @@ class SchemaV4(SchemaV3):
 
     @property
     def stage_task(self):
-        return self._gen_task_schema("stage", required_any=())
+        return self._gen_task_schema("stage")
 
     @property
     def sync_task(self):
         return self._gen_task_schema(
             "sync",
-            ['parameters'],
+            ['role', 'parameters'],
             {
                 'type': 'object',
                 'required': ['src', 'dst'],
@@ -309,7 +287,7 @@ class SchemaV4(SchemaV3):
     def upload_file_task(self):
         return self._gen_task_schema(
             "upload_file",
-            ['parameters'],
+            ['role', 'parameters'],
             {
                 'type': 'object',
                 'required': ['path', 'data'],

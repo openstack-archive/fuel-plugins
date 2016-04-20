@@ -13,7 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import jsonschema
+
 import mock
 
 from fuel_plugin_builder import errors
@@ -37,7 +37,6 @@ class TestBaseValidator(BaseTestCase):
         self.validator = NewValidator(self.plugin_path)
         self.data = {'data': 'data1'}
         self.schema = self.make_schema(['data'], {'data': {'type': 'string'}})
-        self.format_checker = jsonschema.FormatChecker
 
     @classmethod
     def make_schema(cls, required, properties):
@@ -55,7 +54,7 @@ class TestBaseValidator(BaseTestCase):
             'file_path')
         schema_mock.validate.assert_called_once_with(
             self.data,
-            self.schema, format_checker=self.format_checker)
+            self.schema)
 
     def test_validate_schema_raises_error(self):
         schema = self.make_schema(['key'], {'key': {'type': 'string'}})
