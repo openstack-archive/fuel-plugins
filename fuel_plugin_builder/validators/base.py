@@ -35,16 +35,15 @@ class BaseValidator(object):
     def basic_version(self):
         pass
 
-    def __init__(self, plugin_path, format_checker=jsonschema.FormatChecker):
+    def __init__(self, plugin_path):
         self.plugin_path = plugin_path
-        self.format_checker = format_checker
 
     def validate_schema(self, data, schema, file_path, value_path=None):
         logger.debug(
             'Start schema validation for %s file, %s', file_path, schema)
+
         try:
-            jsonschema.validate(data, schema,
-                                format_checker=self.format_checker)
+            jsonschema.validate(data, schema)
         except jsonschema.exceptions.ValidationError as exc:
             raise errors.ValidationError(
                 self._make_error_message(exc, file_path, value_path))
@@ -105,7 +104,6 @@ class BaseValidator(object):
     @abc.abstractmethod
     def validate(self):
         """Performs validation
-
         """
 
     def check_schemas(self):
@@ -171,11 +169,9 @@ class BaseValidator(object):
 
     def check_compatibility(self):
         """Json schema doesn't have any conditions, so we have
-
         to make sure here, that this validation schema can be used
         for described fuel releases
         """
-
         meta = utils.parse_yaml(self.meta_path)
         for fuel_release in meta['fuel_version']:
             if StrictVersion(fuel_release) < StrictVersion(self.basic_version):

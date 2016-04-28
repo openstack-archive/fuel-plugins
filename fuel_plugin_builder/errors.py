@@ -33,10 +33,6 @@ class ValidationError(FuelPluginException):
     pass
 
 
-class TaskFieldError(ValidationError):
-    pass
-
-
 class FileIsEmpty(ValidationError):
     def __init__(self, file_path):
         super(FileIsEmpty, self).__init__(
