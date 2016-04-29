@@ -20,7 +20,7 @@ import logging
 def configure_logger(debug=False):
     logger = logging.getLogger('fuel_plugin_builder')
 
-    logger.setLevel(logging.CRITICAL)
+    logger.setLevel(logging.INFO)
     if debug:
         logger.setLevel(logging.DEBUG)
 

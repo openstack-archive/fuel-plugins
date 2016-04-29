@@ -21,7 +21,6 @@ from fuel_plugin_builder.tests.test_validator_v3 import TestValidatorV3
 from fuel_plugin_builder.validators.schemas import SchemaV4
 from fuel_plugin_builder.validators.validator_v4 import ValidatorV4
 
-
 class TestValidatorV4(TestValidatorV3):
 
     __test__ = True
@@ -290,7 +289,7 @@ class TestValidatorV4(TestValidatorV3):
         mock_data = [{
             'id': 'plugin_task',
             'type': 'puppet',
-            'group': ['controller'],
+            'groups': ['controller'],
             'reexecute_on': ['bla']}]
         err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
                   "'bla' is not one of"
@@ -299,8 +298,8 @@ class TestValidatorV4(TestValidatorV3):
             err_msg, self.validator.check_deployment_tasks_schema)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
-    def test_role_attribute_is_required_for_deployment_task_types(
-            self, utils_mock, *args):
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.logger')
+    def test_role_attribute_is_required_for_deployment_task_types(self, logger_mock, utils_mock, *args):
         deployment_tasks_data = [
             {
                 'id': 'plugin_name',
@@ -333,19 +332,19 @@ class TestValidatorV4(TestValidatorV3):
         ]
 
         err_msg = "File '/tmp/plugin_path/deployment_tasks.yaml', " \
-                  "'role' is a required property, value path '0'"
+                  "'(role|groups|roles)' is " \
+                  "a required property, value path '0'"
         for task in deployment_tasks_data:
-            self.check_raised_exception(
-                utils_mock, [task],
-                err_msg, self.validator.check_deployment_tasks)
+            utils_mock.parse_yaml.return_value = [task]
+            self.validator.check_deployment_tasks()
+            self.assertTrue(logger_mock.warn.called)
+
+             #self.check_raised_exception(
+            #     utils_mock, [task],
+            #     err_msg, self.validator.check_deployment_tasks)
 
     # This is the section of tests inherited from the v3 validator
     # where decorators is re-defined for module v4
-
-    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
-    def test_check_deployment_task_role(self, utils_mock, *args):
-        super(TestValidatorV4, self).test_check_deployment_task_role(
-            utils_mock)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
@@ -354,9 +353,83 @@ class TestValidatorV4(TestValidatorV3):
             exists_mock, utils_mock)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_role(self, utils_mock, *args):
+        utils_mock.parse_yaml.return_value = [
+            {'id': 'plugin_name', 'type': 'group', 'groups': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'group', 'groups': '*'},
+            {'id': 'plugin_name', 'type': 'puppet', 'role': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'puppet', 'role': '*'},
+            {'id': 'plugin_name', 'type': 'shell', 'roles': ['a', 'b']},
+            {'id': 'plugin_name', 'type': 'shell', 'roles': '*'},
+            {'id': 'plugin_name', 'type': 'skipped', 'role': '/test/'},
+            {'id': 'plugin_name', 'type': 'stage'},
+            {'id': 'plugin_name', 'type': 'reboot', 'groups': 'contrail'},
+            {
+                'id': 'plugin_name',
+                'type': 'copy_files',
+                'role': '*',
+                'parameters': {
+                    'files': [
+                        {'src': 'some_source', 'dst': 'some_destination'}]}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'sync',
+                'role': 'plugin_name',
+                'parameters': {
+                    'src': 'some_source', 'dst': 'some_destination'}
+            },
+            {
+                'id': 'plugin_name',
+                'type': 'upload_file',
+                'role': '/^.*plugin\w+name$/',
+                'parameters': {
+                    'path': 'some_path', 'data': 'some_data'}
+            },
+        ]
+
+        self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_deployment_task_role_failed(self, utils_mock, *args):
-        super(TestValidatorV4, self).test_check_deployment_task_role_failed(
-            utils_mock)
+        mock_data = [{
+            'id': 'plugin_name',
+            'type': 'group',
+            'role': ['plugin_n@me']}]
+        err_msg = "field should"
+        self.check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.logger')
+    def test_check_deployment_task_required_missing(self, logger_mock, utils_mock, *args):
+        mock_data = [{
+            'id': 'plugin_name',
+            'type': 'puppet'}]
+        utils_mock.parse_yaml.return_value = mock_data
+        self.validator.check_deployment_tasks()
+        self.assertTrue(logger_mock.warn.called)
+
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_required_roles_missing_is_ok(
+            self, utils_mock, *args):
+        utils_mock.parse_yaml.return_value = [{
+            'id': 'plugin_name',
+            'type': 'stage'}]
+        self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_deployment_task_role_regexp_failed(self, utils_mock, *args):
+        mock_data = [{
+            'id': 'plugin_name',
+            'type': 'group',
+            'role': '/[0-9]++/'}]
+        err_msg = "field should.*multiple repeat"
+        self.check_raised_exception(
+            utils_mock, mock_data,
+            err_msg, self.validator.check_deployment_tasks)
 
     @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
     def test_check_group_type_deployment_task_does_not_contain_manifests(
