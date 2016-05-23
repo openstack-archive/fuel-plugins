@@ -19,6 +19,10 @@ Group:          Development/Libraries
 Release:        1
 BuildArch:      noarch
 
+# This will allow arch binaries to be included as part of the plugin package
+# otherwise the build of the plugin fails.
+%%define _binaries_in_noarch_packages_terminate_build 0
+
 %%description
 ${ description }
 
