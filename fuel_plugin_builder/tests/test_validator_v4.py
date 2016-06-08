@@ -493,6 +493,411 @@ class TestValidatorV4(TestValidatorV3):
     def test_check_tasks_schema_validation_passed(self, utils_mock, *args):
         pass
 
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_tasks_schema_1_0_validation_failed(self, utils_mock, *args):
+        checks = [
+            {
+                'data': {
+                    'id': 'task-id',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                'errorTextContains': "'cmd' is a required property, "
+                                     "value path '0 -> parameters'"
+            },
+            {
+                'data': {
+                    'id': 'task-id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                'errorTextContains': "'puppet_manifest' is a required property"
+                                     ", value path '0 -> parameters'"
+            },
+            {
+                'data': {
+                    'id': 'task-id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'xx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                'errorTextContains': "'puppet_manifest' is a required property"
+                                     ", value path '0 -> parameters'"
+            },
+            {
+                'data': {
+                    'id': 'task-id',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'yy',
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                'errorTextContains': "'cmd' is a required property, value path"
+                                     " '0 -> parameters'"
+            },
+            {
+                'data': {
+                    'id': 'task-id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'yy',
+                        'retries': 'asd',
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                'errorTextContains': "'asd' is not of type 'integer', value "
+                                     "path '0 -> parameters -> retries'"
+            },
+            {
+                'data': {
+                    'id': 'task-id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': '',
+                        'retries': 1,
+                    },
+                    'stage': 'pre_deployment',
+                    'role': '*'
+                },
+                'errorTextContains': "'' is too short, value path '0 -> "
+                                     "parameters -> puppet_modules'"
+            },
+            {
+                'data': {
+                    'id': 'task-id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': '',
+                        'puppet_modules': 'yy',
+                        'retries': 1,
+                    },
+                    'stage': 'pre_deployment',
+                    'role': '*'
+                },
+                'errorTextContains': "'' is too short, value path '0 -> "
+                                     "parameters -> puppet_manifest'"
+            }
+        ]
+
+        for check in checks:
+            utils_mock.parse_yaml.return_value = [check['data']]
+            self.assertRaisesRegexp(
+                errors.ValidationError,
+                check['errorTextContains'],
+                self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_tasks_schema_1_0_validation_passed(self, utils_mock, *args):
+        data_sets = [
+            [
+                {
+                    'id': 'task_id',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'xx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+            ],
+            [
+                {
+                    'id': 'task_id',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'xx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'task_id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+            ],
+            [
+                {
+                    'id': 'task_id',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'reboot'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'task_id',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'xx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'task_id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                }
+            ],
+            [
+                {
+                    'id': 'task_id',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'reboot'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'task_id',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'yy',
+                        'cmd': 'reboot'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'task_id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'retries': 10,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'task_id',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'retries': 10,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': 'master'
+                },
+            ]
+        ]
+
+        for data in data_sets:
+            utils_mock.parse_yaml.return_value = data
+            self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_tasks_schema_2_0_validation_failed(self, utils_mock, *args):
+        tasks_data = [
+            {
+                'id': 'test',
+                'type': 'shell',
+                'version': '2'
+            },
+            {
+                'id': 'test',
+                'type': 'shell',
+                'cross-depends': [
+                    {
+                        'role': 'role_without_name'
+                    }
+                ]
+            },
+            {
+                'id': 'test',
+                'type': 'shell',
+                'parameters': {
+                    'strategy': 'NOSUCHSTRATEGY'
+                }
+            },
+            {
+                'id': 'test',
+                'type': 'shell',
+                'parameters': {
+                    'strategy': {
+                        'type': 'NOSUCHSTRATEGY'
+                    }
+                }
+            }
+        ]
+
+        utils_mock.parse_yaml.return_value = tasks_data
+        self.assertRaises(errors.ValidationError,
+                          self.validator.check_deployment_tasks)
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_tasks_schema_2_0_validation_passed(self, utils_mock, *args):
+        tasks_data = [
+            {
+                'id': 'task_id',
+                'type': 'puppet',
+                'version': '2.0.0',
+                'parameters': {
+                    'timeout': 3,
+                    'retries': 10,
+                    'puppet_manifest': 'xx',
+                    'puppet_modules': 'xxx'
+                },
+                'stage': 'post_deployment',
+                'roles': ['test_role'],
+                'cross-depends': [
+                    {
+                        'name': 'task_id2',
+                    },
+                    {
+                        'name': 'task_id2',
+                        'role': ['some_role']
+                    },
+                    {
+                        'name': 'task_id2',
+                        'role': 'some_role'
+                    },
+                    {
+                        'name': 'task_id2',
+                        'policy': 'all'
+                    },
+                    {
+                        'name': 'task_id2',
+                        'policy': 'any'
+                    }
+                ],
+                'cross-depended-by': [
+                    {
+                        'name': 'task_id2',
+                    },
+                    {
+                        'name': 'task_id2',
+                        'role': ['some_role']
+                    },
+                    {
+                        'name': 'task_id2',
+                        'role': 'some_role'
+                    },
+                    {
+                        'name': 'task_id2',
+                        'policy': 'all'
+                    },
+                    {
+                        'name': 'task_id2',
+                        'policy': 'any'
+                    }
+                ],
+                'strategy': {
+                    'type': 'parallel',
+                    'amount': 10
+                }
+            }
+        ]
+
+        utils_mock.parse_yaml.return_value = tasks_data
+        self.validator.check_deployment_tasks()
+
+    @mock.patch('fuel_plugin_builder.validators.validator_v4.utils')
+    def test_check_tasks_schema_2_1_validation_passed(self, utils_mock, *args):
+        # this is a slightly modified task from netconfig.yaml
+        tasks_data = [
+            {
+                "id": "netconfig",
+                "type": "puppet",
+                "version": "2.1.0",
+                "groups": [
+                    "primary-controller",
+                    "controller",
+                ],
+                "required_for": [
+                    "deploy_end"
+                ],
+                "requires": [
+                    "tools"
+                ],
+                "condition": {
+                    "yaql_exp": "changedAny($.network_scheme, $.dpdk, $.get('"
+                                "use_ovs'), $.get('set_rps'), $.get('set_rps')"
+                                ", $.get('run_ping_checker'), $.network_scheme"
+                                ".endpoints.values().where(\n  $.get('gateway'"
+                                ") != null).gateway)\n"
+                },
+                "parameters": {
+                    "puppet_manifest": "/etc/puppet/modules/osnailyfacter/"
+                                       "modular/netconfig/netconfig.pp",
+                    "puppet_modules": "/etc/puppet/modules",
+                    "timeout": 300,
+                    "strategy": {
+                        "type": "parallel",
+                        "amount": {
+                            "yaql_exp": "switch($.get('deployed_before', {})."
+                                        "get('value') => 1, true => 3)\n"
+                        }
+                    }
+                },
+                "test_pre": {
+                    "cmd": "ruby /etc/puppet/modules/osnailyfacter/modular/"
+                           "netconfig/netconfig_pre.rb"
+                },
+                "test_post": {
+                    "cmd": "ruby /etc/puppet/modules/osnailyfacter/modular/"
+                           "netconfig/netconfig_post.rb"
+                },
+                "cross-depends": {
+                    "yaql_exp": "switch(   (\n    $.roles.any($.matches('("
+                                "primary-)?(controller|mongo)'))\n    "
+                                "or ($.network_metadata.get('vips',{}).get"
+                                "('management') = null)\n  ) => [],\n  "
+                                "true => [{name =>'virtual_ips'}]\n)\n"
+                }
+            }
+        ]
+
+        utils_mock.parse_yaml.return_value = tasks_data
+        self.validator.check_deployment_tasks()
+
     @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
     def test_check_tasks_schema_validation_no_file(self, exists_mock, *args):
         mocked_methods = ['validate_schema']
