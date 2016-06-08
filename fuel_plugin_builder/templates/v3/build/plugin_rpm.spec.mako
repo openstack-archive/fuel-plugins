@@ -48,7 +48,7 @@ ${ postinstall_hook }
 # install:      (N/A)
 # upgrade:      1
 # uninstall:    0
-% if uninstall_hook:
+% if uninstall_hook != '':
 if [ $1 -eq 0 ]; then
     ${ uninstall_hook }
 fi
