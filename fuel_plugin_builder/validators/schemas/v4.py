@@ -48,17 +48,42 @@ class SchemaV4(SchemaV3):
         self.role_aliases = ROLE_ALIASES
 
     @property
+    def _node_resolve_policy(self):
+        return {
+            'type': 'string',
+            'enum': ['all', 'any']
+        }
+
+    @property
+    def _yaql_expression(self):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'object',
+            'required': ['yaql_exp'],
+            'properties': {
+                'yaql_exp': {'type': 'string'},
+            }
+        }
+
+    @property
     def _task_relation(self):
         return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'object',
             'required': ['name'],
             'properties': {
-                'name': {'type': 'string'},
-                'role': self._task_role,
-                'policy': {
-                    'type': 'string',
-                    'enum': ['all', 'any']
-                }
+                'name': {
+                    'oneOf': [
+                        {'type': 'string'},
+                        self._yaql_expression],
+                },
+                'role': {
+                    'oneOf': [
+                        {'type': 'string'},
+                        {'type': 'array'},
+                        self._yaql_expression]
+                },
+                'policy': self._node_resolve_policy,
             }
         }
 
@@ -83,10 +108,18 @@ class SchemaV4(SchemaV3):
     @property
     def _task_strategy(self):
         return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'object',
+            'required': ['type'],
             'properties': {
                 'type': {
-                    'enum': ['parallel', 'one_by_one']
+                    'type': 'string',
+                    'enum': ['parallel', 'one_by_one']},
+                'amount': {
+                    'oneOf': [
+                        {'type': 'integer'},
+                        self._yaql_expression
+                    ]
                 }
             }
         }
@@ -149,11 +182,15 @@ class SchemaV4(SchemaV3):
                 'required_for': self.task_group,
                 'requires': self.task_group,
                 'cross-depends': {
-                    'type': 'array',
-                    'items': self._task_relation},
+                    'oneOf': [
+                        {'type': 'array', 'items': self._task_relation},
+                        self._yaql_expression]
+                },
                 'cross-depended-by': {
-                    'type': 'array',
-                    'items': self._task_relation},
+                    'oneOf': [
+                        {'type': 'array', 'items': self._task_relation},
+                        self._yaql_expression]
+                },
                 'stage': self._task_stage,
                 'tasks': {  # used only for 'group' tasks
                     'type': 'array',
@@ -161,7 +198,7 @@ class SchemaV4(SchemaV3):
                         'type': 'string',
                         'pattern': TASK_ROLE_PATTERN}},
                 'reexecute_on': self._task_reexecute,
-                'parameters': parameters or {},
+                'parameters': parameters,
             },
         }
 
