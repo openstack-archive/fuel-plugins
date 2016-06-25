@@ -14,7 +14,7 @@ def web_app(environ, start_response):
 
 def start_server(host, port):
     httpd = make_server(host, port, web_app)
-    print 'Started server 8234'
+    print ('Started server 8234')
     httpd.serve_forever()
 
 
