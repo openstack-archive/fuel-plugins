@@ -1,5 +1,28 @@
 # Changelog
 
+## 4.1.0 (2016-06-29)
+
+Bugfixes:
+
+- `tasks.yaml` is now optional for package version "4.0.0"
+  [LP1552248](https://bugs.launchpad.net/fuel/+bug/1552248)
+- Fuel Mitaka (9.0) is supported by default in package version "4.0.0"
+  [LP1549276](https://bugs.launchpad.net/fuel/+bug/1549276)
+- Use more reliable way to check for `fpm` Ruby GEM
+  [LP1561069](https://bugs.launchpad.net/fuel/+bug/1561069)
+- Add ability for role to conflict with all roles by using `*` sign
+  [LP1547590](https://bugs.launchpad.net/fuel/+bug/1547590)
+- Do not execute `uninstall.sh` on plugin upgrade
+  [LP1564123](https://bugs.launchpad.net/fuel/+bug/1564123)
+- Add possiblity to use generators in `environment_config.yaml`
+  [LP1557562](https://bugs.launchpad.net/fuel/+bug/1557562)
+- Don't put any code to PREUN section if `uninstall.sh` doesn't exist or empty
+  [LP1574478](https://bugs.launchpad.net/fuel/+bug/1574478)
+- Allow a user to specify any arbitrary string as role name for cross-deps
+  [LP1557997](https://bugs.launchpad.net/fuel/+bug/1557997)
+- Add deployment tasks v2.1 validation support
+  [LP1590389](https://bugs.launchpad.net/fuel/+bug/1590389)
+
 ## 4.0.0 (2016-02-26)
 
 New package version "4.0.0" includes the following features:
