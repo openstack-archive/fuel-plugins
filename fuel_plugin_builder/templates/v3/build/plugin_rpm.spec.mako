@@ -50,6 +50,8 @@ ${ postinstall_hook }
 # uninstall:    0
 % if uninstall_hook:
 if [ $1 -eq 0 ]; then
+    # insert no-op to allow empty or comment-only uninstall hooks
+    :
     ${ uninstall_hook }
 fi
 % endif
