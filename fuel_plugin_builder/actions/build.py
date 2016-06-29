@@ -53,8 +53,7 @@ class BaseBuildPlugin(BaseAction):
     def __init__(self, plugin_path):
         self.plugin_path = plugin_path
 
-        self.pre_build_hook_path = join_path(self.plugin_path,
-                                             'pre_build_hook')
+        self.pre_build_hook_cmd = './pre_build_hook'
         self.meta = utils.parse_yaml(
             join_path(self.plugin_path, 'metadata.yaml')
         )
@@ -78,8 +77,8 @@ class BaseBuildPlugin(BaseAction):
         utils.remove_by_mask(self.result_package_mask)
 
     def run_pre_build_hook(self):
-        if utils.which(self.pre_build_hook_path):
-            utils.exec_cmd(self.pre_build_hook_path)
+        if utils.which(join_path(self.plugin_path, self.pre_build_hook_cmd)):
+            utils.exec_cmd(self.pre_build_hook_cmd, self.plugin_path)
 
     def add_checksums_file(self):
         utils.create_checksums_file(self.build_src_dir, self.checksums_path)
