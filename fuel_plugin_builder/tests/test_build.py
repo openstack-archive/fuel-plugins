@@ -102,7 +102,7 @@ class BaseBuild(BaseTestCase):
         path = '/repo/path'
         self.builder.build_ubuntu_repos([path])
         utils_mock.exec_piped_cmds.assert_called_once_with(
-            ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
+            ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
             cwd=path)
 
     @mock.patch('fuel_plugin_builder.actions.build.utils')
@@ -276,7 +276,7 @@ class TestBaseBuildV2(BaseBuild):
         path = '/repo/path'
         self.builder.build_ubuntu_repos([path])
         utils_mock.exec_piped_cmds.assert_called_once_with(
-            ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
+            ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
             cwd=path)
         release_src = os.path.abspath(join_path(
             os.path.dirname(__file__), '..',
