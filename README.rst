@@ -47,7 +47,7 @@ Creating your own plugins
 Detailed instructions can be found in the `Plugins Wiki`_ page.
 
 Plugins should be built using the ``fuel-plugin-builder`` (fpb) utility
-found in this repoistory or via ``pip``. ``fbp`` will ensure that build
+found in this repoistory or via ``pip``. ``fpb`` will ensure that build
 steps as well as validation is performed prior to assembling a package.
 
 Abbreviated instructions:
