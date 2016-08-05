@@ -1,0 +1,10 @@
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Yujun Zhang <zhang.yujunz@zte.com.cn>
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Workflow+1: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 05 Aug 2016 09:06:59 +0000
+Reviewed-on: https://review.openstack.org/351083
+Project: openstack/fuel-plugins
+Branch: refs/heads/master
