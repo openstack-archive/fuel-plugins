@@ -1,0 +1,67 @@
+# Plugin name
+name: fuel_plugin_example_v5
+# Version of plugin package
+package_version: '5.0.0'
+# Human-readable name for your plugin
+title: Fuel plugin package v5.0.0 example
+# Plugin own version
+version: '0.0.1'
+# Description
+description: This is an example of 'release' as the plugin
+# Minimum required fuel version
+fuel_version: ['10.0']
+# Specify license of your plugin
+licenses: ['Apache License Version 2.0']
+# Specify author or company name
+authors: ['Specify author or company name']
+# A link to the plugin's page
+homepage: 'https://github.com/openstack/fuel-plugins'
+# Specify a group which your plugin implements, possible options:
+# network, storage, storage::cinder, storage::glance, hypervisor,
+# equipment
+groups: []
+## Change `false` to `true` if you are specifying plugin and it can be
+## installed in the environment after the deployment.
+## For releases definitions this flag will be ignored.
+#is_hotpluggable: false
+
+# introduce new release
+releases:
+  - name: 'ExampleRelease'                      #required
+    description: 'Example Release Description'  #required
+    operating_system: 'ubuntu'                  #required, or its alias "os"
+    version: '0.0.1'                            #required
+
+    networks_path: ubuntu-10.0/metadata/networks.yaml
+    volumes_path: ubuntu-10.0/metadata/volumes.yaml
+    roles_path: ubuntu-10.0/metadata/roles.yaml
+    network_roles_path: ubuntu-10.0/metadata/network_roles.yaml
+    components_path: ubuntu-10.0/metadata/components.yaml
+
+    attributes_path: ubuntu-10.0/attributes/attributes.yaml
+    vmware_attributes_path: ubuntu-10.0/attributes/vmware.yaml
+    node_attributes_path: ubuntu-10.0/attributes/node.yaml
+    nic_attributes_path: ubuntu-10.0/attributes/nic.yaml
+    bond_attributes_path: ubuntu-10.0/attributes/bond.yaml
+
+    graphs_path:  # Fuel will take all .yamls and merge this graphs respecting
+                  # graph types
+      - ubuntu-10.0/graphs/
+
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+
+
+## You could define the plugin functionality extending existing releases as
+## well.
+
+## The plugin is compatible with releases in the list
+#releases:
+#  - os: ubuntu
+#    version: mitaka-9.0
+#    deployment_scripts_path: deployment_scripts/
+#    repository_path: repositories/ubuntu
+#  - os: ubuntu
+#    version: newton-10.0
+#    deployment_scripts_path: deployment_scripts/
+#    repository_path: repositories/ubuntu
