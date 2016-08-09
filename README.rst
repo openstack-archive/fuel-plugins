@@ -12,6 +12,16 @@ plugin so that you can use a Gluster file system as backend for Cinder
 volumes.
 
 
+Fuel Plugin Builder <-> Fuel versions mapping:
+
+Fuel      FPB     Plugins version
+
+ 6.0  -  1.0.0    -
+ 6.1  -  1.0.1    -
+ ---
+
+FIXME: fill versions table
+
 Finding Plugins
 ---------------
 

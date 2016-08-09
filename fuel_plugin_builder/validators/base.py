@@ -14,177 +14,135 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import abc
 import logging
+import os
 
-import jsonschema
-import six
-
-from distutils.version import StrictVersion
-from fuel_plugin_builder import errors
-from fuel_plugin_builder import utils
-from os.path import join as join_path
+from fuel_plugin_builder import files_manager
+from fuel_plugin_builder import schemas
+from fuel_plugin_builder import consts
+from fuel_plugin_builder import reports
+from fuel_plugin_builder import checks
 
 logger = logging.getLogger(__name__)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class LegacyBaseValidator(object):
+class BaseValidator(object):
+    """Base Validator.
 
-    @abc.abstractproperty
-    def basic_version(self):
-        pass
+    New BaseValidator targeted to plugin package version >= 5.0.0 and using
+    Checks to describe custom logic and providing output based on
+    reports.ReportNode class.
 
-    def __init__(self, plugin_path, format_checker=jsonschema.FormatChecker):
+    Check is a basic logic unit that performing validations with given
+    parameters.
+
+    Its not recommended to inherit Validators other than BaseValidator from each
+    other creating multiple levels of inheritance because it makes hard to
+    trace, test and debug where and what checks is applied.
+    """
+
+    package_version = '0.0.1'
+    minimal_fuel_version = '0.1'
+    report = None
+
+    @property
+    def root_metadata_path(self):
+        return self._get_absolute_path(consts.ROOT_FILE_MASK)
+
+    def __init__(self, plugin_path):
         self.plugin_path = plugin_path
-        self.format_checker = format_checker
 
-    def validate_schema(self, data, schema, file_path, value_path=None):
-        logger.debug(
-            'Start schema validation for %s file, %s', file_path, schema)
-        try:
-            jsonschema.validate(data, schema,
-                                format_checker=self.format_checker)
-        except jsonschema.exceptions.ValidationError as exc:
-            raise errors.ValidationError(
-                self._make_error_message(exc, file_path, value_path))
+    def _get_absolute_path(self, path='.'):
+        """Get absolute path from the relative to the plugins folder.
 
-    def _make_error_message(self, exc, file_path, value_path):
-        if value_path is None:
-            value_path = []
+        :param path: relative path
+        :type path: str
 
-        if exc.absolute_path:
-            value_path.extend(exc.absolute_path)
-
-        if exc.context:
-            sub_exceptions = sorted(
-                exc.context, key=lambda e: len(e.schema_path), reverse=True)
-            sub_message = sub_exceptions[0]
-            value_path.extend(list(sub_message.absolute_path)[2:])
-            message = sub_message.message
-        else:
-            message = exc.message
-
-        error_msg = "File '{0}', {1}".format(file_path, message)
-
-        if value_path:
-            value_path = ' -> '.join(map(six.text_type, value_path))
-            error_msg = '{0}, {1}'.format(
-                error_msg, "value path '{0}'".format(value_path))
-
-        return error_msg
-
-    def validate_file_by_schema(self, schema, file_path,
-                                allow_not_exists=False, allow_empty=False):
-        """Validate file with given JSON schema.
-
-        :param schema: object dict
-        :type schema: object
-        :param file_path: path to the file
-        :type file_path: basestring
-        :param allow_not_exists: if true don't raise error on missing file
-        :type allow_not_exists: bool
-        :param allow_empty: allow file to contain no json
-        :type allow_empty: bool
-        :return:
+        :return: path string
+        :rtype: str
         """
-        if not utils.exists(file_path):
-            if allow_not_exists:
-                logger.debug('No file "%s". Skipping check.', file_path)
-                return
-            else:
-                raise errors.FileDoesNotExist(file_path)
+        return os.path.join(self.plugin_path, path)
 
-        data = utils.parse_yaml(file_path)
-        if data is not None:
-            self.validate_schema(data, schema, file_path)
-        else:
-            if not allow_empty:
-                raise errors.FileIsEmpty(file_path)
+    def _load_root_metadata_file(self):
+        """Get plugin root data (usually, it's metadata.yaml).
 
-    @abc.abstractmethod
-    def validate(self):
-        """Performs validation
-
+        :return: data
+        :rtype: list|dict
         """
+        return files_manager.files_manager.load(self.root_metadata_path)
 
-    def check_schemas(self):
-        logger.debug('Start schema checking "%s"', self.plugin_path)
-        self.validate_file_by_schema(
-            self.schema.metadata_schema,
-            self.meta_path)
-        self.validate_file_by_schema(
-            self.schema.tasks_schema,
-            self.tasks_path)
-        self.check_env_config_attrs()
+    def validate(self, plugin_path=None):
+        """Entry point of validator.
 
-    def check_env_config_attrs(self):
-        """Check attributes in environment config file.
+        :param plugin_path: plugin path that could override init path
+        :type plugin_path: str
 
-        'attributes' is not required field, but if it's
-        present it should contain UI elements OR metadata
-        structure.
+        :return: report
+        :rtype: reports.ReportNode
         """
-        config = utils.parse_yaml(self.env_conf_path)
-        if not config:
-            return
+        # create root reports.ReportNode and place all inspections results
+        # under it
+        if plugin_path:
+            self.plugin_path = plugin_path
+        self.report = reports.ReportNode(
+            u'Validating plugin at path: {0}'.format(plugin_path)
+        )
 
-        self.validate_schema(
-            config,
-            self.schema.attr_root_schema,
-            self.env_conf_path)
+        self.report.add_nodes(
+            checks.path_exists(self.root_metadata_path)
+        )
 
-        attrs = config.get('attributes', {})
-        for attr_id, attr in six.iteritems(attrs):
-            schema = self.schema.attr_element_schema
-            # Metadata object is totally different
-            # from the others, we have to set different
-            # validator for it
-            if attr_id == 'metadata':
-                schema = self.schema.attr_meta_schema
+        return self.report
 
-            self.validate_schema(
-                attr,
-                schema,
-                self.env_conf_path,
-                value_path=['attributes', attr_id])
+        # if not self.report.is_failed():
+        #     try:
+        #         root_data = self._load_root_metadata_file()
+        #         self.report.add_nodes(
+        #             checks.check_fuel_ver_compatible_with_package_ver(
+        #                 self.minimal_fuel_version, root_data
+        #             )
+        #         )
+        #
+        #     except Exception as exc:
+        #         return self.report.error(exc)
+        # else:
+        #     # nowhere to go, nothing to do, lets shutdown check
+        #     return self.report.error(u"Failed to find root metadata file, "
+        #                              u"further validation is impossible")
+        #
+        # self.report.add_nodes(
+        #     checks.check_with_json_schema(
+        #         schemas.schema_task_v2_1_0.deployment_task_schema,
+        #         root_data
+        #     )
+        # )
+        # self.report.add_nodes(
+        #     reports.ReportNode(u"Checking releases").add_nodes(
+        #         map(  # they will return reports.ReportNode instances
+        #             checks.check_release_record_v5_0_0,
+        #             root_data.get('releases', [])
+        #         )
+        #     )
+        # )
 
-    def check_releases_paths(self):
-        meta = utils.parse_yaml(self.meta_path)
-        for release in meta['releases']:
-            scripts_path = join_path(
-                self.plugin_path,
-                release['deployment_scripts_path'])
-            repo_path = join_path(
-                self.plugin_path,
-                release['repository_path'])
-
-            wrong_paths = []
-            for path in [scripts_path, repo_path]:
-                if not utils.exists(path):
-                    wrong_paths.append(path)
-
-            if wrong_paths:
-                raise errors.ReleasesDirectoriesError(
-                    'Cannot find directories {0} for release "{1}"'.format(
-                        ', '.join(wrong_paths), release))
-
-    def check_compatibility(self):
-        """Json schema doesn't have any conditions, so we have
-
-        to make sure here, that this validation schema can be used
-        for described fuel releases
-        """
-
-        meta = utils.parse_yaml(self.meta_path)
-        for fuel_release in meta['fuel_version']:
-            if StrictVersion(fuel_release) < StrictVersion(self.basic_version):
-                raise errors.ValidationError(
-                    'Current plugin format {0} is not compatible with {2} Fuel'
-                    ' release. Fuel version must be {1} or higher.'
-                    ' Please remove {2} version from metadata.yaml file or'
-                    ' downgrade package_version.'
-                    .format(
-                        meta['package_version'],
-                        self.basic_version,
-                        fuel_release))
+    # def check_release_record(self, data):
+    #     report = reports.ReportNode(u"Checking release record")
+    #
+    #     report.add_nodes(
+    #         checks.check_multi_json_schema_is_valid(
+    #             {
+    #                 'puppet': schema_task_v2_1.puppet_task,
+    #                 'shell': schema_task_v2_1.shell_task,
+    #                 'group': schema_task_v2_1.group_task,
+    #                 'skipped': schema_task_v2_1.skipped_task,
+    #                 'copy_files': schema_task_v2_1.copy_files_task,
+    #                 'sync': schema_task_v2_1.sync_task,
+    #                 'upload_file': schema_task_v2_1.upload_file_task,
+    #                 'stage': schema_task_v2_1.stage_task,
+    #                 'reboot': schema_task_v2_1.reboot_task
+    #             }
+    #         ),
+    #         data
+    #     )
+    #
+    #     return report
