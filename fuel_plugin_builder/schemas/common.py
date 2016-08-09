@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2015 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -17,21 +17,11 @@
 from fuel_plugin_builder import consts
 
 
-class BaseSchema(object):
+class SchemaCommonV1_0_0(object):
 
     @property
-    def plugin_release_schema(self):
-        return {
-            'type': 'object',
-            'required': ['version', 'os', 'mode'],
-            'properties': {
-                'version': {'type': 'string'},
-                'os': {'enum': ['ubuntu', 'centos']},
-                'deployment_scripts_path': {'type': 'string'},
-                'repository_path': {'type': 'string'},
-                'mode': {'type': 'array',
-                         'items': {'enum': ['ha', 'multinode']}}}
-        }
+    def plugin_name_pattern(self):
+        return consts.PLUGIN_NAME_PATTERN
 
     @property
     def condition(self):
@@ -64,35 +54,6 @@ class BaseSchema(object):
                     self.condition,
                     self.full_restriction,
                     self.short_restriction]}}
-
-    @property
-    def metadata_schema(self):
-        return {
-            '$schema': 'http://json-schema.org/draft-04/schema#',
-            'title': 'plugin',
-            'type': 'object',
-            'required': [
-                'name',
-                'title',
-                'version',
-                'package_version',
-                'description',
-                'fuel_version',
-                'releases',
-            ],
-            'properties': {
-                'name': {
-                    'type': 'string',
-                    'pattern': consts.PLUGIN_NAME_PATTERN},
-                'title': {'type': 'string'},
-                'version': {'type': 'string'},
-                'package_version': {'enum': ['1.0.0']},
-                'description': {'type': 'string'},
-                'fuel_version': self.list_of_strings,
-                'releases': {
-                    'type': 'array',
-                    'items': self.plugin_release_schema}}
-        }
 
     @property
     def list_of_strings(self):
@@ -172,17 +133,27 @@ class BaseSchema(object):
                 'value': {'anyOf': [
                     {'type': 'string'},
                     {'type': 'boolean'},
-                    {'type': 'object',
-                     'properties': {'generator': {'type': 'string'}}}
+                    {
+                        'type': 'object',
+                        'properties': {
+                            'generator': {'type': 'string'}
+                        }
+                    }
                 ]},
                 'label': {'type': 'string'},
                 'restrictions': self.restrictions,
-                'values': {'type': 'array', 'items':
-                           {'type': 'object',
-                            'required': ['data', 'label'],
-                            'properties': {
-                                'data': {'type': 'string'},
-                                'label': {'type': 'string'}}}}}
+                'values': {
+                    'type': 'array',
+                    'items': {
+                        'type': 'object',
+                        'required': ['data', 'label'],
+                        'properties': {
+                            'data': {'type': 'string'},
+                            'label': {'type': 'string'}
+                        }
+                    }
+                }
+            }
         }
 
     @property
@@ -195,7 +166,8 @@ class BaseSchema(object):
                 'weight': {'type': 'integer'},
                 'toggleable': {'type': 'boolean'},
                 'enabled': {'type': 'boolean'},
-                'restrictions': self.restrictions}
+                'restrictions': self.restrictions
+            }
         }
 
     @property
@@ -204,5 +176,8 @@ class BaseSchema(object):
             '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'object',
             'properties': {
-                'attributes': {'type': 'object'}}
+                'attributes': {'type': 'object'}
+            }
         }
+
+common_v1_0_0 = SchemaCommonV1_0_0()
