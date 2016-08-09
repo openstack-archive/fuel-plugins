@@ -1,0 +1,753 @@
+editable:
+  access:
+    email:
+      description: Email address for Administrator
+      label: Email
+      regex: {error: Invalid email, source: ^\S+@\S+$}
+      type: text
+      value: admin@localhost
+      weight: 40
+    metadata: {group: general, label: OpenStack Access, weight: 10}
+    password:
+      description: Password for Administrator
+      label: Password
+      regex: {error: Empty password, source: \S}
+      type: password
+      value: admin
+      weight: 20
+    tenant:
+      description: Tenant (project) name for Administrator
+      label: Tenant
+      regex: {error: Invalid tenant name, source: '^(?!services$)(?!nova$)(?!glance$)(?!keystone$)(?!neutron$)(?!cinder$)(?!swift$)(?!ceph$)(?!ironic$)(?![Gg]uest$)(?!.*
+          +.*$).+'}
+      type: text
+      value: admin
+      weight: 30
+    user:
+      description: Username for Administrator
+      label: Username
+      regex: {error: Invalid username, source: '^(?!services$)(?!nova$)(?!glance$)(?!keystone$)(?!neutron$)(?!cinder$)(?!swift$)(?!ceph$)(?!ironic$)(?![Gg]uest$)(?!.*
+          +.*$).+'}
+      type: text
+      value: admin
+      weight: 10
+  additional_components:
+    ceilometer: {description: 'If selected, Ceilometer and Aodh components will be
+        installed', label: Install Ceilometer and Aodh, type: checkbox, value: false,
+      weight: 60}
+    heat: {description: '', label: '', type: hidden, value: true, weight: 50}
+    ironic:
+      description: If selected, Ironic component will be installed
+      label: Install Ironic
+      restrictions:
+      - {'cluster:net_provider != ''neutron'' or networking_parameters:segmentation_type != ''vlan''': Ironic
+          requires Neutron with VLAN segmentation.}
+      - {'settings:storage.images_ceph.value == true and settings:storage.objects_ceph.value == false': Ironic
+          requires Swift or RadosGW for Glance images.}
+      type: checkbox
+      value: false
+      weight: 80
+    metadata: {group: openstack_services, label: Additional Components, weight: 10}
+    mongo:
+      description: If selected, You can use external Mongo DB as ceilometer backend
+      label: Use external Mongo DB
+      restrictions:
+      - {'settings:additional_components.ceilometer.value == false': 'External Mongo
+          aims to be an external backend for Ceilometer. Without Ceilometer enabled,
+          External Mongo is useless and should not be installed.'}
+      type: checkbox
+      value: false
+      weight: 70
+    murano: {description: 'If selected, Murano component will be installed', label: Install
+        Murano, type: checkbox, value: false, weight: 20}
+    murano-cfapi:
+      description: If selected, Murano service broker will be installed
+      label: Install Murano service broker for Cloud Foundry
+      restrictions:
+      - {condition: 'settings:additional_components.murano.value == false', message: Murano
+          should be enabled}
+      - {action: hide, condition: 'not (''experimental'' in version:feature_groups)'}
+      type: checkbox
+      value: false
+      weight: 30
+    sahara: {description: 'If selected, Sahara component will be installed', label: Install
+        Sahara, type: checkbox, value: false, weight: 10}
+  atop:
+    interval:
+      description: Interval between the snapshots in seconds
+      label: Interval between the snapshots
+      regex: {error: Should be a number of seconds, source: '^[1-9]\d*$'}
+      restrictions:
+      - {action: hide, condition: 'settings:atop.service_enabled.value == false'}
+      type: text
+      value: '20'
+      weight: 20
+    metadata: {enabled: true, group: logging, label: Advanced System & Process Monitor
+        (atop), toggleable: false, weight: 60}
+    rotate:
+      description: Number of days to keep log files
+      label: Rotate days
+      regex: {error: Should be a number of days, source: '^[1-9]\d*$'}
+      restrictions:
+      - {action: hide, condition: 'settings:atop.service_enabled.value == false'}
+      type: text
+      value: '7'
+      weight: 30
+    service_enabled: {description: 'NOTE: When enabled, the service may generate logs
+        up to a gigabyte in size per day.
+
+        This should be taken into consideration when determining the correct size
+        for the log partition.
+
+        ', label: Enable atop service, type: checkbox, value: true, weight: 10}
+  cgroups:
+    metadata:
+      always_editable: true
+      group: general
+      label: Cgroups conguration for services
+      restrictions:
+      - {action: hide, condition: 'true'}
+      weight: 90
+  common:
+    auth_key: {group: security, type: hidden, value: '', weight: 70}
+    auto_assign_floating_ip:
+      description: If selected, OpenStack will automatically assign a floating IP
+        to a new instance
+      group: network
+      label: Auto assign floating IP
+      restrictions:
+      - {action: hide, condition: 'cluster:net_provider == ''neutron'''}
+      type: checkbox
+      value: false
+      weight: 40
+    debug: {description: 'Debug logging mode provides more information, but requires
+        more disk space.', group: logging, label: OpenStack debug logging, type: checkbox,
+      value: false, weight: 20}
+    libvirt_type:
+      group: compute
+      label: Hypervisor type
+      type: radio
+      value: qemu
+      values:
+      - {data: kvm, description: Choose this type of hypervisor if you run OpenStack
+          on hardware, label: KVM}
+      - {data: qemu, description: Choose this type of hypervisor if you run OpenStack
+          on virtual hosts., label: QEMU}
+      weight: 30
+    metadata: {label: Common, weight: 10}
+    nova_quota: {description: Quotas are used to limit CPU and memory usage for tenants.
+        Enabling quotas will increase load on the Nova database., group: compute,
+      label: Nova quotas, type: checkbox, value: false, weight: 30}
+    propagate_task_deploy: {type: hidden, value: false, weight: 12}
+    puppet_debug: {description: 'Debug puppet logging mode provides more information,
+        but requires more disk space.', group: logging, label: Puppet debug logging,
+      type: checkbox, value: true, weight: 20}
+    resume_guests_state_on_host_boot: {description: 'Whether to resume previous guests
+        state when the host reboots. If enabled, this option causes guests assigned
+        to the host to resume their previous state. If the guest was running a restart
+        will be attempted when nova-compute starts. If the guest was not running previously,
+        a restart will not be attempted.', group: compute, label: Resume guests state
+        on host boot, type: checkbox, value: true, weight: 50}
+    run_ping_checker: {description: 'Uncheck this box if the public gateway will not
+        be available or will not respond to ICMP requests to the deployed cluster.
+        If unchecked, the controllers will not take public gateway availability into
+        account as part of the cluster health.  If the cluster will not have internet
+        access, you will need to make sure to provide proper offline mirrors for the
+        deployment to succeed.', group: network, label: Public Gateway is Available,
+      type: checkbox, value: true, weight: 50}
+    task_deploy: {type: hidden, value: true, weight: 11}
+    use_cow_images: {description: 'For most cases you will want qcow format. If it''s
+        disabled, raw image format will be used to run VMs. OpenStack with raw format
+        currently does not support snapshotting.', group: storage, label: Use qcow
+        format for images, type: checkbox, value: true, weight: 60}
+    use_vcenter: {type: hidden, value: false, weight: 30}
+  corosync:
+    group: {description: '', label: Group, type: text, value: 226.94.1.1, weight: 10}
+    metadata:
+      group: general
+      label: Corosync
+      restrictions:
+      - {action: hide, condition: 'true'}
+      weight: 50
+    port: {description: '', label: Port, type: text, value: '12000', weight: 20}
+    verified: {description: Set True only if multicast is configured correctly on
+        router., label: Need to pass network verification., type: checkbox, value: false,
+      weight: 10}
+  external_dns:
+    dns_list:
+      description: List of upstream DNS servers
+      label: DNS list
+      max: 3
+      regex: {error: Invalid IP address, source: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$'}
+      type: text_list
+      value: {generator: from_settings, generator_arg: DNS_UPSTREAM}
+      weight: 10
+    metadata: {group: network, label: Host OS DNS Servers, weight: 30}
+  external_mongo:
+    hosts_ip:
+      description: IP Addresses of MongoDB. Use comma to split IPs
+      label: MongoDB hosts IP
+      regex: {error: Invalid hosts ip sequence, source: '^(((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?),)*((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'}
+      type: text
+      value: ''
+      weight: 30
+    metadata:
+      group: openstack_services
+      label: External MongoDB
+      restrictions:
+      - {action: hide, condition: 'settings:additional_components.mongo.value == false',
+        message: Ceilometer and MongoDB are not enabled on the Additional Components
+          section}
+      weight: 30
+    mongo_db_name:
+      description: Mongo database name
+      label: Database name
+      regex: {error: Invalid database name, source: ^\w+$}
+      type: text
+      value: ceilometer
+      weight: 30
+    mongo_password:
+      description: Mongo database password
+      label: Password
+      regex: {error: Password contains spaces, source: ^\S*$}
+      type: password
+      value: ceilometer
+      weight: 30
+    mongo_replset: {description: Name for Mongo replication set, label: Replset, type: text,
+      value: '', weight: 30}
+    mongo_user:
+      description: Mongo database username
+      label: Username
+      regex: {error: Empty username, source: ^\w+$}
+      type: text
+      value: ceilometer
+      weight: 30
+  external_ntp:
+    metadata: {group: network, label: Host OS NTP Servers, weight: 40}
+    ntp_list:
+      description: List of upstream NTP servers
+      label: NTP server list
+      regex: {error: Invalid NTP server, source: '^[a-zA-Z\d]+[-\.\da-zA-Z]*$'}
+      type: text_list
+      value: {generator: from_settings, generator_arg: NTP_UPSTREAM}
+      weight: 10
+  kernel_params:
+    kernel: {description: Default kernel parameters, label: Initial parameters, type: text,
+      value: console=tty0 net.ifnames=1 biosdevname=0 rootdelay=90 nomodeset}
+    metadata: {group: general, label: Kernel parameters, weight: 60}
+  murano_settings:
+    metadata:
+      group: openstack_services
+      label: Murano Settings
+      restrictions:
+      - {action: hide, condition: 'settings:additional_components.murano.value ==
+          false', message: Murano is not enabled on the Additional Components section}
+      weight: 20
+    murano_glance_artifacts_plugin: {description: If selected glance artifact repository
+        will be enabled, label: Enable glance artifact repository, type: checkbox,
+      value: true, weight: 40}
+    murano_repo_url: {description: '', label: Murano Repository URL, type: text, value: 'http://storage.apps.openstack.org/',
+      weight: 10}
+  neutron_advanced_configuration:
+    metadata:
+      group: network
+      label: Neutron Advanced Configuration
+      restrictions:
+      - {action: hide, condition: 'cluster:net_provider != ''neutron'''}
+      weight: 20
+    neutron_dvr:
+      description: Enable Distributed Virtual Routers in Neutron
+      label: Neutron DVR
+      restrictions:
+      - {? 'networking_parameters:segmentation_type != ''vlan'' and settings:neutron_advanced_configuration.neutron_l2_pop.value
+          == false' : DVR requires L2 population to be enabled.}
+      type: checkbox
+      value: false
+      weight: 20
+    neutron_l2_pop:
+      description: Enable L2 population mechanism in Neutron
+      label: Neutron L2 population
+      restrictions:
+      - {action: hide, condition: 'networking_parameters:segmentation_type == ''vlan'''}
+      type: checkbox
+      value: false
+      weight: 10
+    neutron_l3_ha:
+      description: 'Enable High Availability features for Virtual Routers in Neutron
+
+        Requires at least 2 Controller nodes to function properly
+
+        '
+      label: Neutron L3 HA
+      restrictions:
+      - {condition: 'settings:neutron_advanced_configuration.neutron_dvr.value ==
+          true', message: Neutron DVR must be disabled in order to use Neutron L3
+          HA}
+      type: checkbox
+      value: false
+      weight: 30
+    neutron_qos: {description: Enable Neutron QoS advanced service plug-in, label: Neutron
+        QoS, type: checkbox, value: false, weight: 40}
+  operator_user:
+    authkeys: {description: 'Public SSH keys to include to operator user''s authorized
+        keys, one per line.', label: Authorized SSH keys, type: textarea, value: '',
+      weight: 80}
+    homedir:
+      description: Home directory for operator user
+      label: Home directory
+      regex: {error: Invalid path, source: ^/\S}
+      type: text
+      value: /home/fueladmin
+      weight: 70
+    metadata: {group: general, label: Operating System Access, weight: 15}
+    name:
+      description: Username for operator user
+      label: Username
+      regex: {error: Empty username, source: \S}
+      type: text
+      value: fueladmin
+      weight: 50
+    password:
+      description: Password for operator user
+      label: Password
+      regex: {error: Empty password, source: \S}
+      type: password
+      value: {generator: password}
+      weight: 60
+    sudo: {description: 'Sudoers configuration directives for operator user, one per
+        line.', label: Sudoers configuration, type: textarea, value: 'ALL=(ALL) NOPASSWD:
+        ALL', weight: 90}
+  provision:
+    metadata:
+      group: general
+      label: Provision
+      restrictions:
+      - {action: hide, condition: 'false'}
+      weight: 80
+    method: {type: hidden, value: image}
+    packages: {label: Initial packages, type: textarea, value: 'acl
+
+        anacron
+
+        bash-completion
+
+        bridge-utils
+
+        bsdmainutils
+
+        build-essential
+
+        cloud-init
+
+        curl
+
+        daemonize
+
+        debconf-utils
+
+        gdisk
+
+        grub-pc
+
+        hwloc
+
+        linux-firmware
+
+        linux-headers-generic-lts-xenial
+
+        linux-image-generic-lts-xenial
+
+        lvm2
+
+        mcollective
+
+        mdadm
+
+        multipath-tools
+
+        multipath-tools-boot
+
+        nailgun-agent
+
+        nailgun-mcagents
+
+        network-checker
+
+        ntp
+
+        ntpdate
+
+        openssh-client
+
+        openssh-server
+
+        puppet
+
+        python-amqp
+
+        ruby-augeas
+
+        ruby-ipaddress
+
+        ruby-json
+
+        ruby-netaddr
+
+        ruby-openstack
+
+        ruby-shadow
+
+        ruby-stomp
+
+        telnet
+
+        ubuntu-minimal
+
+        ubuntu-standard
+
+        uuid-runtime
+
+        vim
+
+        virt-what
+
+        vlan
+
+        ', weight: 10}
+  public_network_assignment:
+    assign_to_all_nodes: {description: 'When disabled, public network will be assigned
+        to controllers only', label: Assign public network to all nodes, type: checkbox,
+      value: false, weight: 10}
+    metadata:
+      group: network
+      label: Public network assignment
+      restrictions:
+      - {action: hide, condition: 'cluster:net_provider != ''neutron'''}
+      weight: 10
+  public_ssl:
+    cert_data:
+      description: Certificate and private key data, concatenated into a single file
+      label: Certificate
+      restrictions:
+      - {action: hide, condition: '(settings:public_ssl.cert_source.value != ''user_uploaded'')
+          or (settings:public_ssl.horizon.value == false and settings:public_ssl.services.value
+          == false)'}
+      type: file
+      value: ''
+      weight: 40
+    cert_source:
+      description: From where we'll get certificate and private key
+      label: Select source for certificate
+      restrictions:
+      - {action: hide, condition: 'settings:public_ssl.horizon.value == false and
+          settings:public_ssl.services.value == false'}
+      type: radio
+      value: self_signed
+      values:
+      - {data: self_signed, description: Generate private key and certificate that
+          will be signed by this key, label: Self-signed}
+      - {data: user_uploaded, description: Use pre-generated key and certificate,
+        label: I have my own keypair with certificate}
+      weight: 30
+    horizon:
+      description: Secure access to Horizon enabling HTTPS instead of HTTP
+      label: HTTPS for Horizon
+      restrictions:
+      - {'settings:public_ssl.services.value == false': TLS for OpenStack public endpoints
+          should be enabled}
+      type: checkbox
+      value: false
+      weight: 20
+    hostname:
+      description: Your DNS entries should point to this name. Self-signed certificates
+        also will use this hostname
+      label: DNS hostname for public TLS endpoints
+      regex: {error: Invalid DNS hostname, source: '^[a-zA-Z\d]+[-\.\da-zA-Z]*$'}
+      restrictions:
+      - {action: hide, condition: 'settings:public_ssl.horizon.value == false and
+          settings:public_ssl.services.value == false'}
+      type: text
+      value: public.fuel.local
+      weight: 50
+    metadata: {group: security, label: Public TLS, weight: 110}
+    services: {description: Enable TLS termination on HAProxy for OpenStack services,
+      label: TLS for OpenStack public endpoints, type: checkbox, value: false, weight: 10}
+  repo_setup:
+    metadata: {always_editable: true, group: general, label: Repositories, weight: 50}
+    repos:
+      description: 'Please note: the first repository will be considered the operating
+        system mirror that will be used during node provisioning.
+
+        To create a local repository mirror on the Fuel master node, please follow
+        the instructions provided by running "fuel-createmirror --help" on the Fuel
+        master node.
+
+        Please make sure your Fuel master node has Internet access to the repository
+        before attempting to create a mirror.
+
+        '
+      extra_priority: null
+      type: custom_repo_configuration
+      value:
+      - {name: ubuntu, priority: null, section: main universe multiverse, suite: xenial,
+        type: deb, uri: 'http://archive.ubuntu.com/ubuntu/'}
+      - {name: ubuntu-updates, priority: null, section: main universe multiverse,
+        suite: xenial-updates, type: deb, uri: 'http://archive.ubuntu.com/ubuntu/'}
+      - {name: ubuntu-security, priority: null, section: main universe multiverse,
+        suite: xenial-security, type: deb, uri: 'http://archive.ubuntu.com/ubuntu/'}
+      - {name: mos, priority: 1050, section: main restricted, suite: mos10.0, type: deb,
+        uri: 'http://{settings.MASTER_IP}:8080/{cluster.release.version}/ubuntu/x86_64'}
+      - {name: mos-updates, priority: 1050, section: main restricted, suite: mos10.0-updates,
+        type: deb, uri: 'http://mirror.fuel-infra.org/mos-repos/ubuntu/{cluster.release.environment_version}/'}
+      - {name: mos-security, priority: 1050, section: main restricted, suite: mos10.0-security,
+        type: deb, uri: 'http://mirror.fuel-infra.org/mos-repos/ubuntu/{cluster.release.environment_version}/'}
+      - {name: mos-holdback, priority: 1100, section: main restricted, suite: mos10.0-holdback,
+        type: deb, uri: 'http://mirror.fuel-infra.org/mos-repos/ubuntu/{cluster.release.environment_version}/'}
+      - {name: Auxiliary, priority: 1150, section: main restricted, suite: auxiliary,
+        type: deb, uri: 'http://{settings.MASTER_IP}:8080/{cluster.release.version}/ubuntu/auxiliary'}
+  service_user:
+    homedir: {type: hidden, value: /var/lib/fuel}
+    metadata:
+      group: general
+      label: Service user account
+      restrictions:
+      - {action: hide, condition: 'true'}
+      weight: 10
+    name: {type: hidden, value: fuel}
+    password:
+      type: hidden
+      value: {generator: password}
+    root_password: {type: hidden, value: r00tme}
+    sudo: {type: hidden, value: 'ALL=(ALL) NOPASSWD: ALL'}
+  ssh:
+    brute_force_protection:
+      description: When enabled, the access from all networks (except the provided
+        ones) will be granted, but the networks will be checked against the brute
+        force attack.
+      label: Brute force protection
+      restrictions:
+      - {action: hide, condition: 'settings:ssh.security_enabled.value == false'}
+      type: checkbox
+      value: false
+      weight: 30
+    metadata: {enabled: true, group: security, label: SSH security, toggleable: false,
+      weight: 120}
+    security_enabled: {description: 'NOTE: When enabled, provide at least one working
+        IP address (the Fuel Master node IP is already added).
+
+        We recommend adding new addresses instead of replacing the provided Fuel Master
+        node IP.
+
+        When disabled (by default), the admin, management, and storage networks are
+        only allowed to connect to the SSH service.
+
+        ', label: Restrict SSH service on network, type: checkbox, value: false, weight: 10}
+    security_networks:
+      description: IPv4/CIDR address
+      label: Restrict access to
+      regex: {error: Invalid IPv4/CIDR address, source: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))*$'}
+      restrictions:
+      - {action: hide, condition: 'settings:ssh.security_enabled.value == false'}
+      type: text_list
+      value: ['{settings.MASTER_IP}']
+      weight: 20
+  storage:
+    admin_key:
+      type: hidden
+      value: {generator: cephx_key}
+    auth_s3_keystone_ceph:
+      description: This allows to authenticate S3 requests basing on EC2/S3 credentials
+        managed by Keystone. Please note that enabling the integration will increase
+        the latency of S3 requests as well as load on Keystone service. Please consult
+        with Mirantis Technical Bulletin 27 and Mirantis Support on mitigating the
+        risks related with load.
+      label: Enable S3 API Authentication via Keystone in Ceph RadosGW
+      restrictions:
+      - {action: hide, condition: 'settings:storage.objects_ceph.value == false'}
+      type: checkbox
+      value: false
+      weight: 82
+    bootstrap_osd_key:
+      type: hidden
+      value: {generator: cephx_key}
+    ephemeral_ceph: {description: 'Configures Nova to store ephemeral volumes in RBD.
+        This works best if Ceph is enabled for volumes and images, too. Enables live
+        migration of all types of Ceph backed VMs (without this option, live migration
+        will only work with VMs launched from Cinder volumes).', label: Ceph RBD for
+        ephemeral volumes (Nova), type: checkbox, value: false, weight: 75}
+    fsid:
+      type: hidden
+      value: {generator: uuid4}
+    images_ceph:
+      description: Configures Glance to use the Ceph RBD backend to store images.
+        If enabled, this option will prevent Swift from installing.
+      label: Ceph RBD for images (Glance)
+      restrictions:
+      - {'settings:storage.images_vcenter.value == true': Only one Glance backend
+          could be selected.}
+      type: checkbox
+      value: false
+      weight: 30
+    images_vcenter:
+      description: Configures Glance to use the vCenter/ESXi backend to store images.
+        If enabled, this option will prevent Swift from installing.
+      label: VMware vCenter/ESXi datastore for images (Glance)
+      restrictions:
+      - {action: hide, condition: 'settings:common.use_vcenter.value != true'}
+      - {condition: 'settings:storage.images_ceph.value == true', message: Only one
+          Glance backend could be selected.}
+      type: checkbox
+      value: false
+      weight: 35
+    metadata: {group: storage, label: Storage Backends, weight: 60}
+    mon_key:
+      type: hidden
+      value: {generator: cephx_key}
+    objects_ceph: {description: 'Configures RadosGW front end for Ceph RBD. This exposes
+        S3 and Swift API Interfaces. If enabled, this option will prevent Swift from
+        installing.', label: Ceph RadosGW for objects (Swift API), type: checkbox,
+      value: false, weight: 80}
+    osd_pool_size:
+      description: Configures the default number of object replicas in Ceph. This
+        number must be equal to or lower than the number of deployed 'Ceph OSD' nodes.
+      label: Ceph object replication factor
+      regex: {error: Invalid number, source: '^[1-9]\d*$'}
+      type: text
+      value: '3'
+      weight: 85
+    radosgw_key:
+      type: hidden
+      value: {generator: cephx_key}
+    volumes_block_device:
+      description: High performance block device storage. It is recommended to have
+        at least one Cinder Block Device
+      label: Cinder Block device driver
+      restrictions: ['settings:storage.volumes_ceph.value == true']
+      type: checkbox
+      value: false
+      weight: 15
+    volumes_ceph:
+      description: Configures Cinder to store volumes in Ceph RBD images.
+      label: Ceph RBD for volumes (Cinder)
+      restrictions: ['settings:storage.volumes_lvm.value == true or settings:storage.volumes_block_device.value
+          == true']
+      type: checkbox
+      value: false
+      weight: 20
+    volumes_lvm:
+      description: It is recommended to have at least one Cinder node.
+      label: Cinder LVM over iSCSI for volumes
+      restrictions: ['settings:storage.volumes_ceph.value == true']
+      type: checkbox
+      value: true
+      weight: 10
+  syslog:
+    metadata: {enabled: false, group: logging, label: Syslog, toggleable: true, weight: 50}
+    syslog_port:
+      description: Remote syslog port
+      label: Port
+      regex: {error: Invalid syslog port, source: '^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$'}
+      type: text
+      value: '514'
+      weight: 20
+    syslog_server:
+      description: Remote syslog hostname
+      label: Hostname
+      regex: {error: Invalid hostname, source: '^[a-zA-Z\d]+[-\.\da-zA-Z]*$'}
+      type: text
+      value: ''
+      weight: 10
+    syslog_transport:
+      label: Syslog transport protocol
+      type: radio
+      value: tcp
+      values:
+      - {data: udp, description: '', label: UDP}
+      - {data: tcp, description: '', label: TCP}
+      weight: 30
+  workloads_collector:
+    enabled: {type: hidden, value: true}
+    metadata:
+      group: general
+      label: Workloads Collector User
+      restrictions:
+      - {action: hide, condition: 'true'}
+      weight: 10
+    password:
+      type: password
+      value: {generator: password}
+    tenant: {type: text, value: services}
+    user: {type: text, value: fuel_stats_user}
+generated:
+  aodh:
+    db_password: {generator: password}
+    user_password: {generator: password}
+  base_syslog:
+    syslog_port: {generator: identical, generator_arg: '514'}
+    syslog_server: {generator: ip, generator_arg: admin}
+  ceilometer:
+    db_password: {generator: password}
+    metering_secret: {generator: password}
+    user_password: {generator: password}
+  cinder:
+    db_password: {generator: password}
+    fixed_key: {generator: hexstring, generator_arg: '64'}
+    user_password: {generator: password}
+  cobbler:
+    profile: {generator: identical, generator_arg: ubuntu_bootstrap}
+  deployed_before: {value: false}
+  glance:
+    db_password: {generator: password}
+    user_password: {generator: password}
+  glance_glare:
+    user_password: {generator: password}
+  heat:
+    auth_encryption_key: {generator: hexstring, generator_arg: '32'}
+    db_password: {generator: password}
+    rabbit_password: {generator: password}
+    user_password: {generator: password}
+  horizon:
+    secret_key: {generator: hexstring, generator_arg: '64'}
+  ironic:
+    db_password: {generator: password}
+    swift_tempurl_key: {generator: password}
+    user_password: {generator: password}
+  keystone:
+    admin_token: {generator: password}
+    db_password: {generator: password}
+  murano:
+    db_password: {generator: password}
+    rabbit_password: {generator: password}
+    user_password: {generator: password}
+  murano-cfapi:
+    db_password: {generator: password}
+    rabbit_password: {generator: password}
+    user_password: {generator: password}
+  mysql:
+    root_password: {generator: password}
+    wsrep_password: {generator: password}
+  nova:
+    db_password: {generator: password}
+    state_path: /var/lib/nova
+    user_password: {generator: password}
+  provision:
+    codename: xenial
+    image_data:
+      /: {container: gzip, format: ext4, uri: 'http://{settings.MASTER_IP}:8080/targetimages/env_{cluster.id}_ubuntu_1604_amd64.img.gz'}
+      /boot: {container: gzip, format: ext2, uri: 'http://{settings.MASTER_IP}:8080/targetimages/env_{cluster.id}_ubuntu_1604_amd64-boot.img.gz'}
+  puppet: {manifests: 'rsync://{settings.MASTER_IP}:/puppet/{cluster.release.version}/manifests/',
+    modules: 'rsync://{settings.MASTER_IP}:/puppet/{cluster.release.version}/modules/'}
+  quantum_settings:
+    database:
+      passwd: {generator: password}
+    keystone:
+      admin_password: {generator: password}
+    metadata:
+      metadata_proxy_shared_secret: {generator: password}
+  rabbit:
+    password: {generator: password}
+  sahara:
+    db_password: {generator: password}
+    user_password: {generator: password}
+  swift:
+    user_password: {generator: password}

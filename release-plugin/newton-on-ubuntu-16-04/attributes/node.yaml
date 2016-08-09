@@ -1,0 +1,40 @@
+cpu_pinning:
+  dpdk:
+    description: Number of CPUs for DPDK usage
+    label: DPDK CPU pinning
+    min: 0
+    restrictions:
+    - {action: hide, condition: 'not (''experimental'' in version:feature_groups)'}
+    type: number
+    value: 0
+    weight: 20
+  metadata:
+    group: nfv
+    label: CPU pinning
+    restrictions:
+    - {action: hide, condition: 'settings:common.libvirt_type.value != ''kvm'''}
+    weight: 10
+  nova: {description: Number of CPUs for Nova usage, label: Nova CPU pinning, min: 0,
+    type: number, value: 0, weight: 10}
+hugepages:
+  dpdk:
+    description: DPDK Huge Pages per NUMA node in MB
+    label: DPDK Huge Pages
+    min: 0
+    restrictions:
+    - {action: hide, condition: 'not (''experimental'' in version:feature_groups)'}
+    type: number
+    value: 0
+    weight: 20
+  metadata:
+    group: nfv
+    label: Huge Pages
+    restrictions:
+    - {action: hide, condition: 'settings:common.libvirt_type.value != ''kvm'''}
+    weight: 20
+  nova:
+    description: Nova Huge Pages configuration
+    label: Nova Huge Pages
+    type: custom_hugepages
+    value: {}
+    weight: 10

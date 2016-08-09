@@ -1,0 +1,4 @@
+release-plugin
+============
+
+Plugin description

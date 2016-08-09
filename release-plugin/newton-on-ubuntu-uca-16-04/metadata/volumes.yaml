@@ -1,0 +1,164 @@
+rule_to_pick_boot_disk:
+- {description: 'NVMe drives should be skipped as accessing such drives during the
+    boot typically requires using UEFI which is still not supported by fuel-agent
+    (it always installs BIOS variant of  grub). grub bug (http://savannah.gnu.org/bugs/?41883)',
+  regex: ^nvme, type: exclude_disks_by_name}
+- {description: 'If we have /root on fake raid, then /boot partition should land on
+    to it too. We can''t proceed with grub-install otherwise.', regex: ^md, root_mount: /,
+  type: pick_root_disk_if_disk_name_match}
+volumes:
+- id: os
+  label: Base System
+  min_size: {generator: calc_min_os_size}
+  type: vg
+  volumes:
+  - file_system: ext4
+    mount: /
+    name: root
+    size: {generator: calc_total_root_vg}
+    type: lv
+  - file_system: swap
+    mount: swap
+    name: swap
+    size: {generator: calc_swap_size}
+    type: lv
+- id: logs
+  label: Logs
+  min_size:
+    generator: calc_gb_to_mb
+    generator_args: [10]
+  type: vg
+  volumes:
+  - file_system: ext4
+    mount: /var/log
+    name: log
+    size:
+      generator: calc_total_vg
+      generator_args: [logs]
+    type: lv
+- id: mongo
+  label: MongoDB
+  min_size: {generator: calc_min_mongo_size}
+  type: vg
+  volumes:
+  - file_system: ext4
+    mount: /var/lib/mongo
+    name: mongodb
+    size:
+      generator: calc_total_vg
+      generator_args: [mongo]
+    type: lv
+- file_system: none
+  id: ceph
+  label: Ceph
+  min_size: {generator: calc_min_ceph_size}
+  mount: none
+  name: Ceph
+  partition_guid: 4fbd7e29-9d25-41b8-afd0-062c0ceff05d
+  type: partition
+- file_system: none
+  id: cephjournal
+  label: Ceph Journal
+  min_size: {generator: calc_min_ceph_journal_size}
+  mount: none
+  name: Ceph Journal
+  partition_guid: 45b0969e-9b03-4f30-b4c6-b4b80ceff106
+  type: partition
+- id: mysql
+  label: Mysql Database
+  min_size: {generator: calc_min_mysql_size}
+  type: vg
+  volumes:
+  - file_system: ext4
+    mount: /var/lib/mysql
+    name: root
+    size:
+      generator: calc_total_vg
+      generator_args: [mysql]
+    type: lv
+- id: vm
+  label: Virtual Storage
+  min_size: {generator: calc_min_vm_size}
+  type: vg
+  volumes:
+  - file_system: xfs
+    mount: /var/lib/nova
+    name: nova
+    size:
+      generator: calc_total_vg
+      generator_args: [vm]
+    type: lv
+- id: image
+  label: Image Storage
+  min_size: {generator: calc_min_glance_size}
+  type: vg
+  volumes:
+  - file_system: xfs
+    mount: /var/lib/glance
+    name: glance
+    size:
+      generator: calc_total_vg
+      generator_args: [image]
+    type: lv
+- id: horizon
+  label: Horizon Temp Storage
+  min_size:
+    generator: calc_gb_to_mb
+    generator_args: [11]
+  type: vg
+  volumes:
+  - file_system: xfs
+    mount: /var/lib/horizon
+    name: horizontmp
+    size:
+      generator: calc_total_vg
+      generator_args: [horizon]
+    type: lv
+- id: cinder
+  label: Cinder
+  min_size: {generator: calc_min_cinder_size}
+  type: vg
+  volumes: []
+- id: cinder-block-device
+  label: Cinder Block Device
+  min_size: {generator: calc_min_cinder_size}
+  mount: none
+  type: vg
+  volumes: []
+volumes_roles_mapping:
+  base-os:
+  - {allocate_size: min, id: os}
+  ceph-osd:
+  - {allocate_size: min, id: os}
+  - {allocate_size: min, id: cephjournal}
+  - {allocate_size: full-disk, id: ceph}
+  cinder:
+  - {allocate_size: min, id: os}
+  - {allocate_size: all, id: cinder}
+  cinder-block-device:
+  - {allocate_size: min, id: os}
+  - {allocate_size: full-disk, id: cinder-block-device}
+  cinder-vmware:
+  - {allocate_size: min, id: os}
+  compute:
+  - {allocate_size: min, id: os}
+  - {allocate_size: all, id: vm}
+  compute-vmware:
+  - {allocate_size: min, id: os}
+  controller:
+  - {allocate_size: min, id: os}
+  - {allocate_size: min, id: logs}
+  - {allocate_size: all, id: image}
+  - {allocate_size: min, id: mysql}
+  - {allocate_size: min, id: horizon}
+  ironic:
+  - {allocate_size: min, id: os}
+  - {allocate_size: min, id: logs}
+  mongo:
+  - {allocate_size: min, id: os}
+  - {allocate_size: all, id: mongo}
+  other:
+  - {allocate_size: all, id: os}
+  virt:
+  - {allocate_size: min, id: os}
+  - {allocate_size: all, id: vm}

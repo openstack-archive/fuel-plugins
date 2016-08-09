@@ -1,0 +1,113 @@
+editable:
+  metadata:
+  - fields:
+    - description: Availability zone name
+      label: Availability zone
+      name: az_name
+      regex: {error: Invalid availability zone name, source: '^(?!nova$)\w+$'}
+      type: text
+    - description: vCenter host or IP
+      label: vCenter host
+      name: vcenter_host
+      regex: {error: Invalid vCenter host, source: '^[a-zA-Z\d]+[-\.\da-zA-Z]*$'}
+      type: text
+    - description: vCenter username
+      label: vCenter username
+      name: vcenter_username
+      regex: {error: Empty vCenter username, source: \S}
+      type: text
+    - description: vCenter password
+      label: vCenter password
+      name: vcenter_password
+      regex: {error: Empty vCenter password, source: \S}
+      type: password
+    - {label: Bypass vCenter certificate verification, name: vcenter_insecure, type: checkbox}
+    - {description: 'File containing the trusted CA bundle that emitted vCenter server
+        certificate. Even if CA bundle is not uploaded, certificate verification is
+        turned on.', label: CA file, name: vc_ca_file, type: file}
+    - editable_for_deployed: true
+      fields:
+      - description: vSphere cluster
+        label: vSphere cluster
+        name: vsphere_cluster
+        regex: {error: Invalid vSphere cluster, source: \S}
+        type: text
+      - description: Service name
+        label: Service name
+        name: service_name
+        regex: {error: Invalid service name, source: '^\w[\w\-]+$'}
+        type: text
+      - description: Datastore regex
+        label: Datastore regex
+        name: datastore_regex
+        regex: {error: Invalid datastore regex, source: \S}
+        type: text
+      - {description: Target node for nova-compute service, label: Target node, name: target_node,
+        type: select}
+      name: nova_computes
+      type: array
+    name: availability_zones
+    restrictions:
+    - {condition: 'settings:common.use_vcenter.value == false', message: VMware vCenter
+        not enabled for cluster}
+    type: array
+  - fields:
+    - description: vCenter host or IP
+      label: vCenter host
+      name: vcenter_host
+      regex: {error: Invalid vCenter host, source: '^[a-zA-Z\d]+[-\.\da-zA-Z]*$'}
+      type: text
+    - description: vCenter username
+      label: vCenter username
+      name: vcenter_username
+      regex: {error: Empty vCenter username, source: \S}
+      type: text
+    - description: vCenter password
+      label: vCenter password
+      name: vcenter_password
+      regex: {error: Empty vCenter password, source: \S}
+      type: password
+    - description: Datacenter
+      label: Datacenter
+      name: datacenter
+      regex: {error: Invalid datacenter, source: \S}
+      type: text
+    - description: Datastore
+      label: Datastore
+      name: datastore
+      regex: {error: Invalid datastore, source: \S}
+      type: text
+    - {label: Bypass vCenter certificate verification, name: vcenter_insecure, type: checkbox}
+    - {description: 'File containing the trusted CA bundle that emitted vCenter server
+        certificate. Even if CA bundle is not uploaded, certificate verification is
+        turned on.', label: CA file, name: ca_file, type: file}
+    name: glance
+    restrictions:
+    - {condition: 'settings:storage.images_vcenter.value == false or settings:common.use_vcenter.value
+        == false', message: VMware vCenter datastore for images is not enabled in
+        Settings tab}
+    type: object
+  value:
+    availability_zones:
+    - az_name: vcenter
+      nova_computes:
+      - datastore_regex: ''
+        service_name: ''
+        target_node:
+          current: {id: controllers, label: controllers}
+          options:
+          - {id: controllers, label: controllers}
+        vsphere_cluster: ''
+      vc_ca_file: {}
+      vcenter_host: ''
+      vcenter_insecure: true
+      vcenter_password: ''
+      vcenter_username: ''
+    glance:
+      ca_file: {}
+      datacenter: ''
+      datastore: ''
+      vcenter_host: ''
+      vcenter_insecure: true
+      vcenter_password: ''
+      vcenter_username: ''

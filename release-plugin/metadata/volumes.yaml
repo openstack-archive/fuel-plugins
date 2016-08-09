@@ -1,0 +1,7 @@
+volumes_roles_mapping:
+  # Default role mapping
+  release-plugin_role:
+    - {allocate_size: "min", id: "os"}
+
+# Set here new volumes for your role
+volumes: []

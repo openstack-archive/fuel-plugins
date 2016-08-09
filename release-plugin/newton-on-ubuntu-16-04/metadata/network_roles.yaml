@@ -1,0 +1,161 @@
+- default_mapping: management
+  id: keystone/api
+  properties: &id001
+    gateway: false
+    subnet: true
+    vip: []
+- default_mapping: fuelweb_admin
+  id: admin/pxe
+  properties:
+    gateway: true
+    subnet: true
+    vip: []
+- default_mapping: management
+  id: swift/api
+  properties: *id001
+- default_mapping: management
+  id: neutron/api
+  properties: *id001
+- default_mapping: management
+  id: sahara/api
+  properties: *id001
+- default_mapping: management
+  id: aodh/api
+  properties: *id001
+- default_mapping: management
+  id: ceilometer/api
+  properties: *id001
+- default_mapping: management
+  id: cinder/api
+  properties: *id001
+- default_mapping: management
+  id: glance/api
+  properties: *id001
+- default_mapping: management
+  id: glance/glare
+  properties: *id001
+- default_mapping: management
+  id: heat/api
+  properties: *id001
+- default_mapping: management
+  id: nova/api
+  properties: *id001
+- default_mapping: management
+  id: murano/api
+  properties: *id001
+- default_mapping: management
+  id: murano/cfapi
+  properties: *id001
+- default_mapping: management
+  id: horizon
+  properties: *id001
+- default_mapping: management
+  id: mgmt/memcache
+  properties: *id001
+- default_mapping: management
+  id: mgmt/database
+  properties: *id001
+- default_mapping: management
+  id: mgmt/messaging
+  properties: *id001
+- default_mapping: management
+  id: mgmt/corosync
+  properties: *id001
+- default_mapping: management
+  id: mgmt/vip
+  properties:
+    gateway: false
+    subnet: true
+    vip:
+    - {alias: management_vrouter_vip, name: vrouter, namespace: vrouter}
+    - {alias: management_vip, name: management, namespace: haproxy}
+- default_mapping: public
+  id: public/vip
+  properties:
+    gateway: true
+    subnet: true
+    vip:
+    - alias: public_vrouter_vip
+      name: vrouter_pub
+      namespace: vrouter
+      vendor_specific:
+        iptables_rules:
+          ns_start: [iptables -t nat -A POSTROUTING -o <%INT%> -j MASQUERADE]
+          ns_stop: [iptables -t nat -D POSTROUTING -o <%INT%> -j MASQUERADE]
+    - {alias: public_vip, name: public, namespace: haproxy}
+- default_mapping: private
+  id: neutron/private
+  properties:
+    gateway: false
+    subnet: false
+    vip: []
+- default_mapping: private
+  id: neutron/mesh
+  properties: *id001
+- default_mapping: public
+  id: neutron/floating
+  properties:
+    gateway: false
+    subnet: false
+    vip: []
+- default_mapping: storage
+  id: swift/replication
+  properties: *id001
+- default_mapping: storage
+  id: ceph/public
+  properties: *id001
+- default_mapping: public
+  id: ceph/radosgw
+  properties: *id001
+- default_mapping: storage
+  id: ceph/replication
+  properties: *id001
+- default_mapping: storage
+  id: cinder/iscsi
+  properties: *id001
+- default_mapping: management
+  id: mongo/db
+  properties: *id001
+- default_mapping: fuelweb_admin
+  id: fw-admin
+  properties:
+    gateway: true
+    subnet: true
+    vip: []
+- default_mapping: management
+  id: management
+  properties: *id001
+- default_mapping: public
+  id: ex
+  properties:
+    gateway: true
+    subnet: true
+    vip: []
+- default_mapping: storage
+  id: storage
+  properties: *id001
+- default_mapping: management
+  id: nova/migration
+  properties: *id001
+- default_mapping: management
+  id: ironic/api
+  properties: *id001
+- default_mapping: baremetal
+  id: ironic/baremetal
+  properties:
+    gateway: false
+    subnet: true
+    vip:
+    - alias: baremetal_vip
+      name: baremetal
+      namespace: haproxy
+      vendor_specific:
+        iptables_rules:
+          ns_start: ['iptables -A INPUT -i <%INT%> -s <%CIDR%> -d <%IP%> -p tcp -m
+              multiport --dports 6385,8080 -m state --state NEW -j ACCEPT', 'iptables
+              -A INPUT -i <%INT%> -s <%CIDR%> -d <%IP%> -m state --state ESTABLISHED,RELATED
+              -j ACCEPT', iptables -A INPUT -i <%INT%> -j DROP]
+          ns_stop: ['iptables -D INPUT -i <%INT%> -s <%CIDR%> -d <%IP%> -p tcp -m
+              multiport --dports 6385,8080 -m state --state NEW -j ACCEPT', 'iptables
+              -D INPUT -i <%INT%> -s <%CIDR%> -d <%IP%> -m state --state ESTABLISHED,RELATED
+              -j ACCEPT', iptables -D INPUT -i <%INT%> -j DROP]

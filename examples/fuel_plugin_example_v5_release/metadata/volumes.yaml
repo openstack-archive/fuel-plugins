@@ -1,0 +1,168 @@
+volumes_roles_mapping:
+  controller:
+    - {allocate_size: "min", id: "os"}
+    - {allocate_size: "min", id: "logs"}
+    - {allocate_size: "all", id: "image"}
+    - {allocate_size: "min", id: "mysql"}
+    - {allocate_size: "min", id: "horizon"}
+  compute:
+    - {allocate_size: "min", id: "os"}
+    - {allocate_size: "all", id: "vm"}
+  cinder:
+    - {allocate_size: "min", id: "os"}
+    - {allocate_size: "all", id: "cinder"}
+  cinder-vmware:
+    - {allocate_size: "min", id: "os"}
+  ceph-osd:
+    - {allocate_size: "min", id: "os"}
+    - {allocate_size: "min", id: "cephjournal"}
+    - {allocate_size: "full-disk", id: "ceph"}
+  cinder-block-device:
+    - {allocate_size: "min", id: "os"}
+    - {allocate_size: "full-disk", id: "cinder-block-device"}
+  mongo:
+    - {allocate_size: "min", id: "os"}
+    - {allocate_size: "all", id: "mongo"}
+  other:
+    - {allocate_size: "all", id: "os"}
+  # NOTE(eli): it's better to use entire disk
+  # for OS, but currently we have a bug for
+  # Ubuntu which doesn't allow to do that:
+  # https://bugs.launchpad.net/fuel/+bug/1278964
+  base-os:
+    - {allocate_size: "min", id: "os"}
+  virt:
+    - {allocate_size: "min", id: "os"}
+    - {allocate_size: "all", id: "vm"}
+  compute-vmware:
+    - {allocate_size: "min", id: "os"}
+  ironic:
+    - {allocate_size: "min", id: "os"}
+    - {allocate_size: "min", id: "logs"}
+volumes:
+  - id: "os"
+    type: "vg"
+    min_size: {generator: "calc_min_os_size"}
+    label: "Base System"
+    volumes:
+      - mount: "/"
+        type: "lv"
+        name: "root"
+        size: {generator: "calc_total_root_vg"}
+        file_system: "ext4"
+      - mount: "swap"
+        type: "lv"
+        name: "swap"
+        size: {generator: "calc_swap_size"}
+        file_system: "swap"
+  - id: "logs"
+    type: "vg"
+    min_size:
+      generator: "calc_gb_to_mb"
+      generator_args: [10]
+    label: "Logs"
+    volumes:
+      - mount: "/var/log"
+        type: "lv"
+        name: "log"
+        size:
+          generator: "calc_total_vg"
+          generator_args: ["logs"]
+        file_system: "ext4"
+  - id: "mongo"
+    type: "vg"
+    label: "MongoDB"
+    min_size: {generator: "calc_min_mongo_size"}
+    volumes:
+      - mount: "/var/lib/mongo"
+        type: "lv"
+        name: "mongodb"
+        size:
+          generator: "calc_total_vg"
+          generator_args: ["mongo"]
+        file_system: "ext4"
+  - id: "ceph"
+    type: "partition"
+    min_size: {generator: "calc_min_ceph_size"}
+    label: "Ceph"
+    name: "Ceph"
+    mount: "none"
+    partition_guid: "4fbd7e29-9d25-41b8-afd0-062c0ceff05d"
+    file_system: "none"
+  - id: "cephjournal"
+    type: "partition"
+    min_size: {generator: "calc_min_ceph_journal_size"}
+    name: "Ceph Journal"
+    label: "Ceph Journal"
+    mount: "none"
+    partition_guid: "45b0969e-9b03-4f30-b4c6-b4b80ceff106"
+    file_system: "none"
+  - id: "mysql"
+    type: "vg"
+    min_size: {generator: "calc_min_mysql_size"}
+    label: "Mysql Database"
+    volumes:
+      - mount: "/var/lib/mysql"
+        type: "lv"
+        name: "root"
+        size:
+          generator: "calc_total_vg"
+          generator_args: ["mysql"]
+        file_system: "ext4"
+  - id: "vm"
+    type: "vg"
+    min_size: {generator: "calc_min_vm_size"}
+    label: "Virtual Storage"
+    volumes:
+      - mount: "/var/lib/nova"
+        type: "lv"
+        name: "nova"
+        size:
+          generator: "calc_total_vg"
+          generator_args: ["vm"]
+        file_system: "xfs"
+  - id: "image"
+    type: "vg"
+    min_size: {generator: "calc_min_glance_size"}
+    label: "Image Storage"
+    volumes:
+      - mount: "/var/lib/glance"
+        type: "lv"
+        name: "glance"
+        size:
+          generator: "calc_total_vg"
+          generator_args: ["image"]
+        file_system: "xfs"
+  - id: "horizon"
+    type: "vg"
+    min_size:
+      generator: "calc_gb_to_mb"
+      generator_args: [11]
+    label: "Horizon Temp Storage"
+    volumes:
+      - mount: "/var/lib/horizon"
+        type: "lv"
+        name: "horizontmp"
+        size:
+          generator: "calc_total_vg"
+          generator_args: ["horizon"]
+        file_system: "xfs"
+  - id: "cinder"
+    type: "vg"
+    label: "Cinder"
+    min_size: {generator: "calc_min_cinder_size"}
+    volumes: []
+  - id: "cinder-block-device"
+    type: "vg"
+    label: "Cinder Block Device"
+    min_size: { generator: "calc_min_cinder_size" }
+    mount: "none"
+    volumes: []
+rule_to_pick_boot_disk:
+  - type: "exclude_disks_by_name"
+    regex: "^nvme"
+    description: "NVMe drives should be skipped as accessing such drives during the boot typically requires using UEFI which is still not supported by fuel-agent (it always installs BIOS variant of  grub). grub bug (http://savannah.gnu.org/bugs/?41883)"
+  - type: "pick_root_disk_if_disk_name_match"
+    regex: "^md"
+    root_mount: "/"
+    description: "If we have /root on fake raid, then /boot partition should land on to it too. We can't proceed with grub-install otherwise."
