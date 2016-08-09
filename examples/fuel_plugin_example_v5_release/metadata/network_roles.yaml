@@ -1,0 +1,211 @@
+-
+  id: "keystone/api"
+  default_mapping: "management"
+  properties: &default_network_roles_metadata_properties
+    subnet: true
+    gateway: false
+    vip: []
+-
+  id: "admin/pxe"
+  default_mapping: "fuelweb_admin"
+  properties:
+    subnet: true
+    gateway: true
+    vip: []
+-
+  id: "swift/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "neutron/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "sahara/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "aodh/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "ceilometer/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "cinder/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "glance/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "glance/glare"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "heat/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "nova/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "murano/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "murano/cfapi"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "horizon"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "mgmt/memcache"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "mgmt/database"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "mgmt/messaging"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "mgmt/corosync"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "mgmt/vip"
+  default_mapping: "management"
+  properties:
+    subnet: true
+    gateway: false
+    vip:
+      -
+        name: "vrouter"
+        namespace: "vrouter"
+        alias: "management_vrouter_vip"
+      -
+        name: "management"
+        namespace: "haproxy"
+        alias: "management_vip"
+-
+  id: "public/vip"
+  default_mapping: "public"
+  properties:
+    subnet: true
+    gateway: true
+    vip:
+      -
+        name: "vrouter_pub"
+        namespace: "vrouter"
+        alias: "public_vrouter_vip"
+        vendor_specific:
+          iptables_rules:
+            ns_start:
+              - "iptables -t nat -A POSTROUTING -o <%INT%> -j MASQUERADE"
+            ns_stop:
+              - "iptables -t nat -D POSTROUTING -o <%INT%> -j MASQUERADE"
+      -
+        name: "public"
+        namespace: "haproxy"
+        alias: "public_vip"
+-
+  id: "neutron/private"
+  default_mapping: "private"
+  properties:
+    subnet: false
+    gateway: false
+    vip: []
+-
+  id: "neutron/mesh"
+  default_mapping: "private"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "neutron/floating"
+  default_mapping: "public"
+  properties:
+    subnet: false
+    gateway: false
+    vip: []
+-
+  id: "swift/replication"
+  default_mapping: "storage"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "ceph/public"
+  default_mapping: "storage"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "ceph/radosgw"
+  default_mapping: "public"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "ceph/replication"
+  default_mapping: "storage"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "cinder/iscsi"
+  default_mapping: "storage"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "mongo/db"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "fw-admin"
+  default_mapping: "fuelweb_admin"
+  properties:
+    subnet: true
+    gateway: true
+    vip: []
+-
+  id: "management"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "ex"
+  default_mapping: "public"
+  properties:
+    subnet: true
+    gateway: true
+    vip: []
+-
+  id: "storage"
+  default_mapping: "storage"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "nova/migration"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "ironic/api"
+  default_mapping: "management"
+  properties: *default_network_roles_metadata_properties
+-
+  id: "ironic/baremetal"
+  default_mapping: "baremetal"
+  properties:
+    subnet: true
+    gateway: false
+    vip:
+      -
+        name: "baremetal"
+        namespace: "haproxy"
+        alias: "baremetal_vip"
+        vendor_specific:
+          iptables_rules:
+            ns_start:
+              - "iptables -A INPUT -i <%INT%> -s <%CIDR%> -d <%IP%> -p tcp -m multiport --dports 6385,8080 -m state --state NEW -j ACCEPT"
+              - "iptables -A INPUT -i <%INT%> -s <%CIDR%> -d <%IP%> -m state --state ESTABLISHED,RELATED -j ACCEPT"
+              - "iptables -A INPUT -i <%INT%> -j DROP"
+            ns_stop:
+              - "iptables -D INPUT -i <%INT%> -s <%CIDR%> -d <%IP%> -p tcp -m multiport --dports 6385,8080 -m state --state NEW -j ACCEPT"
+              - "iptables -D INPUT -i <%INT%> -s <%CIDR%> -d <%IP%> -m state --state ESTABLISHED,RELATED -j ACCEPT"
+              - "iptables -D INPUT -i <%INT%> -j DROP"
