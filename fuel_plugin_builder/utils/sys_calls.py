@@ -13,6 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import logging
 import subprocess
 
@@ -23,11 +24,13 @@ logger = logging.getLogger(__name__)
 
 def exec_cmd(cmd, cwd=None):
     """Execute command with logging.
-    Ouput of stdout and stderr will be written
+    Output of STDOUT and STDERR will be written
     in log.
 
     :param cmd: shell command
+    :type cmd: str
     :param cwd: string or None
+    :type cwd: str or None
     """
     logger.debug(u'Execute command "{0}"'.format(cmd))
     child = subprocess.Popen(

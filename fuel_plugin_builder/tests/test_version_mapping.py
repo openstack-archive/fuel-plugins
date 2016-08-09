@@ -16,10 +16,10 @@
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
-from fuel_plugin_builder.validators import ValidatorV1
-from fuel_plugin_builder.validators import ValidatorV2
-from fuel_plugin_builder.validators import ValidatorV3
-from fuel_plugin_builder.validators import ValidatorV4
+# from fuel_plugin_builder.validators import ValidatorV1
+# from fuel_plugin_builder.validators import ValidatorV2
+# from fuel_plugin_builder.validators import ValidatorV3
+# from fuel_plugin_builder.validators import ValidatorV4
 from fuel_plugin_builder.version_mapping import get_plugin_for_version
 
 

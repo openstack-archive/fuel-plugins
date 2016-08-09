@@ -36,7 +36,7 @@ class CreatePlugin(BaseAction):
         self.plugin_name = utils.basename(plugin_path.rstrip('/'))
         self.plugin_path = plugin_path
         self.package_version = (package_version or
-                                version_mapping.latest_version)
+                                consts.latest_version)
 
         self.render_ctx = {'plugin_name': self.plugin_name}
         self.template_paths = version_mapping.get_plugin_for_version(

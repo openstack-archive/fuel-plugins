@@ -198,7 +198,7 @@ class BuildPluginV2(BaseBuildPlugin):
         utils.create_dir(self.rpm_src_path)
 
         utils.make_tar_gz(self.build_src_dir, self.tar_path, self.full_name)
-        utils.render_to_file(
+        utils.render_and_write_template_file(
             self.spec_src,
             self.spec_dst,
             self._make_data_for_template())
@@ -229,7 +229,7 @@ class BuildPluginV2(BaseBuildPlugin):
                 ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
             release_path = join_path(repo_path, 'Release')
-            utils.render_to_file(
+            utils.render_and_write_template_file(
                 self.release_tmpl_src,
                 release_path,
                 {'plugin_name': self.meta['name'],
@@ -263,6 +263,10 @@ class BuildPluginV3(BuildPluginV2):
 
 
 class BuildPluginV4(BuildPluginV3):
+    pass
+
+
+class BuildPluginV5(BuildPluginV4):
     pass
 
 
