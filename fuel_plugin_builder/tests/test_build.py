@@ -76,8 +76,11 @@ class BaseBuild(BaseTestCase):
                 return_value=True)
     def test_run_pre_build_hook(self, exec_cmd_mock, which_mock):
         self.builder.run_pre_build_hook()
-        exec_cmd_mock.assert_called_once_with(self.builder.pre_build_hook_path)
-        which_mock.assert_called_once_with(self.builder.pre_build_hook_path)
+        exec_cmd_mock.assert_called_once_with(self.builder.pre_build_hook_cmd,
+                                              self.builder.plugin_path)
+        which_mock.assert_called_once_with(
+            join_path(self.builder.plugin_path,
+                      self.builder.pre_build_hook_cmd))
 
     @mock.patch('fuel_plugin_builder.actions.build.utils')
     def test_build_repos(self, utils_mock):
