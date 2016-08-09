@@ -60,7 +60,7 @@ class TestCli(BaseTestCase):
         builder_mock.assert_called_once_with('plugin_path')
         build_obj.run.assert_called_once_with()
 
-    @mock.patch('fuel_plugin_builder.cli.ValidatorManager')
+    @mock.patch('fuel_plugin_builder.cli.version_mapping.get_validator')
     def test_perform_check(self, validator_mock):
         args = mock.MagicMock(
             create=None,
