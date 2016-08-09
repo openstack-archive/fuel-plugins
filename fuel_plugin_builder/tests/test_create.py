@@ -16,28 +16,27 @@
 
 import mock
 
-from fuel_plugin_builder.actions import CreatePlugin
 from fuel_plugin_builder import errors
-from fuel_plugin_builder import messages
-from fuel_plugin_builder.tests.base import BaseTestCase
+from fuel_plugin_builder import actions
+
+from .base import BaseTestCase
 
 
 class TestCreate(BaseTestCase):
-
     def setUp(self):
         self.plugins_name = 'fuel_plugin'
         self.plugin_path = '/tmp/{0}'.format(self.plugins_name)
         self.template_dir = '/temp_dir'
-        self.creator = CreatePlugin(self.plugin_path)
+        self.creator = actions.CreatePlugin(self.plugin_path)
         self.creator.template_dir = self.template_dir
 
-    @mock.patch('fuel_plugin_builder.actions.create.utils.exists',
+    @mock.patch('fuel_plugin_builder.actions.create.utils.is_exists',
                 return_value=False)
     def test_check(self, exists_mock):
         self.creator.check()
         exists_mock.assert_called_once_with(self.plugin_path)
 
-    @mock.patch('fuel_plugin_builder.actions.create.utils.exists',
+    @mock.patch('fuel_plugin_builder.actions.create.utils.is_exists',
                 return_value=True)
     def test_check_when_plugin_exists_with_same_name(self, exists_mock):
         self.assertRaisesRegexp(
@@ -47,17 +46,18 @@ class TestCreate(BaseTestCase):
             self.creator.check)
         exists_mock.assert_called_once_with(self.plugin_path)
 
-    @mock.patch('fuel_plugin_builder.actions.create.utils.exists',
+    @mock.patch('fuel_plugin_builder.actions.create.utils.is_exists',
                 return_value=False)
     def test_check_with_invalid_name(self, exists_mock):
         self.creator.plugin_name = 'Test_plugin'
         self.assertRaisesRegexp(
             errors.ValidationError,
-            messages.PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE,
+            "Plugin name is invalid, use only lower "
+            "case letters, numbers, '_', '-' symbols",
             self.creator.check)
         exists_mock.assert_called_once_with(self.plugin_path)
 
-    @mock.patch.object(CreatePlugin, 'check')
+    @mock.patch.object(actions.CreatePlugin, 'check')
     @mock.patch('fuel_plugin_builder.actions.create.utils')
     def test_run(self, utils_mock, _):
         self.creator.run()

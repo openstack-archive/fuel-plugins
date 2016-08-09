@@ -18,22 +18,17 @@ from __future__ import unicode_literals
 
 import abc
 import logging
-import os
-
 from os.path import join as join_path
 
-from fuel_plugin_builder.actions import BaseAction
-from fuel_plugin_builder import errors
+import fuel_plugin_builder
 from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators import ValidatorManager
-from fuel_plugin_builder import version_mapping
-
+from fuel_plugin_builder import errors
+from .base import BaseAction
 
 logger = logging.getLogger(__name__)
 
 
 class BaseBuildPlugin(BaseAction):
-
     @abc.abstractproperty
     def requires(self):
         """Should return a list of commands which
@@ -55,9 +50,9 @@ class BaseBuildPlugin(BaseAction):
 
         self.pre_build_hook_cmd = './pre_build_hook'
         self.meta = utils.parse_yaml(
-            join_path(self.plugin_path, 'metadata.yaml')
+            utils.join_path(self.plugin_path, 'metadata.yaml')
         )
-        self.build_dir = join_path(self.plugin_path, '.build')
+        self.build_dir = utils.join_path(self.plugin_path, '.build')
         self.build_src_dir = join_path(self.build_dir, 'src')
         self.checksums_path = join_path(self.build_src_dir, 'checksums.sha1')
         self.name = self.meta['name']
@@ -133,7 +128,6 @@ class BaseBuildPlugin(BaseAction):
 
 
 class BuildPluginV1(BaseBuildPlugin):
-
     requires = ['rpm', 'createrepo', 'dpkg-scanpackages']
 
     @property
@@ -152,7 +146,6 @@ class BuildPluginV1(BaseBuildPlugin):
 
 
 class BuildPluginV2(BaseBuildPlugin):
-
     requires = ['rpmbuild', 'rpm', 'createrepo', 'dpkg-scanpackages']
 
     rpm_spec_src_path = 'templates/v2/build/plugin_rpm.spec.mako'
@@ -237,7 +230,6 @@ class BuildPluginV2(BaseBuildPlugin):
 
 
 class BuildPluginV3(BuildPluginV2):
-
     rpm_spec_src_path = 'templates/v3/build/plugin_rpm.spec.mako'
     release_tmpl_src_path = 'templates/v3/build/Release.mako'
 
@@ -275,7 +267,8 @@ def make_builder(plugin_path):
     :param str plugin_path: path to the plugin
     :returns: specific version of builder object
     """
-    builder = version_mapping.get_version_mapping_from_plugin(
-        plugin_path)['builder']
+    builder = fuel_plugin_builder.version_mapping.get_version_mapping_from_plugin(
+        plugin_path
+    )['builder']
 
     return builder(plugin_path)

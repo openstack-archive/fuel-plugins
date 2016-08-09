@@ -21,8 +21,7 @@ import sys
 
 from fuel_plugin_builder import actions
 from fuel_plugin_builder import errors
-from fuel_plugin_builder import messages
-from fuel_plugin_builder.validators import ValidatorManager
+from fuel_plugin_builder import version_mapping
 
 from fuel_plugin_builder.logger import configure_logger
 
@@ -38,8 +37,19 @@ def handle_exception(exc):
     logger.exception(exc)
 
     if isinstance(exc, errors.FuelCannotFindCommandError):
-        print_err(messages.HEADER)
-        print_err(messages.INSTALL_REQUIRED_PACKAGES)
+        print_err('=' * 50)
+        print_err("""
+Was not able to find required packages.
+
+If you use Ubuntu, run:
+
+    # sudo apt-get install createrepo rpm dpkg-dev
+
+If you use CentOS, run:
+
+    # yum install createrepo dpkg-devel dpkg-dev rpm rpm-build
+
+""")
 
     elif isinstance(exc, errors.ValidationError):
         print_err('Validation failed')
@@ -106,7 +116,7 @@ def perform_action(args):
         actions.make_builder(args.build).run()
         print('Plugin is built')
     elif args.check:
-        ValidatorManager(args.check).get_validator().validate()
+        version_mapping.get_validator(args.check).validate()
         print('Plugin is valid')
 
 
