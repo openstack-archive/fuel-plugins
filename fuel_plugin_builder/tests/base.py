@@ -21,9 +21,15 @@ except ImportError:
     from unittest2.case import TestCase
 
 import mock
+import os
 from StringIO import StringIO
 
+from pyfakefs import fake_filesystem_unittest
+import yaml
+
+from fuel_plugin_builder import consts
 from fuel_plugin_builder import errors
+from fuel_plugin_builder import utils
 
 
 class FakeFile(StringIO):
@@ -82,6 +88,19 @@ class BaseTestCase(TestCase):
         """
         for method in methods:
             setattr(obj, method, mock.MagicMock())
+
+    def _make_fake_metadata_data(self, **kwargs):
+        """Generate metadata based on example and custom fields from kwargs.
+
+        :return: metadata
+        :rtype: dict
+        """
+        metadata = {
+            'package_version': '5.0.0',
+            'fuel_version': ['9.1']
+        }
+        metadata.update(kwargs)
+        return metadata
 
 
 @mock.patch('fuel_plugin_builder.validators.base.utils')
@@ -246,3 +265,84 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
 
         for method in mocked_methods:
             getattr(self.validator, method).assert_called_once_with()
+
+
+class FakeFSTest(fake_filesystem_unittest.TestCase, BaseTestCase):
+
+    __test__ = False
+
+    plugin_path = None
+
+    def _delete_from_fakefs(self, path):
+        """Remove record from mockfs if exists.
+
+        :param path: path
+        :type path: str
+        """
+        fakefs_path = self._make_fakefs_path(path)
+        if os.path.exists(fakefs_path):
+            self.fs.RemoveObject(fakefs_path)
+
+    def _make_fakefs_path(self, relative_path):
+        """Make absolute path related to the plugin example root folder.
+
+        :param relative_path: relative path
+        :type relative_path: str
+        :return: absolute path
+        :rtype: str
+        """
+        return os.path.abspath(
+            os.path.join(
+                self.plugin_path, relative_path
+            )
+        )
+
+    def _patch_fakefs_file(self, path, add_data):
+        fakefs_path = self._make_fakefs_path(path)
+        if os.path.exists(fakefs_path):
+            raw_data = self.fs.GetObject(fakefs_path)
+            data = yaml.safe_load(raw_data.contents)
+            data.update(add_data)
+        else:
+            data = add_data
+        self._create_fakefs_file(path, data)
+
+    def _create_fakefs_file(self, path, new_data):
+        """Replace file with new one inside file system mock.
+
+        :param path: relative path
+        :type path: str|basestring
+        :param new_data: list/dict structure that will be serialised to YAML
+        :type new_data: dict|list
+        """
+        self._delete_from_fakefs(path)
+        self.fs.CreateFile(
+            file_path=self._make_fakefs_path(path),
+            contents=yaml.dump(new_data)
+        )
+
+    def setUp(self):
+        super(FakeFSTest, self).setUp()
+        if self.plugin_path:  # load FakeFS
+            for root, _, file_names in os.walk(self.plugin_path):
+                for filename in file_names:
+                    src_path = os.path.abspath(
+                        os.path.join(root, filename)
+                    )
+
+                    extension = utils.get_path_extension(src_path)
+                    if extension == consts.TEMPLATE_EXTENSION:
+                        content = utils.template.render_template_file(
+                            src_path, plugin_name="test-plugin")
+                        dst_path = utils.fs.get_path_without_extension(
+                            src_path)
+                    else:
+                        dst_path = src_path
+                        with open(src_path) as f:
+                            content = f.read()
+
+                    self.fs.CreateFile(
+                        file_path=dst_path,
+                        contents=content
+                    )
+        self.setUpPyfakefs()  # and anyway setup FakeFS, teardown not necessary

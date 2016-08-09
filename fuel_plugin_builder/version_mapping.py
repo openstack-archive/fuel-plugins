@@ -14,43 +14,69 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from os.path import join as join_path
 
-from fuel_plugin_builder import errors
-from fuel_plugin_builder import utils
-
-
-latest_version = '4.0.0'
-
-
-def get_mapping():
-    # NOTE(eli): It's required not to have circular dependencies error
-    from fuel_plugin_builder.actions import build
+def get_mapping(version):
     from fuel_plugin_builder import validators
+    from fuel_plugin_builder import loaders
+    from fuel_plugin_builder.actions import build
+    return {
+        '5.0.0': {
+            'version': '5.0.0',
+            'templates': [
+                'templates/base',
+                'templates/v5/plugin_data/'
+            ],
 
-    return [
-        {'version': '1.0.0',
-         'templates': ['templates/base', 'templates/v1/'],
-         'validator': validators.ValidatorV1,
-         'builder': build.BuildPluginV1},
-        {'version': '2.0.0',
-         'templates': ['templates/base', 'templates/v2/plugin_data/'],
-         'validator': validators.ValidatorV2,
-         'builder': build.BuildPluginV2},
-        {'version': '3.0.0',
-         'templates': ['templates/base', 'templates/v3/plugin_data/'],
-         'validator': validators.ValidatorV3,
-         'builder': build.BuildPluginV3},
-        {'version': '4.0.0',
-         'templates': [
-             'templates/base',
-             'templates/v3/plugin_data/',
-             'templates/v4/plugin_data/'],
-         'validator': validators.ValidatorV4,
-         'builder': build.BuildPluginV4}]
+            'loader': loaders.loader_v5.LoaderV5,
+            'validator': validators.validator_v5.ValidatorV5,
+            'builder': build.BuildPluginV5
+        }
+    }.get(version, None)
+    # {'version': '1.0.0',
+    #  'templates': ['templates/base', 'templates/v1/'],
+    #  'validator': validators.ValidatorV1,
+    #  'builder': build.BuildPluginV1},
+    # {'version': '2.0.0',
+    #  'templates': ['templates/base', 'templates/v2/plugin_data/'],
+    #  'validator': validators.ValidatorV2,
+    #  'builder': build.BuildPluginV2},
+    # {'version': '3.0.0',
+    #  'templates': ['templates/base', 'templates/v3/plugin_data/'],
+    #  'validator': validators.ValidatorV3,
+    #  'builder': build.BuildPluginV3},
+    # {'version': '4.0.0',
+    #  'templates': [
+    #       'templates/base',
+    #       'templates/v3/plugin_data/',
+    #       'templates/v4/plugin_data/'
+    #   ],
+    #  'validator': validators.ValidatorV4,
+    #  'builder': build.BuildPluginV4},
+
+    # return [
+    #     {'version': '1.0.0',
+    #      'templates': ['templates/base', 'templates/v1/'],
+    #      'validator': validators.ValidatorV1,
+    #      'builder': build.BuildPluginV1},
+    #     {'version': '2.0.0',
+    #      'templates': ['templates/base', 'templates/v2/plugin_data/'],
+    #      'validator': validators.ValidatorV2,
+    #      'builder': build.BuildPluginV2},
+    #     {'version': '3.0.0',
+    #      'templates': ['templates/base', 'templates/v3/plugin_data/'],
+    #      'validator': validators.ValidatorV3,
+    #      'builder': build.BuildPluginV3},
+    #     {'version': '4.0.0',
+    #      'templates': [
+    #          'templates/base',
+    #          'templates/v3/plugin_data/',
+    #          'templates/v4/plugin_data/'],
+    #      'validator': validators.ValidatorV4,
+    #      'builder': build.BuildPluginV4}]
 
 
 def get_plugin_for_version(version):
+    from fuel_plugin_builder import errors
     """Retrieves data which are required for specific version of plugin
 
     :param str version: version of package
@@ -60,13 +86,13 @@ def get_plugin_for_version(version):
               'validator' - validator class
               'builder' - builder class
     """
-    data = filter(lambda p: p['version'] == version, get_mapping())
+    data = get_mapping(version)
 
     if not data:
         raise errors.WrongPackageVersionError(
             'Wrong package version "{0}"'.format(version))
 
-    return data[0]
+    return data
 
 
 def get_version_mapping_from_plugin(plugin_path):
@@ -79,12 +105,15 @@ def get_version_mapping_from_plugin(plugin_path):
               'templates' - path to templates
               'builder' - builder class
     """
-    meta_path = join_path(plugin_path, 'metadata.yaml')
-    if not utils.exists(meta_path):
-        errors.WrongPluginDirectoryError(
-            'Wrong path to the plugin, cannot find "%s" file', meta_path)
+    from fuel_plugin_builder import loaders
+    from fuel_plugin_builder import errors
 
-    meta = utils.parse_yaml(meta_path)
+    try:
+        meta = loaders.LoaderV5(plugin_path).load('metadata.yaml')
+    except:
+        raise errors.WrongPluginDirectoryError(
+            'Wrong path to the plugin, cannot find "%s" file', 'metadata.yaml')
+
     package_version = meta.get('package_version')
 
     return get_plugin_for_version(package_version)

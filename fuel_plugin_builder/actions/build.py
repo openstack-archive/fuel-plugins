@@ -24,8 +24,9 @@ from os.path import join as join_path
 
 from fuel_plugin_builder.actions import BaseAction
 from fuel_plugin_builder import errors
+from fuel_plugin_builder import loaders
 from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators import ValidatorManager
+from fuel_plugin_builder.validators.manager import ValidatorManager
 from fuel_plugin_builder import version_mapping
 
 
@@ -52,11 +53,13 @@ class BaseBuildPlugin(BaseAction):
 
     def __init__(self, plugin_path):
         self.plugin_path = plugin_path
+        self.loader = loaders.loader_v5.LoaderV5(plugin_path)
 
         self.pre_build_hook_cmd = './pre_build_hook'
-        self.meta = utils.parse_yaml(
+        self.meta, report = self.loader.load(
             join_path(self.plugin_path, 'metadata.yaml')
         )
+        print report.render()
         self.build_dir = join_path(self.plugin_path, '.build')
         self.build_src_dir = join_path(self.build_dir, 'src')
         self.checksums_path = join_path(self.build_src_dir, 'checksums.sha1')
@@ -198,7 +201,7 @@ class BuildPluginV2(BaseBuildPlugin):
         utils.create_dir(self.rpm_src_path)
 
         utils.make_tar_gz(self.build_src_dir, self.tar_path, self.full_name)
-        utils.render_to_file(
+        utils.load_template_and_render_to_file(
             self.spec_src,
             self.spec_dst,
             self._make_data_for_template())
@@ -229,11 +232,14 @@ class BuildPluginV2(BaseBuildPlugin):
                 ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
             release_path = join_path(repo_path, 'Release')
-            utils.render_to_file(
+            utils.load_template_and_render_to_file(
                 self.release_tmpl_src,
                 release_path,
-                {'plugin_name': self.meta['name'],
-                 'major_version': self.plugin_version})
+                {
+                    'plugin_name': self.meta['name'],
+                    'major_version': self.plugin_version
+                }
+            )
 
 
 class BuildPluginV3(BuildPluginV2):
@@ -266,6 +272,10 @@ class BuildPluginV4(BuildPluginV3):
     pass
 
 
+class BuildPluginV5(BuildPluginV4):
+    pass
+
+
 def make_builder(plugin_path):
     """Creates build object.
 
@@ -273,6 +283,7 @@ def make_builder(plugin_path):
     :returns: specific version of builder object
     """
     builder = version_mapping.get_version_mapping_from_plugin(
-        plugin_path)['builder']
+        plugin_path
+    )['builder']
 
     return builder(plugin_path)

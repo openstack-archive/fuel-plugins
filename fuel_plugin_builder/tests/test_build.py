@@ -21,36 +21,48 @@ import os
 
 from os.path import join as join_path
 
+from fuel_plugin_builder import loaders
+from fuel_plugin_builder import validators
 from fuel_plugin_builder.actions.build import BaseBuildPlugin
 from fuel_plugin_builder.actions.build import BuildPluginV1
 from fuel_plugin_builder.actions.build import BuildPluginV2
 from fuel_plugin_builder.actions.build import BuildPluginV3
 from fuel_plugin_builder import errors
-from fuel_plugin_builder.tests.base import BaseTestCase
+from fuel_plugin_builder.tests.base import FakeFSTest
 
 
-class BaseBuild(BaseTestCase):
+class BaseBuildTestCase(FakeFSTest):
 
     # Prevent test runner to run tests in base
     __test__ = False
-    # Redefine class
-    builder_class = None
 
+    plugin_path = None
+    fake_metadata = None
+    loader = loaders.BaseLoader()
+    validator = validators.BaseValidator()
+    BuilderClass = BaseBuildPlugin
     releases = [
-        {'os': 'ubuntu',
-         'deployment_scripts_path': 'deployment_scripts_path',
-         'repository_path': 'repository_path'}]
+        {
+            'os': 'ubuntu',
+            'deployment_scripts_path': 'deployment_scripts_path',
+            'repository_path': 'repository_path'
+        }
+    ]
 
     def setUp(self):
-        self.plugins_name = 'fuel_plugin'
-        self.plugin_path = '/tmp/{0}'.format(self.plugins_name)
-        self.builder = self.create_builder(self.plugin_path)
+        super(BaseBuildTestCase, self).setUp()
+        if self.fake_metadata:
+            self._create_fakefs_file(
+                self._path_from_plugin('metadata.yaml'),
+                self.fake_metadata
+            )
+        self.builder = self._create_builder(self.plugin_path)
 
-    def create_builder(self, plugin_path):
-        with mock.patch(
-                'fuel_plugin_builder.actions.build.utils.parse_yaml',
-                return_value=self.meta):
-            return self.builder_class(plugin_path)
+    def _create_builder(self, plugin_path):
+        return self.BuilderClass(plugin_path)
+
+    def _path_from_plugin(self, path):
+        return join_path(self.plugin_path, path)
 
     def test_run(self):
         mocked_methods = [
@@ -85,9 +97,9 @@ class BaseBuild(BaseTestCase):
     @mock.patch('fuel_plugin_builder.actions.build.utils')
     def test_build_repos(self, utils_mock):
         with mock.patch.object(
-                self.builder_class, 'build_ubuntu_repos') as build_ubuntu_mock:
+                self.BuilderClass, 'build_ubuntu_repos') as build_ubuntu_mock:
             with mock.patch.object(
-                    self.builder_class,
+                    self.BuilderClass,
                     'build_centos_repos') as build_centos_mock:
                 self.builder.build_repos()
 
@@ -147,6 +159,7 @@ class BaseBuild(BaseTestCase):
     @mock.patch(
         'fuel_plugin_builder.actions.build.utils.create_checksums_file')
     def test_add_checksums_file(self, create_checksums_file_mock):
+        print "ZZZ", self.builder, self.plugin_path
         self.builder.add_checksums_file()
         create_checksums_file_mock.assert_called_once_with(
             self.builder.build_src_dir, self.builder.checksums_path)
@@ -160,13 +173,13 @@ class BaseBuild(BaseTestCase):
             mock.call.remove_by_mask(self.builder.result_package_mask)])
 
 
-class TestBaseBuildV1(BaseBuild):
+class TestBaseBuildV1(BaseBuildTestCase):
 
     __test__ = True
-    builder_class = BuildPluginV1
-
-    meta = {
-        'releases': BaseBuild.releases,
+    plugin_path = os.path.abspath('../templates/v1/')
+    BuilderClass = BuildPluginV1
+    fake_metadata = {
+        'releases': BaseBuildTestCase.releases,
         'version': '1.2.3',
         'name': 'plugin_name'
     }
@@ -191,12 +204,13 @@ class TestBaseBuildV1(BaseBuild):
             self.builder._check_requirements)
 
 
-class TestBaseBuildV2(BaseBuild):
+class TestBaseBuildV2(BaseBuildTestCase):
 
     __test__ = True
-    builder_class = BuildPluginV2
-    meta = {
-        'releases': BaseBuild.releases,
+    plugin_path = os.path.abspath('../templates/v2/plugin_data')
+    BuilderClass = BuildPluginV2
+    fake_metadata = {
+        'releases': BaseBuildTestCase.releases,
         'version': '1.2.3',
         'name': 'plugin_name',
         'title': 'Plugin title',
@@ -230,17 +244,20 @@ class TestBaseBuildV2(BaseBuild):
         spec_src = os.path.abspath(join_path(
             os.path.dirname(__file__), '..',
             self.builder.rpm_spec_src_path))
-        utils_mock.render_to_file.assert_called_once_with(
+        utils_mock.load_template_and_render_to_file.assert_called_once_with(
             spec_src,
             join_path(plugin_path, '.build/rpm/plugin_rpm.spec'),
-            {'vendor': 'author1, author2',
-             'description': 'Description',
-             'license': 'Apache and BSD',
-             'summary': 'Plugin title',
-             'version': '1.2.3',
-             'homepage': 'url',
-             'name': 'plugin_name-1.2',
-             'year': '2014'})
+            {
+                'vendor': 'author1, author2',
+                'description': 'Description',
+                'license': 'Apache and BSD',
+                'summary': 'Plugin title',
+                'version': '1.2.3',
+                'homepage': 'url',
+                'name': 'plugin_name-1.2',
+                'year': '2014'
+            }
+        )
 
         utils_mock.exec_cmd.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
@@ -259,9 +276,15 @@ class TestBaseBuildV2(BaseBuild):
         self.check_make_package(self.builder, self.plugin_path)
 
     def test_make_package_with_non_ascii_chars_in_path(self):
-        plugin_path = '/tmp/тест/' + self.plugins_name
+        plugin_path = '/tmp/тест/fuel_plugin'
 
-        builder = self.create_builder(plugin_path)
+        self._create_fakefs_file(
+            self._path_from_plugin(
+                os.path.join(plugin_path, 'metadata.yaml')
+            ),
+            self.fake_metadata
+        )
+        builder = self._create_builder(plugin_path)
 
         self.check_make_package(builder, plugin_path)
 
@@ -279,24 +302,40 @@ class TestBaseBuildV2(BaseBuild):
         path = '/repo/path'
         self.builder.build_ubuntu_repos([path])
         utils_mock.exec_piped_cmds.assert_called_once_with(
-            ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
-            cwd=path)
-        release_src = os.path.abspath(join_path(
-            os.path.dirname(__file__), '..',
-            self.builder.release_tmpl_src_path))
-        utils_mock.render_to_file.assert_called_once_with(
+            [
+                'dpkg-scanpackages .',
+                'gzip -c9 > Packages.gz'
+            ],
+            cwd=path
+        )
+        # self.
+        release_src = os.path.abspath(
+            join_path(
+                os.path.dirname(__file__),
+                '..',
+                self.builder.release_tmpl_src_path
+            )
+        )
+
+        # print "RS", release_src
+        utils_mock.load_template_and_render_to_file.assert_called_once_with(
             release_src,
             '/repo/path/Release',
-            {'major_version': '1.2',
-             'plugin_name': 'plugin_name'})
+            {
+                'major_version': '1.2',
+                'plugin_name': 'plugin_name'
+            }
+        )
 
 
-class TestBaseBuildV3(BaseBuild):
+class TestBaseBuildV3(BaseBuildTestCase):
 
     __test__ = True
-    builder_class = BuildPluginV3
-    meta = {
-        'releases': BaseBuild.releases,
+    BuilderClass = BuildPluginV3
+    plugin_path = os.path.abspath('../templates/v3/plugin_data')
+
+    fake_metadata = {
+        'releases': BaseBuildTestCase.releases,
         'version': '1.2.3',
         'name': 'plugin_name',
         'title': 'Plugin title',
@@ -327,20 +366,23 @@ class TestBaseBuildV3(BaseBuild):
         spec_src = os.path.abspath(join_path(
             os.path.dirname(__file__), '..',
             self.builder.rpm_spec_src_path))
-        utils_mock.render_to_file.assert_called_once_with(
+        utils_mock.load_template_and_render_to_file.assert_called_once_with(
             spec_src,
             join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
-            {'vendor': 'author1, author2',
-             'description': 'Description',
-             'license': 'Apache and BSD',
-             'summary': 'Plugin title',
-             'version': '1.2.3',
-             'homepage': 'url',
-             'name': 'plugin_name-1.2',
-             'year': '2014',
-             'preinstall_hook': 'echo preinst',
-             'postinstall_hook': 'echo postinst',
-             'uninstall_hook': 'echo uninst'})
+            {
+                'vendor': 'author1, author2',
+                'description': 'Description',
+                'license': 'Apache and BSD',
+                'summary': 'Plugin title',
+                'version': '1.2.3',
+                'homepage': 'url',
+                'name': 'plugin_name-1.2',
+                'year': '2014',
+                'preinstall_hook': 'echo preinst',
+                'postinstall_hook': 'echo postinst',
+                'uninstall_hook': 'echo uninst'
+            }
+        )
 
         utils_mock.exec_cmd.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
@@ -356,3 +398,76 @@ class TestBaseBuildV3(BaseBuild):
             mock.call(self.path_from_plugin('uninstall.sh')),
             mock.call(self.path_from_plugin('pre_install.sh')),
             mock.call(self.path_from_plugin('post_install.sh'))])
+
+
+class TestBaseBuildV5(BaseBuildTestCase):
+
+    __test__ = True
+    BuilderClass = BuildPluginV3
+    plugin_path = os.path.abspath('../templates/v5/plugin_data')
+
+    fake_metadata = {
+        'releases': BaseBuildTestCase.releases,
+        'version': '1.2.3',
+        'name': 'plugin_name',
+        'title': 'Plugin title',
+        'description': 'Description',
+        'licenses': ['Apache', 'BSD'],
+        'authors': ['author1', 'author2'],
+        'homepage': 'url'
+    }
+
+    @mock.patch('fuel_plugin_builder.actions.build.utils')
+    def test_make_package(self, utils_mock):
+        utils_mock.get_current_year.return_value = '2014'
+        utils_mock.read_if_exist.side_effect = [
+            'echo uninst', 'echo preinst', 'echo postinst']
+
+        self.builder.make_package()
+        rpm_src_path = self._path_from_plugin('.build/rpm/SOURCES')
+        utils_mock.create_dir.assert_called_once_with(rpm_src_path)
+
+        fp_dst = self._path_from_plugin(
+            '.build/rpm/SOURCES/plugin_name-1.2.fp')
+        utils_mock.make_tar_gz.assert_called_once_with(
+            self._path_from_plugin('.build/src'),
+            fp_dst,
+            'plugin_name-1.2')
+
+        spec_src = os.path.abspath(join_path(
+            os.path.dirname(__file__), '..',
+            self.builder.rpm_spec_src_path))
+        utils_mock.load_template_and_render_to_file.assert_called_once_with(
+            spec_src,
+            os.path.abspath(
+                join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec')
+            ),
+            {
+                'vendor': 'author1, author2',
+                'description': 'Description',
+                'license': 'Apache and BSD',
+                'summary': 'Plugin title',
+                'version': '1.2.3',
+                'homepage': 'url',
+                'name': 'plugin_name-1.2',
+                'year': '2014',
+                'preinstall_hook': 'echo preinst',
+                'postinstall_hook': 'echo postinst',
+                'uninstall_hook': 'echo uninst'
+            }
+        )
+
+        utils_mock.exec_cmd.assert_called_once_with(
+            'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
+            '{1}'.format(
+                self._path_from_plugin('.build/rpm'),
+                self._path_from_plugin('.build/rpm/plugin_rpm.spec')))
+
+        utils_mock.copy_files_in_dir.assert_called_once_with(
+            self._path_from_plugin('.build/rpm/RPMS/noarch/*.rpm'),
+            self.plugin_path)
+
+        utils_mock.read_if_exist.assert_has_calls([
+            mock.call(self._path_from_plugin('uninstall.sh')),
+            mock.call(self._path_from_plugin('pre_install.sh')),
+            mock.call(self._path_from_plugin('post_install.sh'))])
