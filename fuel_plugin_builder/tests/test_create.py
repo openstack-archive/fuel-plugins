@@ -31,13 +31,13 @@ class TestCreate(BaseTestCase):
         self.creator = CreatePlugin(self.plugin_path)
         self.creator.template_dir = self.template_dir
 
-    @mock.patch('fuel_plugin_builder.actions.create.utils.exists',
+    @mock.patch('fuel_plugin_builder.actions.create.utils.is_exists',
                 return_value=False)
     def test_check(self, exists_mock):
         self.creator.check()
         exists_mock.assert_called_once_with(self.plugin_path)
 
-    @mock.patch('fuel_plugin_builder.actions.create.utils.exists',
+    @mock.patch('fuel_plugin_builder.actions.create.utils.is_exists',
                 return_value=True)
     def test_check_when_plugin_exists_with_same_name(self, exists_mock):
         self.assertRaisesRegexp(
@@ -47,7 +47,7 @@ class TestCreate(BaseTestCase):
             self.creator.check)
         exists_mock.assert_called_once_with(self.plugin_path)
 
-    @mock.patch('fuel_plugin_builder.actions.create.utils.exists',
+    @mock.patch('fuel_plugin_builder.actions.create.utils.is_exists',
                 return_value=False)
     def test_check_with_invalid_name(self, exists_mock):
         self.creator.plugin_name = 'Test_plugin'

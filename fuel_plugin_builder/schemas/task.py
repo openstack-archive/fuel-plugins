@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2015 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -16,36 +16,18 @@
 
 import six
 
-from fuel_plugin_builder.validators.schemas import SchemaV3
 
+class SchemaTaskV2_1_0(object):
 
-COMPONENTS_TYPES_STR = '|'.join(
-    ['hypervisor', 'network', 'storage', 'additional_service'])
-COMPONENT_NAME_PATTERN = \
-    '^({0}):([0-9a-z_-]+:)*[0-9a-z_-]+$'.format(COMPONENTS_TYPES_STR)
-COMPATIBLE_COMPONENT_NAME_PATTERN = \
-    '^({0}):([0-9a-z_-]+:)*([0-9a-z_-]+|(\*)?)$'.format(COMPONENTS_TYPES_STR)
+    file_permissions_pattern = '^[0-7]{4}$'
 
-
-TASK_NAME_PATTERN = TASK_ROLE_PATTERN = '^[0-9a-zA-Z_-]+$|^\*$'
-NETWORK_ROLE_PATTERN = '^[0-9a-z_-]+$'
-FILE_PERMISSIONS_PATTERN = '^[0-7]{4}$'
-TASK_VERSION_PATTERN = '^\d+.\d+.\d+$'
-STAGE_PATTERN = '^(post_deployment|pre_deployment)' \
-                '(/[-+]?([0-9]*\.[0-9]+|[0-9]+))?$'
-
-ROLE_ALIASES = ('roles', 'groups', 'role')
-TASK_OBLIGATORY_FIELDS = ['id', 'type']
-ROLELESS_TASKS = ('stage')
-
-
-class SchemaV4(SchemaV3):
-
-    def __init__(self):
-        super(SchemaV4, self).__init__()
-        self.role_pattern = TASK_ROLE_PATTERN
-        self.roleless_tasks = ROLELESS_TASKS
-        self.role_aliases = ROLE_ALIASES
+    role_aliases = ('roles', 'groups', 'role')
+    stage_pattern = '^(post_deployment|pre_deployment)' \
+                    '(/[-+]?([0-9]*\.[0-9]+|[0-9]+))?$'
+    task_name_pattern = '^[0-9a-zA-Z_-]+$|^\*$'
+    task_obligatory_fields = ('id', 'type')
+    task_role_pattern = '^[0-9a-zA-Z_-]+$|^\*$'
+    task_version_pattern = '^\d+.\d+.\d+$'
 
     @property
     def _node_resolve_policy(self):
@@ -126,7 +108,7 @@ class SchemaV4(SchemaV3):
 
     @property
     def _task_stage(self):
-        return {'type': 'string', 'pattern': STAGE_PATTERN}
+        return {'type': 'string', 'pattern': self.stage_pattern}
 
     @property
     def _task_reexecute(self):
@@ -138,8 +120,17 @@ class SchemaV4(SchemaV3):
             }
         }
 
-    def _gen_task_schema(self, task_types, required=None,
-                         parameters=None):
+    @property
+    def _task_group(self):
+        return {
+            'type': 'array',
+            'items': {
+                'type': 'string',
+                'pattern': self.task_name_pattern
+            }
+        }
+
+    def _gen_task_schema(self, task_types, required=None, parameters=None):
         """Generate deployment task schema using prototype.
 
         :param task_types: task types
@@ -148,6 +139,7 @@ class SchemaV4(SchemaV3):
         :type required: list
         :param parameters: new properties dict
         :type parameters: dict
+
         :return:
         :rtype: dict
         """
@@ -163,8 +155,9 @@ class SchemaV4(SchemaV3):
         }
         parameters.setdefault("properties", {})
         parameters["properties"].setdefault("strategy", self._task_strategy)
-        task_specific_req_fields = list(set(TASK_OBLIGATORY_FIELDS +
-                                            (required or [])))
+        task_specific_req_fields = set(
+            self.task_obligatory_fields + (tuple(required) if required else ())
+        )
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'object',
@@ -173,14 +166,17 @@ class SchemaV4(SchemaV3):
                 'type': {'enum': task_types},
                 'id': {
                     'type': 'string',
-                    'pattern': TASK_NAME_PATTERN},
+                    'pattern': self.task_name_pattern
+                },
                 'version': {
-                    'type': 'string', "pattern": TASK_VERSION_PATTERN},
+                    'type': 'string',
+                    "pattern": self.task_version_pattern
+                },
                 'role': self._task_role,
                 'groups': self._task_role,
                 'roles': self._task_role,
-                'required_for': self.task_group,
-                'requires': self.task_group,
+                'required_for': self._task_group,
+                'requires': self._task_group,
                 'cross-depends': {
                     'oneOf': [
                         {'type': 'array', 'items': self._task_relation},
@@ -196,35 +192,30 @@ class SchemaV4(SchemaV3):
                     'type': 'array',
                     'items': {
                         'type': 'string',
-                        'pattern': TASK_ROLE_PATTERN}},
+                        'pattern': self.task_role_pattern}},
                 'reexecute_on': self._task_reexecute,
                 'parameters': parameters,
-            },
+            }
         }
 
     @property
-    def deployment_task_schema(self):
+    def tasks(self):
         return {
             '$schema': 'http://json-schema.org/draft-04/schema#',
             'type': 'array',
-            'items': {
-                "$ref": "#/definitions/anyTask"
-            },
-            "definitions": {
-                "anyTask": self._gen_task_schema(
-                    [
-                        'copy_files',
-                        'group',
-                        'reboot',
-                        'shell',
-                        'skipped',
-                        'stage',
-                        'sync',
-                        'puppet',
-                        'upload_file',
-                    ]
-                )
-            }
+            'items': self._gen_task_schema(
+                [
+                    'copy_files',
+                    'group',
+                    'reboot',
+                    'shell',
+                    'skipped',
+                    'stage',
+                    'sync',
+                    'puppet',
+                    'upload_file',
+                ]
+            )
         }
 
     @property
@@ -247,14 +238,17 @@ class SchemaV4(SchemaV3):
                                 'dst': {'type': 'string'}}}},
                     'permissions': {
                         'type': 'string',
-                        'pattern': FILE_PERMISSIONS_PATTERN},
+                        'pattern': self.file_permissions_pattern},
                     'dir_permissions': {
                         'type': 'string',
-                        'pattern': FILE_PERMISSIONS_PATTERN}}})
+                        'pattern': self.file_permissions_pattern}}})
 
     @property
     def group_task(self):
-        return self._gen_task_schema("group", [])
+        return self._gen_task_schema(
+            "group",
+            []
+        )
 
     @property
     def puppet_task(self):
@@ -312,11 +306,15 @@ class SchemaV4(SchemaV3):
 
     @property
     def skipped_task(self):
-        return self._gen_task_schema("skipped")
+        return self._gen_task_schema(
+            "skipped"
+        )
 
     @property
     def stage_task(self):
-        return self._gen_task_schema("stage")
+        return self._gen_task_schema(
+            "stage"
+        )
 
     @property
     def sync_task(self):
@@ -349,75 +347,5 @@ class SchemaV4(SchemaV3):
             }
         )
 
-    @property
-    def package_version(self):
-        return {'enum': ['4.0.0']}
 
-    @property
-    def metadata_schema(self):
-        schema = super(SchemaV4, self).metadata_schema
-        schema['required'].append('is_hotpluggable')
-        schema['properties']['is_hotpluggable'] = {'type': 'boolean'}
-        schema['properties']['groups']['items']['enum'].append('equipment')
-        return schema
-
-    @property
-    def attr_root_schema(self):
-        schema = super(SchemaV4, self).attr_root_schema
-        schema['properties']['attributes']['properties'] = {
-            'metadata': {
-                'type': 'object',
-                'properties': {
-                    'group': {
-                        'enum': [
-                            'general', 'security',
-                            'compute', 'network',
-                            'storage', 'logging',
-                            'openstack_services', 'other'
-                        ]
-                    }
-                }
-            }
-        }
-        return schema
-
-    @property
-    def components_items(self):
-        return {
-            'type': 'array',
-            'items': {
-                'type': 'object',
-                'required': ['name'],
-                'properties': {
-                    'name': {
-                        'type': 'string',
-                        'pattern': COMPATIBLE_COMPONENT_NAME_PATTERN
-                    },
-                    'message': {'type': 'string'}
-                }
-            }
-        }
-
-    @property
-    def components_schema(self):
-        return {
-            '$schema': 'http://json-schema.org/draft-04/schema#',
-            'type': 'array',
-            'items': {
-                'required': ['name', 'label'],
-                'type': 'object',
-                'additionalProperties': False,
-                'properties': {
-                    'name': {
-                        'type': 'string',
-                        'pattern': COMPONENT_NAME_PATTERN
-                    },
-                    'label': {'type': 'string'},
-                    'description': {'type': 'string'},
-                    'compatible': self.components_items,
-                    'requires': self.components_items,
-                    'incompatible': self.components_items,
-                    'bind': {'type': 'array'}
-                }
-            }
-        }
+task_v2_1_0 = SchemaTaskV2_1_0()
