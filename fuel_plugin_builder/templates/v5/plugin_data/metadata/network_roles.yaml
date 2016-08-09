@@ -1,0 +1,15 @@
+# Unique network role name
+- id: "example_net_role"
+  # Role mapping to network
+  default_mapping: "public"
+  properties:
+    # Should be true if network role requires subnet being set
+    subnet: true
+    # Should be true if network role requires gateway being set
+    gateway: false
+    # List of VIPs to be allocated
+    vip:
+         # Unique VIP name
+       - name: "vip_name"
+         # Optional linux namespace for VIP
+         namespace: "haproxy"

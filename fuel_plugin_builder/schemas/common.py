@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2015 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,9 +14,22 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from fuel_plugin_builder import consts
 
-from fuel_plugin_builder.validators.schemas.base import BaseSchema
-from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
-from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
-from fuel_plugin_builder.validators.schemas.v3 import SchemaV3
-from fuel_plugin_builder.validators.schemas.v4 import SchemaV4
+
+class SchemaCommonV6_0(object):
+    @property
+    def plugin_name_pattern(self):
+        return consts.PLUGIN_NAME_PATTERN
+
+    @property
+    def list_of_strings(self):
+        return {'type': 'array',
+                'items': {'type': 'string'}}
+
+    @property
+    def positive_integer(self):
+        return {'type': 'integer', 'minimum': 0}
+
+
+common_v6_0 = SchemaCommonV6_0()
