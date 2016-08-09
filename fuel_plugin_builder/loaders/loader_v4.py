@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-#    Copyright 2014 Mirantis, Inc.
+#
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,15 +14,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuel_plugin_builder import version_mapping
+from loader_base import LoaderBase
 
 
-class ValidatorManager(object):
-
-    def __init__(self, plugin_path):
-        self.plugin_path = plugin_path
-
-    def get_validator(self):
-        validator = version_mapping.get_version_mapping_from_plugin(
-            self.plugin_path)['validator']
-        return validator(self.plugin_path)
+class LoaderV4(LoaderBase):
+    _map_paths_to_data_keys = {
+        'tasks': 'tasks.yaml',
+        'environment_config': 'environment_config.yaml',
+        'deployment_tasks': 'deployment_tasks.yaml',
+        'network_roles': 'network_roles.yaml',
+        'node_roles': 'node_roles.yaml',
+        'volumes': 'volumes.yaml',
+        'components': 'components.yaml'
+    }

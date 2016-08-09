@@ -19,11 +19,11 @@ import os
 import re
 
 from fuel_plugin_builder.actions import BaseAction
-from fuel_plugin_builder import consts
-from fuel_plugin_builder import errors
-from fuel_plugin_builder import messages
-from fuel_plugin_builder import utils
-from fuel_plugin_builder import version_mapping
+import consts
+import errors
+import messages
+import utils
+import version_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +36,14 @@ class CreatePlugin(BaseAction):
         self.plugin_name = utils.basename(plugin_path.rstrip('/'))
         self.plugin_path = plugin_path
         self.package_version = (package_version or
-                                version_mapping.latest_version)
+                                consts.LATEST_VERSION)
 
         self.render_ctx = {'plugin_name': self.plugin_name}
         self.template_paths = version_mapping.get_plugin_for_version(
             self.package_version)['templates']
 
     def check(self):
-        if utils.exists(self.plugin_path):
+        if utils.is_exists(self.plugin_path):
             raise errors.PluginDirectoryExistsError(
                 'Plugins directory {0} already exists, '
                 'choose another name'.format(self.plugin_path))

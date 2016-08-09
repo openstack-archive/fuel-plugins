@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-#    Copyright 2015 Mirantis, Inc.
+#
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,9 +14,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from loader_base import LoaderBase
 
-from fuel_plugin_builder.validators.schemas.base import BaseSchema
-from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
-from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
-from fuel_plugin_builder.validators.schemas.v3 import SchemaV3
-from fuel_plugin_builder.validators.schemas.v4 import SchemaV4
+
+class LoaderV3(LoaderBase):
+    _map_paths_to_data_keys = {
+        'tasks': 'tasks.yaml',
+        'environment_config': 'environment_config.yaml',
+        'deployment_tasks': 'deployment_tasks.yaml',
+        'network_roles': 'network_roles.yaml',
+        'node_roles': 'node_roles.yaml',
+        'volumes': 'volumes.yaml'
+    }
