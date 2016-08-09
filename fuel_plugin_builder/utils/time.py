@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2015 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,9 +14,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
 
-from fuel_plugin_builder.validators.schemas.base import BaseSchema
-from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
-from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
-from fuel_plugin_builder.validators.schemas.v3 import SchemaV3
-from fuel_plugin_builder.validators.schemas.v4 import SchemaV4
+
+def get_current_year():
+    """Returns current year
+    """
+    return str(datetime.date.today().year)
