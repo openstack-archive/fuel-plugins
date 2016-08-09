@@ -14,12 +14,6 @@ built_plugins/
 # Packages
 *.egg*
 *.egg-info
-dist
-build
-eggs
-parts
-bin
-var
 sdist
 develop-eggs
 .installed.cfg
@@ -62,3 +56,4 @@ ChangeLog
 .*.swp
 .*sw?
 .idea
+.docker_build
