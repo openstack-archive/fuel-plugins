@@ -16,15 +16,15 @@
 
 import argparse
 import logging
-import six
 import sys
+
+import six
 
 from fuel_plugin_builder import actions
 from fuel_plugin_builder import errors
-from fuel_plugin_builder import messages
-from fuel_plugin_builder.validators import ValidatorManager
-
 from fuel_plugin_builder.logger import configure_logger
+from fuel_plugin_builder import utils
+from fuel_plugin_builder import version_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +38,19 @@ def handle_exception(exc):
     logger.exception(exc)
 
     if isinstance(exc, errors.FuelCannotFindCommandError):
-        print_err(messages.HEADER)
-        print_err(messages.INSTALL_REQUIRED_PACKAGES)
+        print_err('=' * 50)
+        print_err("""
+Was not able to find required packages.
+
+If you use Ubuntu, run:
+
+    # sudo apt-get install createrepo rpm dpkg-dev
+
+If you use CentOS, run:
+
+    # yum install createrepo dpkg-devel dpkg-dev rpm rpm-build
+
+""")
 
     elif isinstance(exc, errors.ValidationError):
         print_err('Validation failed')
@@ -63,7 +74,7 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(
         description='fpb is a fuel plugin builder which '
-        'helps you create plugin for Fuel')
+                    'helps you create plugin for Fuel')
 
     # TODO(vsharshov): we should move to subcommands instead of
     # exclusive group, because in this case we could not
@@ -99,15 +110,18 @@ def perform_action(args):
 
     :param args: argparse object
     """
+
     if args.create:
-        actions.CreatePlugin(args.create, args.package_version).run()
-        print('Plugin is created')
+        report = actions.CreatePlugin(args.create, args.package_version).run()
     elif args.build:
-        actions.make_builder(args.build).run()
-        print('Plugin is built')
+        report = actions.make_builder(args.build).run()
     elif args.check:
-        ValidatorManager(args.check).get_validator().validate()
-        print('Plugin is valid')
+        report = version_mapping.get_validator(args.check).validate()
+    else:
+        report = utils.ReportNode('', level='error')
+        print("Invalid args: {}".format(args))
+        return
+    print (report.render())
 
 
 def package_version_check(args, parser):
