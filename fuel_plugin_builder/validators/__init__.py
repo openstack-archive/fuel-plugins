@@ -14,9 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuel_plugin_builder.validators.manager import ValidatorManager
-from fuel_plugin_builder.validators.validator_v1 import ValidatorV1
-from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
-from fuel_plugin_builder.validators.validator_v3 import ValidatorV3
-from fuel_plugin_builder.validators.validator_v4 import ValidatorV4
-from fuel_plugin_builder.validators.base import LegacyBaseValidator
+from .validator_base import ValidatorBase
+from .validator_v1 import ValidatorV1
+from .validator_v2 import ValidatorV2
+from .validator_v3 import ValidatorV3
+from .validator_v4 import ValidatorV4
+from .validator_v5 import ValidatorV5

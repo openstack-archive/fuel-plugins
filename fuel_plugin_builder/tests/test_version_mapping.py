@@ -14,53 +14,55 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuel_plugin_builder import errors
+from fuel_plugin_builder import builders
+from fuel_plugin_builder import loaders
 from fuel_plugin_builder.tests.base import BaseTestCase
-from fuel_plugin_builder.validators import ValidatorV1
-from fuel_plugin_builder.validators import ValidatorV2
-from fuel_plugin_builder.validators import ValidatorV3
-from fuel_plugin_builder.validators import ValidatorV4
-from fuel_plugin_builder.version_mapping import get_plugin_for_version
+from fuel_plugin_builder import validators
+from fuel_plugin_builder.version_mapping import \
+    get_plugin_package_config
 
 
 class TestVersionMapping(BaseTestCase):
-
-    def test_get_plugin_for_version_1(self):
-        result = get_plugin_for_version('1.0.0')
-        self.assertEqual(result['version'], '1.0.0')
-        self.assertEqual(
-            result['templates'],
-            ['templates/base', 'templates/v1/'])
-        self.assertEqual(result['validator'], ValidatorV1)
-
-    def test_get_plugin_for_version_2(self):
-        result = get_plugin_for_version('2.0.0')
-        self.assertEqual(result['version'], '2.0.0')
-        self.assertEqual(
-            result['templates'],
-            ['templates/base', 'templates/v2/plugin_data/'])
-        self.assertEqual(result['validator'], ValidatorV2)
-
-    def test_get_plugin_for_version_3(self):
-        result = get_plugin_for_version('3.0.0')
-        self.assertEqual(result['version'], '3.0.0')
-        self.assertEqual(
-            result['templates'],
-            ['templates/base', 'templates/v3/plugin_data/'])
-        self.assertEqual(result['validator'], ValidatorV3)
-
-    def test_get_plugin_for_version_4(self):
-        result = get_plugin_for_version('4.0.0')
-        self.assertEqual(result['version'], '4.0.0')
-        self.assertEqual(
-            result['templates'],
-            [
-                'templates/base',
-                'templates/v3/plugin_data/',
-                'templates/v4/plugin_data/'])
-        self.assertEqual(result['validator'], ValidatorV4)
+    def test_get_plugin_for_existing_versions(self):
+        for n, valdator, builder, loader in (
+            (
+                1,
+                validators.ValidatorV1,
+                builders.BuilderV1,
+                loaders.PluginLoaderV1
+            ),
+            (
+                2,
+                validators.ValidatorV2,
+                builders.BuilderV2,
+                loaders.PluginLoaderV1
+            ),
+            (
+                3,
+                validators.ValidatorV3,
+                builders.BuilderV3,
+                loaders.PluginLoaderV3
+            ),
+            (
+                4,
+                validators.ValidatorV4,
+                builders.BuilderV3,
+                loaders.PluginLoaderV4
+            ),
+            (
+                5,
+                validators.ValidatorV5,
+                builders.BuilderV3,
+                loaders.PluginLoaderV5
+            )
+        ):
+            result = get_plugin_package_config('{}.0.0'.format(n))
+            self.assertEqual(result['version'], '{}.0.'.format(n))
+            self.assertEqual(result['validator'], valdator)
+            self.assertEqual(result['builder'], builder)
+            self.assertEqual(result['loader'], loader)
 
     def test_get_plugin_for_version_raises_error(self):
-        with self.assertRaisesRegexp(errors.WrongPackageVersionError,
+        with self.assertRaisesRegexp(Exception,
                                      'Wrong package version "2999"'):
-            get_plugin_for_version('2999')
+            get_plugin_package_config('2999')

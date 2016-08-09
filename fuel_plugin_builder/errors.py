@@ -17,6 +17,15 @@ class FuelPluginException(Exception):
     pass
 
 
+class ReportedException(FuelPluginException):
+    def __init__(self, report):
+        self.report = report
+        super(ReportedException, self).__init__()
+
+    def __str__(self):
+        return self.report.render()
+
+
 class FuelCannotFindCommandError(FuelPluginException):
     pass
 
@@ -45,10 +54,14 @@ class FileIsEmpty(ValidationError):
 
 
 class FileDoesNotExist(ValidationError):
-    def __init__(self, file_path):
+    def __init__(self, file_path=None):
         super(FileDoesNotExist, self).__init__(
             "File '{0}' does not exist".format(file_path)
         )
+
+
+class FilesInPathDoesNotExist(ValidationError):
+    pass
 
 
 class WrongPackageVersionError(FuelPluginException):
@@ -61,3 +74,41 @@ class ReleasesDirectoriesError(FuelPluginException):
 
 class WrongPluginDirectoryError(FuelPluginException):
     pass
+
+
+class InspectionConfigurationError(FuelPluginException):
+    pass
+
+
+class InvalidFileFormat(FuelPluginException):
+    message = "Invalid file format: {}, supported formats are:"
+
+    def __init__(self, path, supported_formats, *args, **kwargs):
+        super(InvalidFileFormat, self).__init__(*args, **kwargs)
+        self.message = self.message.format(path, supported_formats.join(', '))
+
+
+class CantReadFile(FuelPluginException):
+    message = "Can't read file: {}"
+
+    def __init__(self, path, *args, **kwargs):
+        super(CantReadFile, self).__init__(*args, **kwargs)
+        self.message = self.message.format(path)
+
+
+class InvalidFileExtension(FuelPluginException):
+    def __init__(self, extension):
+        super(InvalidFileExtension, self).__init__(
+            "Invalid file extension: {}".format(extension)
+        )
+
+
+class NoPluginFileFound(FuelPluginException):
+    message = "Plugin file not found"
+
+    def __init__(self, message):
+        self.message = message
+
+
+class FailedToLoadPlugin(FuelPluginException):
+    message = "Failed to load plugin"

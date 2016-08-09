@@ -1,0 +1,21 @@
+#!/bin/bash
+set -eux
+
+command -v fpm >/dev/null 2>&1 || {
+    echo >&2 "Install 'fpm' to build this plugin. Aborting."; exit 1;
+}
+
+ruby -e "require 'fpm'" 2>&1 || {
+    echo >&2 "'Fpm' binary file is present, but gem seems to be broken! Aborting."; exit 1;
+}
+
+ROOT=$(dirname `readlink -f $0`)
+
+UBUNTU_REPO_PATH=$ROOT/repositories/ubuntu
+CENTOS_REPO_PATH=$ROOT/repositories/centos
+
+rm -f $UBUNTU_REPO_PATH/*.deb
+rm -f $CENTOS_REPO_PATH/*.rpm
+
+fpm -t deb -p $UBUNTU_REPO_PATH -n fuel-simple-service -v 4.0.0 -s dir $ROOT/fuel-simple-service.py=/usr/bin/fuel-simple-service.py
+fpm -t rpm -p $CENTOS_REPO_PATH -n fuel-simple-service -v 4.0.0 -s dir $ROOT/fuel-simple-service.py=/usr/bin/fuel-simple-service.py
