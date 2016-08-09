@@ -18,22 +18,17 @@ from __future__ import unicode_literals
 
 import abc
 import logging
-import os
-
 from os.path import join as join_path
 
-from fuel_plugin_builder.actions import BaseAction
+import fuel_plugin_builder
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators import ValidatorManager
-from fuel_plugin_builder import version_mapping
-
+from .base import BaseAction
 
 logger = logging.getLogger(__name__)
 
 
 class BaseBuildPlugin(BaseAction):
-
     @abc.abstractproperty
     def requires(self):
         """Should return a list of commands which
@@ -55,9 +50,9 @@ class BaseBuildPlugin(BaseAction):
 
         self.pre_build_hook_cmd = './pre_build_hook'
         self.meta = utils.parse_yaml(
-            join_path(self.plugin_path, 'metadata.yaml')
+            utils.join_path(self.plugin_path, 'metadata.yaml')
         )
-        self.build_dir = join_path(self.plugin_path, '.build')
+        self.build_dir = utils.join_path(self.plugin_path, '.build')
         self.build_src_dir = join_path(self.build_dir, 'src')
         self.checksums_path = join_path(self.build_src_dir, 'checksums.sha1')
         self.name = self.meta['name']
@@ -92,8 +87,8 @@ class BaseBuildPlugin(BaseAction):
 
         releases_paths = {}
         for release in self.meta['releases']:
-            releases_paths.setdefault(release['os'], [])
-            releases_paths[release['os']].append(
+            releases_paths.setdefault(release['operating_system'], [])
+            releases_paths[release['operating_system']].append(
                 join_path(self.build_src_dir, release['repository_path']))
 
         self.build_ubuntu_repos(releases_paths.get('ubuntu', []))
@@ -129,11 +124,11 @@ class BaseBuildPlugin(BaseAction):
                     ', '.join(not_found)))
 
     def _check_structure(self):
-        ValidatorManager(self.plugin_path).get_validator().validate()
+        from fuel_plugin_builder import version_mapping
+        version_mapping.get_validator(self.plugin_path).validate(self.meta)
 
 
 class BuildPluginV1(BaseBuildPlugin):
-
     requires = ['rpm', 'createrepo', 'dpkg-scanpackages']
 
     @property
@@ -152,7 +147,6 @@ class BuildPluginV1(BaseBuildPlugin):
 
 
 class BuildPluginV2(BaseBuildPlugin):
-
     requires = ['rpmbuild', 'rpm', 'createrepo', 'dpkg-scanpackages']
 
     rpm_spec_src_path = 'templates/v2/build/plugin_rpm.spec.mako'
@@ -237,30 +231,24 @@ class BuildPluginV2(BaseBuildPlugin):
 
 
 class BuildPluginV3(BuildPluginV2):
-
     rpm_spec_src_path = 'templates/v3/build/plugin_rpm.spec.mako'
     release_tmpl_src_path = 'templates/v3/build/Release.mako'
 
     def _make_data_for_template(self):
         data = super(BuildPluginV3, self)._make_data_for_template()
 
-        uninst = utils.read_if_exist(
-            join_path(self.plugin_path, "uninstall.sh"))
-
-        preinst = utils.read_if_exist(
-            join_path(self.plugin_path, "pre_install.sh"))
-
-        postinst = utils.read_if_exist(
-            join_path(self.plugin_path, "post_install.sh"))
-
-        plugin_build_version = str(self.meta.get('build_version', '1'))
-
-        data.update(
-            {'postinstall_hook': postinst,
-             'preinstall_hook': preinst,
-             'uninstall_hook': uninst,
-             'build_version': plugin_build_version}
-        )
+        data['build_version'] = str(self.data.get('build_version', '1'))
+        fm = utils.FilesManager()
+        for key, script_file in (
+            ('uninstall_hook', 'uninstall.sh'),
+            ('preinstall_hook', 'pre_install.sh'),
+            ('postinstall_hook', 'post_install.sh')
+        ):
+            try:
+                data[key] = fm.load(
+                    join_path(self.plugin_path, script_file))
+            except errors.NoPluginFileFound:
+                pass
 
         return data
 
@@ -275,7 +263,8 @@ def make_builder(plugin_path):
     :param str plugin_path: path to the plugin
     :returns: specific version of builder object
     """
-    builder = version_mapping.get_version_mapping_from_plugin(
-        plugin_path)['builder']
-
+    builder = \
+        fuel_plugin_builder.version_mapping.get_plugin_package_config_for_path(
+            plugin_path
+        )['builder']
     return builder(plugin_path)
