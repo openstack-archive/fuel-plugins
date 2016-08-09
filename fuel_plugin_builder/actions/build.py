@@ -16,17 +16,9 @@
 
 from __future__ import unicode_literals
 
-import abc
 import logging
-import os
 
-from os.path import join as join_path
-
-from fuel_plugin_builder.actions import BaseAction
-from fuel_plugin_builder import errors
-from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators import ValidatorManager
-from fuel_plugin_builder import version_mapping
+import version_mapping
 
 
 logger = logging.getLogger(__name__)
@@ -276,6 +268,7 @@ def make_builder(plugin_path):
     :returns: specific version of builder object
     """
     builder = version_mapping.get_version_mapping_from_plugin(
-        plugin_path)['builder']
+        plugin_path
+    )['builder']
 
     return builder(plugin_path)
