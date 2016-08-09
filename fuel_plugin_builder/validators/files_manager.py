@@ -16,27 +16,103 @@
 import json
 import yaml
 
-import utils.path_tools
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils
 
 
-# All files operations should be done through this class
+def deserializer_json(raw_data, *args, **kwargs):
+    """Load JSON data from file object.
 
+    :param raw_data: raw data
+    :type raw_data: basestring
+
+    :return: data
+    :rtype: list|dict
+    """
+    return json.load(raw_data, *args, **kwargs)
+
+
+def deserializer_yaml(raw_data, loader=yaml.SafeLoader, *args, **kwargs):
+    """Load YAML data from file object.
+
+    :param raw_data: raw data
+    :type raw_data: basestring
+    :param loader: YAML-specific loader
+    :type loader: yaml.Loader
+
+    :return: data
+    :rtype: list|dict
+    """
+    return yaml.load(raw_data, Loader=loader)
+
+
+def deserializer_plaintext(raw_data, *args, **kwargs):
+    """Load YAML data from file object.
+
+    :param raw_data: text
+    :type raw_data: basestring
+
+    :return: data
+    :rtype: list|dict
+    """
+    return raw_data
+
+
+def serializer_json(data, *args, **kwargs):
+    """Load JSON data from file object.
+
+    :param data: data
+    :type data: dict|list
+
+    :return: raw data
+    :rtype: basestring
+    """
+    return json.dumps(data, *args, **kwargs)
+
+
+def serializer_yaml(data, dumper=yaml.SafeDumper, *args, **kwargs):
+    """Load YAML data from file object.
+
+    :param data: data
+    :type data: dict|list
+    :param dumper: YAML-specific dumper
+    :type dumper: yaml.Dumper
+
+    :return: data
+    :rtype: basestring
+    """
+    return yaml.dump(data, Dumper=dumper, **kwargs)
+
+
+def serializer_plaintext(cls, data, *args, **kwargs):
+    """Serialize text to string.
+
+    :param data: data
+    :type data: basestring
+
+    :return: data
+    :rtype: basestring
+    """
+    return data
+
+
+file_deserializers = {
+    "json": deserializer_json,
+    "yaml": deserializer_yaml,
+    "txt": deserializer_plaintext
+}
+
+file_serializers = {
+    "json": serializer_json,
+    "yaml": serializer_yaml,
+    "txt": serializer_plaintext
+}
+
+
+# All files loading and saving operations are recommended to be performed via
+# FilesManager class
 class FilesManager(object):
     """Converts files to data and back."""
-
-    # file loading functions
-    file_deserializers = {
-        "json": json.load,
-        "yaml": lambda f, loader=yaml.SafeLoader: yaml.load(f, Loader=loader)
-    }
-
-    # file loading functions
-    file_serializers = {
-        "json": json.dumps,
-        "yaml": lambda f, dumper=yaml.SafeDumper: yaml.dump(f, Dumper=dumper)
-    }
 
     def load(self, path, *args, **kwargs):
         """Load file from path.
@@ -47,15 +123,20 @@ class FilesManager(object):
         :return: data
         :rtype: list|dict
         """
-        ext = utils.path_tools.get_path_extension(path)
-        loader = files_manager.file_deserializers.get(ext)
+
+        path = utils.fs.get_best_path_by_mask(path)
+        ext = utils.fs.get_path_extension(path)
+
+        loader = file_deserializers.get(ext)
 
         if loader is not None:
-            return loader(path, *args, **kwargs)
+            with open(path, 'r') as content_file:
+                content = content_file.read()
+            return loader(content, *args, **kwargs)
         else:
             raise errors.InvalidFileFormat(
                 path,
-                list(self.file_deserializers)
+                list(file_deserializers)
             )
 
     def save(self, path, *args, **kwargs):
@@ -67,16 +148,13 @@ class FilesManager(object):
         :return: data
         :rtype: list|dict
         """
-        ext = utils.path_tools.get_path_extension(path)
-        saver = files_manager.file_serializers.get(ext)
+        ext = utils.fs.get_path_extension(path)
+        serializer = file_serializers.get(ext)
 
-        if saver is not None:
-            return saver(path, *args, **kwargs)
+        if serializer is not None:
+            return serializer(path, *args, **kwargs)
         else:
-            raise errors.InvalidFileFormat(
-                path,
-                list(self.file_serializers)
-            )
+            raise errors.InvalidFileFormat(path, list(file_serializers))
 
 # Global export
 files_manager = FilesManager()

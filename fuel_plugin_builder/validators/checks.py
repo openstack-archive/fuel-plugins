@@ -167,7 +167,7 @@ def check_file_exists(path):
     """
     result = ReportNode(text=path)
 
-    if not utils.paths.is_exists(path):
+    if not utils.fs.is_exists(path):
         result.error('File not found')
     return result
 
@@ -183,21 +183,87 @@ def check_release_compatible(basic_version, plugin_metadata):
     :return: report
     :rtype ReportNode:
     """
-    result = ReportNode("Checking version compatibility")
-    result.info('Expected Fuel version >={0}'.format(basic_version))
+    result = ReportNode(u'Checking version compatibility')
+    result.info(u'Expected Fuel version >= {0}'.format(basic_version))
+    incompatible_versions = list()
+    compatible_versions = list()
 
-    for fuel_release in plugin_metadata.get('fuel_version', []):
+    for fuel_version in plugin_metadata.get('fuel_version', []):
         if (
-            utils.strict_version(fuel_release) <
+            utils.strict_version(fuel_version) <
             utils.strict_version(basic_version)
         ):
-            result.error(
-                'Current plugin format {0} is not compatible with {2} Fuel'
-                ' release. Fuel version must be {1} or higher.'
-                ' Please remove {2} version from metadata.yaml file or'
-                ' downgrade package_version.'
-                .format(
+            incompatible_versions.append(fuel_version)
+        else:
+            compatible_versions.append(fuel_version)
+
+    if not compatible_versions:
+        result.error(
+            u'Current plugin format {0} is not compatible with following Fuel '
+            u'versions: {2}\n'
+            u'Fuel version must be {1} or higher. '
+            u'Please remove {2} version from metadata.yaml file or '
+            u'downgrade package_version.'
+            .format(
+                plugin_metadata['package_version'],
+                basic_version,
+                ', '.join(incompatible_versions)))
+
+    if compatible_versions:
+        if incompatible_versions:
+            result.warning(
+                u'Current plugin format {0} is not compatible with following '
+                u'Fuel versions: {2}\n'
+                u'Fuel version must be {1} or higher. '
+                u'Please remove {2} version from metadata.yaml file or '
+                u'downgrade package_version.'.format(
                     plugin_metadata['package_version'],
                     basic_version,
-                    fuel_release))
+                    ', '.join(incompatible_versions)))
+
+        result.info(u'Check done!')
+
     return result
+#
+#
+# def check_fuel_compatible(minimal_fuel_version, plugin_metadata):
+#     """Checks version compatibility.
+#
+#     :param minimal_fuel_version: basic supported version
+#     :type minimal_fuel_version: str
+#     :param plugin_metadata: plugin metadata root
+#     :type plugin_metadata: dict
+#
+#     :return: report
+#     :rtype ReportNode:
+#     """
+#     report = ReportNode(u'Checking version compatibility')
+#     report.info(u'Expected Fuel version >= {0}'.format(minimal_fuel_version))
+#
+#     compatible_version_found = False
+#
+#     for metadata_fuel_version in plugin_metadata.get('fuel_version', []):
+#         if (
+#             utils.strict_version(metadata_fuel_version) <
+#             utils.strict_version(minimal_fuel_version)
+#         ):
+#             report.warning(
+#                 u'Current plugin package format {package_version} is not '
+#                 u'compatible with {metadata_fuel_version} Fuel version. '
+#                 u'Fuel version must be {minimal_fuel_version} or higher. '
+#                 u'Please remove {metadata_fuel_version} version from '
+#                 u'{metadata_path} file or downgrade package_version.'
+#                 .format(
+#                     package_version=plugin_metadata['package_version'],
+#                     minimal_fuel_version=minimal_fuel_version,
+#                     metadata_fuel_version=metadata_fuel_version,
+#                     metadata_path='metadata.yaml'
+#                 ))
+#         else:
+#             report.info(u"Compatible version found: {}"
+#                         u"".format(metadata_fuel_version))
+#             compatible_version_found = True
+#
+#     if not compatible_version_found:
+#         report.error(u'No compatible versions found')
+#     return report

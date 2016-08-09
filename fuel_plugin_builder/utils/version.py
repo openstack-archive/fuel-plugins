@@ -13,11 +13,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import distutils
 
 
-def strict_version(basic_version):
-    return distutils.version.StrictVersion(basic_version)
+def strict_version(minimal_fuel_version):
+    return distutils.version.StrictVersion(minimal_fuel_version)
 
 
 def version_split_name_rpm(version):

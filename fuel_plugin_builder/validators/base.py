@@ -33,7 +33,22 @@ from fuel_plugin_builder.validators import checks
 logger = logging.getLogger(__name__)
 
 
-class BaseValidator(object):
+class TestExecutionResult(object):
+    def __init__(self, process_handle, out, err):
+        self.return_code = process_handle.returncode
+        self.stdout = out
+        self.stderr = err
+
+    @property
+    def has_errors(self):
+        return self.return_code != 0
+
+    @property
+    def is_return_code_zero(self):
+        return self.return_code == 0
+
+
+class BaseValidator(TestExecutionResult):
     """Base Validator.
 
     New BaseValidator targeted to plugin package version >= 5.0.0 and using
@@ -48,6 +63,9 @@ class BaseValidator(object):
     test and debug where and what checks is applied.
     """
 
+    package_version = '0.0.0'
+    minimal_fuel_version = '0.0'
+
     def __init__(self, plugin_path):
         self.plugin_path = plugin_path
 
@@ -61,24 +79,25 @@ class BaseValidator(object):
         """
         return os.path.join(self.plugin_path, path)
 
-    @staticmethod
-    def load_root_file(root_file_path=consts.ROOT_FILE_PATH_AND_NAME):
-        """Get where is plugin root is located.
+    def load_main_metadata_file(self, main_file_path=consts.ROOT_FILE_MASK):
+        """Get plugin root data (usually it's metadata.yaml)
 
-        :param root_file_path: where root file is located relative the plugin
-        root.
-        :type root_file_path: str
-        :return:
+        :param main_file_path: root file is located relative the plugin root
+        :type main_file_path: str
+
+        :return: data
+        :rtype: list|dict
         """
         try:
-
-            return files_manager.load(root_file_path)
-        except IOError:
-            raise errors.FileDoesNotExist(
-                'No plugin root file found here:\n{}'.format(
-                    root_file_path
-                ),
-            )
+            path = self.get_absolute_path(main_file_path)
+            return files_manager.load(path)
+        except Exception as exc:
+            raise exc
+            # errors.FileDoesNotExist(
+            #     'No plugin root file found here:\n{}'.format(
+            #         main_file_path
+            #     ),
+            # )
 
     def validate(self, plugin_path=None):
         """Entry point of validator.
@@ -95,14 +114,15 @@ class BaseValidator(object):
         # create root ReportNode and place all inspections results under it
         report = ReportNode('Validating: {0}'.format(self.plugin_path))
 
-        result = ReportNode()
         try:
-            data = self.load_root_file()
+            root_data = self.load_main_metadata_file()
+            report.add_nodes(
+                checks.check_release_compatible(
+                    self.minimal_fuel_version, root_data
+                )
+            )
+
         except Exception as exc:
-            result.error(exc.message)
+            report.error(exc)
 
-        sys.stdout.write(
-            report.render(add_summary=True)
-        )
-
-        return report.ok
+        return report

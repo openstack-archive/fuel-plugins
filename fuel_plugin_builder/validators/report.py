@@ -13,6 +13,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import six
+import traceback
 
 from fuel_plugin_builder import consts
 from fuel_plugin_builder import errors
@@ -32,7 +34,7 @@ class ReportNode(object):
         """Basic unit of report tree.
 
         :param text: node text
-        :type text: str
+        :type text: basestring
         :param children: list of child ReportNodes
         :type children: list[ReportNode]
         :param failed: failure flag that affects rendering
@@ -47,7 +49,7 @@ class ReportNode(object):
 
         :param level: indent level
         :type level: int
-        :return: failed flag and list of message strings
+        :return: failed flag and list of message lines
         :rtype: (list[str], bool)
         """
         indent_size = consts.REPORT_INDENT_SIZE * level
@@ -56,14 +58,14 @@ class ReportNode(object):
         indent = indent_size * ' '
         error_indent = error_indent_size * ' '
 
-        strings = []
+        lines = []
         failed = self.failed
         # no indent is required if we have no output on this level
         next_level = level + (1 if self.text else 0)
         for child in self.children:
             child_strings, child_failed = child._render(next_level)
             failed = child_failed or failed
-            strings.extend(child_strings)
+            lines.extend(child_strings)
 
         if self.text:
             output = ''.join([
@@ -71,16 +73,9 @@ class ReportNode(object):
                 consts.REPORT_FAILURE_POINTER if failed else '',
                 self.text
             ])
-            strings.insert(0, output)
-        return strings, failed
+            lines.insert(0, output)
 
-    @property
-    def ok(self):
-        return self.count_failures() == 0
-
-    @property
-    def failed(self):
-        return self.count_failures() > 0
+        return lines, failed
 
     def add_nodes(self, *nodes):
         """Add single node or several nodes.
@@ -92,37 +87,61 @@ class ReportNode(object):
         for node in nodes:
             if not isinstance(node, ReportNode):
                 raise errors.InspectionConfigurationError(
-                    "This value is not ReportNode {0}".format(node))
+                    u"This value is not ReportNode {0}".format(node))
             self.children.append(node)
         return self
 
-    def error(self, msg, fail=True):
+    def error(self, msg_or_exc, *args, **kwargs):
         """Add child ReportNode with error message.
 
-        :param msg: text
-        :type msg: str
-        :param fail: set node as failed
-        :type fail: bool
+        :param msg_or_exc: message or exception
+        :type msg_or_exc: str|basestring|Exception
         """
-        if fail:
-            self.failed = True
-        return self.add_nodes(ReportNode('ERROR: ' + msg, failed=True))
+        self.failed = True
+        if isinstance(msg_or_exc, six.string_types):
+            self.add_nodes(
+                ReportNode(u'ERROR: {}'.format(msg_or_exc))
+            )
 
-    def warning(self, msg):
+        elif isinstance(msg_or_exc, Exception):
+            self.add_nodes(
+                ReportNode(
+                    u'ERROR: {}'.format(traceback.print_exc(msg_or_exc)))
+            )
+
+        self.add_nodes(
+            *(
+                ReportNode(u'ERROR: {}'.format(arg))
+                for arg in args
+            )
+        )
+        self.add_nodes(
+            *(
+                ReportNode(u'ERROR: {}: {}'.format(key, kwargs[key]))
+                for key in kwargs
+            )
+        )
+        return self
+
+    def warning(self, msg, *args, **kwargs):
         """Add child ReportNode with warning message.
 
         :param msg: text
-        :type msg: str
+        :type msg: str|basestring
         """
-        return self.add_nodes(ReportNode('WARNING: ' + msg, failed=False))
+        return self.add_nodes(
+            ReportNode(u'WARNING: {}'.format(msg), failed=False)
+        )
 
-    def info(self, msg):
+    def info(self, msg, *args, **kwargs):
         """Add child ReportNode with info message.
 
         :param msg: text
-        :type msg: str
+        :type msg: str|basestring
         """
-        return self.add_nodes(ReportNode('INFO: ' + msg, failed=False))
+        return self.add_nodes(
+            ReportNode(u'INFO: {}'.format(msg), failed=False)
+        )
 
     def render(self, add_summary=True):
         """Render report tree to the text.
@@ -131,24 +150,24 @@ class ReportNode(object):
         :type add_summary: bool
 
         :return: report strings
-        :rtype: str
+        :rtype: str|basestring
         """
         strings, _ = self._render()
 
         if add_summary:
             strings.append('')
-            failures_count = self.count_failures()
-            if failures_count:
+            fail_count = self.count_failures()
+            if fail_count:
                 strings += [
-                    'VALIDATION FAILED!',
-                    'Please fix {0} errors listed above.'.format(
-                        failures_count)
+                    u'Validation failed!',
+                    u'Please fix {} errors listed above.'.format(fail_count)
                 ]
             else:
                 strings += [
                     'Validation successful!'
                 ]
 
+        print "\n".join(strings)
         return "\n".join(strings)
 
     def count_failures(self, start_from=0):

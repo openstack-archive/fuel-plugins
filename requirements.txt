@@ -2,8 +2,8 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
-pbr>=1.6
-six>=1.5.2
-Mako==0.9.1
-PyYAML==3.10
 jsonschema==2.4.0
+Mako==0.9.1
+pbr>=1.6
+PyYAML==3.10
+six>=1.5.2

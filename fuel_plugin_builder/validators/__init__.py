@@ -17,7 +17,3 @@
 from fuel_plugin_builder.validators.legacy_base import LegacyBaseValidator
 from fuel_plugin_builder.validators.manager import ValidatorManager
 from fuel_plugin_builder.validators.files_manager import files_manager
-from fuel_plugin_builder.validators.validator_v1 import ValidatorV1
-from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
-from fuel_plugin_builder.validators.validator_v3 import ValidatorV3
-from fuel_plugin_builder.validators.validator_v4 import ValidatorV4

@@ -21,7 +21,7 @@ import six
 class LegacyBaseValidator(object):
     """This class is deprecated, please, use BaseValidator instead."""
     # @abc.abstractproperty
-    # def basic_version(self):
+    # def minimal_fuel_version(self):
     #     pass
     #
     # def __init__(self, plugin_path):
@@ -163,7 +163,7 @@ class LegacyBaseValidator(object):
     #     """
     #     meta = utils.parse_yaml(self.meta_path)
     #     for fuel_release in meta['fuel_version']:
-    #         if StrictVersion(fuel_release) < StrictVersion(self.basic_version):
+    #         if StrictVersion(fuel_release) < StrictVersion(self.minimal_fuel_version):
     #             raise errors.ValidationError(
     #                 'Current plugin format {0} is not compatible with {2} Fuel'
     #                 ' release. Fuel version must be {1} or higher.'
@@ -171,6 +171,6 @@ class LegacyBaseValidator(object):
     #                 ' downgrade package_version.'
     #                 .format(
     #                     meta['package_version'],
-    #                     self.basic_version,
+    #                     self.minimal_fuel_version,
     #                     fuel_release))
     pass

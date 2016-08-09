@@ -14,11 +14,36 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from fuel_plugin_builder import errors
 
-def make_schema(required, properties):
+
+def make_schema(required_fields, properties, root_type='object'):
+    """Make JSON schema v4 wrapper.
+
+    :param required_fields:
+    :type required_fields: list[str]
+    :param properties: properties
+    :type required_fields: dict
+    :param root_type: object type
+    :type root_type: root object type
+
+    :return: schema
+    :rtype: dict
+    """
+    possible_root_types = ('object', 'array')
+
+    if root_type not in possible_root_types:
+        raise errors.FuelPluginException(
+            'Invalid JSON schema root object type: {}, '
+            'possible values are: {}'.format(
+                root_type,
+                ', '.join(possible_root_types)
+            )
+        )
+
     return {
         '$schema': 'http://json-schema.org/draft-04/schema#',
-        'type': 'object',
-        'required': required,
+        'type': root_type,
+        'required': required_fields or [],
         'properties': properties
     }

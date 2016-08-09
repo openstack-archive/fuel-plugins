@@ -20,6 +20,6 @@ from fuel_plugin_builder.validators.base import BaseValidator
 
 
 class ValidatorV5(BaseValidator):
+    package_version = '5.0.0'
+    minimal_fuel_version = '9.1'
     schema_v5 = schemas.SchemaV5()
-    schema_v4 = schemas.SchemaV4()
-    schema_v3 = schemas.SchemaV3()

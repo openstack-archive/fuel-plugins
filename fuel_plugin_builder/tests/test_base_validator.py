@@ -16,6 +16,7 @@
 import jsonschema
 import mock
 
+import utils
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 from fuel_plugin_builder.validators import LegacyBaseValidator
@@ -27,7 +28,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
         class NewValidator(LegacyBaseValidator):
 
             @property
-            def basic_version(self):
+            def minimal_fuel_version(self):
                 return None
 
             def validate(self):
@@ -36,16 +37,8 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
         self.plugin_path = '/tmp/plugin_path'
         self.validator = NewValidator(self.plugin_path)
         self.data = {'data': 'data1'}
-        self.schema = self.make_schema(['data'], {'data': {'type': 'string'}})
+        self.schema = utils.make_schema(['data'], {'data': {'type': 'string'}})
         self.format_checker = jsonschema.FormatChecker
-
-    @classmethod
-    def make_schema(cls, required, properties):
-        return {
-            '$schema': 'http://json-schema.org/draft-04/schema#',
-            'type': 'object',
-            'required': required,
-            'properties': properties}
 
     @mock.patch('fuel_plugin_builder.validators.base.jsonschema')
     def test_validate_schema(self, schema_mock):
@@ -58,7 +51,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
             self.schema, format_checker=self.format_checker)
 
     def test_validate_schema_raises_error(self):
-        schema = self.make_schema(['key'], {'key': {'type': 'string'}})
+        schema = utils.make_schema(['key'], {'key': {'type': 'string'}})
         data = {}
 
         with self.assertRaisesRegexp(
@@ -67,7 +60,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
             self.validator.validate_schema(data, schema, 'file_path')
 
     def test_validate_schema_raises_error_path_in_message(self):
-        schema = self.make_schema(
+        schema = utils.make_schema(
             ['key'],
             {'key': {'type': 'array', 'items': {'type': 'string'}}})
         data = {'key': ['str', 'str', 0]}
@@ -80,7 +73,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
             self.validator.validate_schema(data, schema, 'file_path')
 
     def test_validate_schema_raises_error_custom_value_path(self):
-        schema = self.make_schema(['key'], {'key': {'type': 'string'}})
+        schema = utils.make_schema(['key'], {'key': {'type': 'string'}})
         data = {}
 
         with self.assertRaisesRegexp(
@@ -164,7 +157,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
             }
         }
 
-        schema = self.make_schema(['key'], schema_object)
+        schema = utils.make_schema(['key'], schema_object)
 
         with self.assertRaisesRegexp(
                 errors.ValidationError,

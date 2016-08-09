@@ -198,7 +198,7 @@ class TestChecks(BaseTestCase):
             (['6.0', '6.1', '7.0', '8.0']),
             (['6.1', '7.0', '8.0']),
         )
-        check = IsReleaseCompatible(basic_version='6.0')
+        check = IsReleaseCompatible(minimal_fuel_version='6.0')
 
         for fuel_version in fuel_version_checks:
             parse_yaml_m.return_value = {
@@ -215,9 +215,9 @@ class TestChecks(BaseTestCase):
             (['6.0', '6.1', '7.0', '8.0', '9.0']),
             (['6.1', '7.0', '8.0']),
         )
-        basic_version = '8.0'
+        minimal_fuel_version = '8.0'
         good_versions = ['8.0', '9.0']
-        check = IsReleaseCompatible(basic_version=basic_version)
+        check = IsReleaseCompatible(minimal_fuel_version=minimal_fuel_version)
 
         for fuel_version in fuel_version_checks:
             invalid_fuel_versions = [
@@ -234,7 +234,7 @@ class TestChecks(BaseTestCase):
                            'with {0} Fuel release. Fuel version must be {1} '
                            'or higher. Please remove {0} version from '
                            'metadata.yaml file or downgrade package_version.'
-                           ''.format(invalid_version, basic_version))
+                           ''.format(invalid_version, minimal_fuel_version))
                 self.assertIn(err_msg, result.render())
 
     @mock.patch('fuel_plugin_builder.validators.checks.utils.exists')
