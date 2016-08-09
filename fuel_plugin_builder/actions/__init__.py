@@ -13,10 +13,7 @@
 #    under the License.
 
 
-from fuel_plugin_builder.actions.base import BaseAction
-from fuel_plugin_builder.actions.create import CreatePlugin
-from fuel_plugin_builder.actions.build import BuildPluginV1
-from fuel_plugin_builder.actions.build import BuildPluginV2
-from fuel_plugin_builder.actions.build import BuildPluginV3
-from fuel_plugin_builder.actions.build import BuildPluginV4
-from fuel_plugin_builder.actions.build import make_builder
+from .base import BaseAction
+from .build import make_builder
+from .create import CreatePlugin
+
