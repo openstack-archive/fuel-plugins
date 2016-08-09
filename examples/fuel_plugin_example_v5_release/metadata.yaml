@@ -1,0 +1,68 @@
+# Plugin name
+name: fuel_fuel_plugin_example_v5_release
+# Version of plugin package
+package_version: '5.0.0'
+# Human-readable name for your plugin
+title: Fuel plugin package v5.0.0 with releases example
+# Plugin own version
+version: '0.0.1'
+# Description
+description: This is an example of 'release' as the plugin
+# Minimum required fuel version
+fuel_version: ['10.0']
+# Specify license of your plugin
+licenses: ['Apache License Version 2.0']
+# Specify author or company name
+authors: ['Specify author or company name']
+# A link to the plugin's page
+homepage: 'https://github.com/openstack/fuel-plugins'
+# Specify a group which your plugin implements, possible options:
+# network, storage, storage::cinder, storage::glance, hypervisor,
+# equipment
+groups: []
+## Change `false` to `true` if you are specifying plugin and it can be
+## installed in the environment after the deployment.
+## For releases definitions this flag will be ignored.
+#is_hotpluggable: false
+
+# new release bundle
+releases:
+  - name: "Test Newton on Ubuntu 16.04"
+    version: "test-newton-10.0"
+    description: 'Example Release Description'
+    operating_system: 'ubuntu'
+    version: 'test-1.0.0'
+
+    is_release: true # this defines release description
+    base_release_path: base_release/base.yaml
+
+    networks_path: metadata/networks.yaml
+    volumes_path: metadata/volumes.yaml
+    roles_path: metadata/roles.yaml
+    network_roles_path: metadata/network_roles.yaml
+    components_path: metadata/components.yaml
+
+    attributes_path: attributes/attributes.yaml
+    vmware_attributes_path: attributes/vmware.yaml
+    node_attributes_path: attributes/node.yaml
+    nic_attributes_path: attributes/nic.yaml
+    bond_attributes_path: attributes/bond.yaml
+
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+
+    # deployment_tasks is used in fuel 9.0.x as a deployment graph
+    # don't use if in new fuel versions
+    # deployment_tasks_path: graphs/deployment_tasks.yaml
+
+    graphs:
+      - type: provisioning
+        graph_path: graphs/provisioning.yaml
+
+      - type: deletion
+        graph_path: graphs/deletion.yaml
+
+      - type: default   # default was used in fuel 9.0.x as a deployment graph
+        graph:
+          name: deployment-graph-name
+          tasks_path: graphs/default_tasks.yaml
