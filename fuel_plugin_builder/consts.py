@@ -14,5 +14,37 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# Only lower case letters, numbers, '_', '-' symbols
+# Default files encoding
+DEFAULT_ENCODING = 'utf-8'
+
+# Where the plugin root file located relative to the plugin root
+# the first suitable file matching this mask will be considered as root file.
+# used in loader 5.0.0
+ROOT_FILE_MASK = 'metadata.*'
+
+# used in loaders 1.0.0 - 4.0.0
+ROOT_FILE_NAME = 'metadata.yaml'
+
+# In order of preference
+SUPPORTED_FORMATS = ('yaml', 'json',)
+
+# Used during plugin build
+TAR_PARAMETERS = 'w:gz'
+
+# Size of the new level text indent when rendering report
+REPORT_INDENT_SIZE = 4
+
+# Symbol to mark error nodes when rendering report
+REPORT_FAILURE_POINTER = '> '
+
+# Template extension
+TEMPLATE_EXTENSION = 'mako'
+
+# Latest plugin package version
+LATEST_VERSION = '5.0.0'
+
+# Plugin name pattern that are used in schemas and builder
 PLUGIN_NAME_PATTERN = '^[a-z0-9_-]+$'
+
+# suffix for the metadata.yaml paths filds
+PATHS_SUFFIX = '_path'
