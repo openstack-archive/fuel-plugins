@@ -1,5 +1,47 @@
 # Changelog
 
+## 5.0.0 (Not relesed)
+
+New package version "5.0.0" includes the following features:
+
+- Now it is possible to deliver Fuel release configuration using the Fuel plugin
+  [bp/release-as-a-plugin](https://blueprints.launchpad.net/fuel/+spec/release-as-a-plugin)
+  Using flag ``is_release: true`` in ``metadata.yaml: releases:`` section you coud
+  define new fuel release.
+  Also you could define ``base_release: release_template.yaml`` inside release
+  description to share single template between multiple releases.
+- ``*_path`` directive in is now supported in ``metadata.yaml``.
+  Now you could require folder, external file or merged glob output using keys
+  like ``deployment_tasks_path: 'dt.yaml'``
+- It is possible to define graphs linked with plugin or releases
+  directive inside ``metadata.yaml``, see the examples.
+- All yaml root files is not not required except ``metadata.yaml``.
+- Templates and examples for the Fuel plugins package ``v5.0.0`` are added.
+- Fuel plugin builder is refactored to make all configurations traceable and
+  decouple logic working with file system with validation logic and building
+  logic.
+  [LP1539598](https://bugs.launchpad.net/fuel/+bug/1539598)
+
+Also, this release include several experimental features and improvements:
+
+- Docker environment for building and creating plugins example.
+- Experimental ``JSON`` manifests support added.
+- Schemas are aligned with Fuel versions.
+- Advanced build process reporting.
+  Now FPB trying to detect all possible problems in plugin configuration
+  and report them instead of failing of first of them and also could warn user
+  without stopping execution.
+
+  Reporting tree provides nice hierarchical output and extends integration
+  abilities by providing different output formats: ``json``, ``yaml``,
+  ``plaintext``
+
+
+Bugfixes:
+
+- Now it is possible to build plugin package v4.0.0 without ``tasks.yaml``
+  [LP1552248](https://bugs.launchpad.net/fuel/+bug/1552248)
+
 ## 4.1.0 (2016-06-29)
 
 Bugfixes:
