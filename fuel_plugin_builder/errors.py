@@ -61,3 +61,22 @@ class ReleasesDirectoriesError(FuelPluginException):
 
 class WrongPluginDirectoryError(FuelPluginException):
     pass
+
+
+class InspectionConfigurationError(FuelPluginException):
+    pass
+
+
+class InvalidFileFormat(FuelPluginException):
+    def __init__(self, file_path, alternatives):
+        msg = "File format is invalid: '{}'\n".format(file_path)
+        if alternatives:
+            msg += "use one of these: {}\n".format(", ".join(alternatives))
+        super(InvalidFileFormat, self).__init__(msg)
+
+
+class InvalidFileExtension(FuelPluginException):
+    def __init__(self, extensions):
+        super(InvalidFileExtension, self).__init__(
+            "Invalid file extension: {}".format(extensions)
+        )

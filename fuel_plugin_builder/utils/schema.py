@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2014 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,10 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuel_plugin_builder.validators.legacy_base import LegacyBaseValidator
-from fuel_plugin_builder.validators.manager import ValidatorManager
-from fuel_plugin_builder.validators.files_manager import files_manager
-from fuel_plugin_builder.validators.validator_v1 import ValidatorV1
-from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
-from fuel_plugin_builder.validators.validator_v3 import ValidatorV3
-from fuel_plugin_builder.validators.validator_v4 import ValidatorV4
+
+def make_schema(required, properties):
+    return {
+        '$schema': 'http://json-schema.org/draft-04/schema#',
+        'type': 'object',
+        'required': required,
+        'properties': properties
+    }

@@ -14,5 +14,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+
 # Only lower case letters, numbers, '_', '-' symbols
 PLUGIN_NAME_PATTERN = '^[a-z0-9_-]+$'
+
+# where the plugin root file located relative to the plugin root
+ROOT_FILE_PATH_AND_NAME = './metadata'  # tail suppose extension
+
+# in order of preference
+SUPPORTED_FORMATS = ('yaml', 'json',)
+
+# used during plugin build
+TAR_PARAMETERS = 'w:gz'
+
+
+# size of the new level text indent when rendering report
+REPORT_INDENT_SIZE = 4
+
+# symbol to mark error nodes when rendering report
+REPORT_FAILURE_POINTER = '> '
+
+
+TEMPLATE_EXTENSIONS = '.mako'

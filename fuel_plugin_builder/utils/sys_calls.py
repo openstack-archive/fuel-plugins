@@ -23,11 +23,13 @@ logger = logging.getLogger(__name__)
 
 def exec_cmd(cmd, cwd=None):
     """Execute command with logging.
-    Ouput of stdout and stderr will be written
+    Output of STDOUT and STDERR will be written
     in log.
 
     :param cmd: shell command
+    :type cmd: str
     :param cwd: string or None
+    :type cwd: str or None
     """
     logger.debug(u'Execute command "{0}"'.format(cmd))
     child = subprocess.Popen(

@@ -18,7 +18,7 @@ import logging
 from os.path import join as join_path
 
 from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators.base import LegacyBaseValidator
+from fuel_plugin_builder.validators import LegacyBaseValidator
 from fuel_plugin_builder.validators.schemas import SchemaV2
 
 
