@@ -14,5 +14,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# Only lower case letters, numbers, '_', '-' symbols
+# Default files encoding
+DEFAULT_ENCODING = 'utf-8'
+
+# In order of preference
+SUPPORTED_FORMATS = ('yaml', 'json',)
+
+# Used during plugin build
+TAR_PARAMETERS = 'w:gz'
+
+# Template extension
+TEMPLATE_EXTENSION = 'mako'
+
+# Latest plugin package version
+LATEST_VERSION = '5.0.0'
+
+# Plugin name pattern that are used in schemas and builder
 PLUGIN_NAME_PATTERN = '^[a-z0-9_-]+$'
+
+# suffix for the metadata.yaml paths filds
+PATHS_SUFFIX = '_path'
