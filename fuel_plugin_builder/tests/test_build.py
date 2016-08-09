@@ -16,25 +16,27 @@
 
 from __future__ import unicode_literals
 
-import mock
 import os
-
 from os.path import join as join_path
 
-from fuel_plugin_builder.actions.build import BaseBuildPlugin
-from fuel_plugin_builder.actions.build import BuildPluginV1
-from fuel_plugin_builder.actions.build import BuildPluginV2
-from fuel_plugin_builder.actions.build import BuildPluginV3
+import mock
+
+import reports
+from builders import BaseBuildPlugin
+from builders import BuildPluginV1
+from builders import BuildPluginV2
+from builders import BuildPluginV3
 from fuel_plugin_builder import errors
 from fuel_plugin_builder.tests.base import BaseTestCase
 
 
-class BaseBuild(BaseTestCase):
-
+class BaseBuildTestCase(BaseTestCase):
     # Prevent test runner to run tests in base
     __test__ = False
     # Redefine class
-    builder_class = None
+    BuilderClass = None
+
+    fake_metadata = None
 
     releases = [
         {'os': 'ubuntu',
@@ -42,15 +44,14 @@ class BaseBuild(BaseTestCase):
          'repository_path': 'repository_path'}]
 
     def setUp(self):
-        self.plugins_name = 'fuel_plugin'
-        self.plugin_path = '/tmp/{0}'.format(self.plugins_name)
-        self.builder = self.create_builder(self.plugin_path)
+        self.plugin_path = '/tmp/fuel_plugin'
+        self.builder = self._create_builder(self.plugin_path)
 
-    def create_builder(self, plugin_path):
+    def _create_builder(self, plugin_path):
         with mock.patch(
-                'fuel_plugin_builder.actions.build.utils.parse_yaml',
-                return_value=self.meta):
-            return self.builder_class(plugin_path)
+                'fuel_plugin_builder.loaders.base.BaseLoader.load',
+                return_value=(self.fake_metadata, reports.ReportNode())):
+            return self.BuilderClass(plugin_path)
 
     def test_run(self):
         mocked_methods = [
@@ -71,8 +72,8 @@ class BaseBuild(BaseTestCase):
         self.builder.build_repos.assert_called_once_with()
         self.builder.make_package()
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils.which')
-    @mock.patch('fuel_plugin_builder.actions.build.utils.exec_cmd',
+    @mock.patch('fuel_plugin_builder.utils.which')
+    @mock.patch('fuel_plugin_builder.utils.exec_cmd',
                 return_value=True)
     def test_run_pre_build_hook(self, exec_cmd_mock, which_mock):
         self.builder.run_pre_build_hook()
@@ -82,106 +83,111 @@ class BaseBuild(BaseTestCase):
             join_path(self.builder.plugin_path,
                       self.builder.pre_build_hook_cmd))
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_build_repos(self, utils_mock):
+    @mock.patch('fuel_plugin_builder.utils.create_dir')
+    @mock.patch('fuel_plugin_builder.utils.copy_files_in_dir')
+    def test_build_repos(self, copy_files_in_dir_m, create_dir_m):
         with mock.patch.object(
-                self.builder_class, 'build_ubuntu_repos') as build_ubuntu_mock:
+                self.BuilderClass, 'build_ubuntu_repos') as build_ubuntu_mock:
             with mock.patch.object(
-                    self.builder_class,
+                    self.BuilderClass,
                     'build_centos_repos') as build_centos_mock:
                 self.builder.build_repos()
 
-        utils_mock.create_dir.assert_called_once_with(
-            self.builder.build_src_dir)
-        utils_mock.copy_files_in_dir.assert_called_once_with(
-            '/tmp/fuel_plugin/*',
-            self.builder.build_src_dir)
-        build_centos_mock.assert_called_once_with([])
-        build_ubuntu_mock.assert_called_once_with([
-            '/tmp/fuel_plugin/.build/src/repository_path'])
+            create_dir_m.assert_called_once_with(
+                self.builder.build_src_dir)
+            copy_files_in_dir_m.assert_called_once_with(
+                '/tmp/fuel_plugin/*',
+                self.builder.build_src_dir)
+            build_centos_mock.assert_called_once_with([])
+            build_ubuntu_mock.assert_called_once_with([
+                '/tmp/fuel_plugin/.build/src/repository_path'])
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_build_ubuntu_repos(self, utils_mock):
+    @mock.patch('fuel_plugin_builder.utils.exec_piped_cmds')
+    @mock.patch('fuel_plugin_builder.utils.load_template_and_render_to_file')
+    def test_build_ubuntu_repos(self,
+                                load_template_and_render_to_file_m,
+                                exec_piped_cmds_m):
         path = '/repo/path'
         self.builder.build_ubuntu_repos([path])
-        utils_mock.exec_piped_cmds.assert_called_once_with(
+        exec_piped_cmds_m.assert_called_once_with(
             ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
             cwd=path)
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_build_centos_repos(self, utils_mock):
+    @mock.patch('fuel_plugin_builder.utils.create_dir')
+    @mock.patch('fuel_plugin_builder.utils.move_files_in_dir')
+    @mock.patch('fuel_plugin_builder.utils.exec_cmd')
+    def test_build_centos_repos(
+            self, exec_cmd_m, move_files_in_dir_m, create_dir_m):
         path = '/repo/path'
         self.builder.build_centos_repos([path])
-        utils_mock.create_dir.assert_called_once_with(
+        create_dir_m.assert_called_once_with(
             '/repo/path/Packages')
-        utils_mock.move_files_in_dir.assert_called_once_with(
+        move_files_in_dir_m.assert_called_once_with(
             '/repo/path/*.rpm', '/repo/path/Packages')
-        utils_mock.exec_cmd.assert_called_once_with(
+        exec_cmd_m.assert_called_once_with(
             'createrepo -o /repo/path /repo/path')
 
     @mock.patch.object(BaseBuildPlugin, '_check_requirements')
-    @mock.patch.object(BaseBuildPlugin, '_check_structure')
+    @mock.patch.object(BaseBuildPlugin, '_validate')
     def test_check(self, check_structure_mock, check_requirements_mock):
         self.builder.check()
         check_structure_mock.assert_called_once_with()
         check_requirements_mock.assert_called_once_with()
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils.which',
+    @mock.patch('fuel_plugin_builder.utils.which',
                 return_value=True)
     def test_check_requirements(self, _):
         self.builder._check_requirements()
 
-    @mock.patch('fuel_plugin_builder.actions.build.ValidatorManager')
-    def test_check_structure(self, manager_class_mock):
-        validator_manager_obj = mock.MagicMock()
-        manager_class_mock.return_value = validator_manager_obj
+    @mock.patch('fuel_plugin_builder.version_mapping.get_validator')
+    def test_check_structure(self, get_validator_m):
         validator_mock = mock.MagicMock()
-        validator_manager_obj.get_validator.return_value = validator_mock
+        get_validator_m.return_value = validator_mock
 
-        self.builder._check_structure()
+        self.builder._validate()
 
-        manager_class_mock.assert_called_once_with(self.plugin_path)
-        validator_manager_obj.get_validator.assert_called_once_with()
+        get_validator_m.assert_called_once_with(self.plugin_path)
         validator_mock.validate.assert_called_once_with()
 
     @mock.patch(
-        'fuel_plugin_builder.actions.build.utils.create_checksums_file')
+        'fuel_plugin_builder.utils.create_checksums_file')
     def test_add_checksums_file(self, create_checksums_file_mock):
         self.builder.add_checksums_file()
         create_checksums_file_mock.assert_called_once_with(
             self.builder.build_src_dir, self.builder.checksums_path)
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_clean(self, utils_mock):
+    @mock.patch('fuel_plugin_builder.utils.remove')
+    @mock.patch('fuel_plugin_builder.utils.create_dir')
+    @mock.patch('fuel_plugin_builder.utils.remove_by_mask')
+    def test_clean(self, remove_by_mask_m, created_dir_m, remove_m):
         self.builder.clean()
-        utils_mock.assert_has_calls([
-            mock.call.remove(self.builder.build_dir),
-            mock.call.create_dir(self.builder.build_dir),
-            mock.call.remove_by_mask(self.builder.result_package_mask)])
+        remove_m.assert_called_once_with(self.builder.build_dir),
+        created_dir_m.assert_called_once_with(self.builder.build_dir),
+        remove_by_mask_m.assert_called_once_with(
+            self.builder.result_package_mask)
 
 
-class TestBaseBuildV1(BaseBuild):
-
+class TestBaseBuildV1(BaseBuildTestCase):
     __test__ = True
-    builder_class = BuildPluginV1
+    BuilderClass = BuildPluginV1
 
-    meta = {
-        'releases': BaseBuild.releases,
+    fake_metadata = {
+        'releases': BaseBuildTestCase.releases,
         'version': '1.2.3',
         'name': 'plugin_name'
     }
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_make_package(self, utils_mock):
+    @mock.patch('fuel_plugin_builder.utils.make_tar_gz')
+    def test_make_package(self, make_tar_gz_m):
         self.builder.make_package()
         tar_path = '/tmp/fuel_plugin/plugin_name-1.2.3.fp'
 
-        utils_mock.make_tar_gz.assert_called_once_with(
+        make_tar_gz_m.assert_called_once_with(
             self.builder.build_src_dir,
             tar_path,
             'plugin_name-1.2.3')
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils.which',
+    @mock.patch('fuel_plugin_builder.utils.which',
                 return_value=False)
     def test_check_requirements_raises_error(self, _):
         self.assertRaisesRegexp(
@@ -191,12 +197,12 @@ class TestBaseBuildV1(BaseBuild):
             self.builder._check_requirements)
 
 
-class TestBaseBuildV2(BaseBuild):
-
+class TestBaseBuildV2(BaseBuildTestCase):
     __test__ = True
-    builder_class = BuildPluginV2
-    meta = {
-        'releases': BaseBuild.releases,
+    plugin_path = os.path.abspath('./templates/v2/plugin_data')
+    BuilderClass = BuildPluginV2
+    fake_metadata = {
+        'releases': BaseBuildTestCase.releases,
         'version': '1.2.3',
         'name': 'plugin_name',
         'title': 'Plugin title',
@@ -209,20 +215,27 @@ class TestBaseBuildV2(BaseBuild):
     def path_from_plugin(self, plugin_path, path):
         return join_path(plugin_path, path)
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def check_make_package(self, builder, plugin_path, utils_mock):
-        plugin_path = plugin_path
-
-        utils_mock.get_current_year.return_value = '2014'
+    # fixme(ikutukov): investigate better approach to utils mocking
+    @mock.patch('fuel_plugin_builder.utils.get_current_year')
+    @mock.patch('fuel_plugin_builder.utils.create_dir')
+    @mock.patch('fuel_plugin_builder.utils.make_tar_gz')
+    @mock.patch('fuel_plugin_builder.utils.load_template_and_render_to_file')
+    @mock.patch('fuel_plugin_builder.utils.exec_cmd')
+    @mock.patch('fuel_plugin_builder.utils.copy_files_in_dir')
+    def check_make_package(self, builder, plugin_path,
+                           copy_files_in_dir_m, exec_cmd_m,
+                           load_template_and_render_to_file_m, make_tar_gz_m,
+                           create_dir_m, get_current_year_m):
+        get_current_year_m.return_value = '2016'
         builder.make_package()
         rpm_src_path = self.path_from_plugin(plugin_path,
                                              '.build/rpm/SOURCES')
-        utils_mock.create_dir.assert_called_once_with(rpm_src_path)
+        create_dir_m.assert_called_once_with(rpm_src_path)
 
         fp_dst = self.path_from_plugin(
             plugin_path, '.build/rpm/SOURCES/plugin_name-1.2.fp')
 
-        utils_mock.make_tar_gz.assert_called_once_with(
+        make_tar_gz_m.assert_called_once_with(
             self.path_from_plugin(plugin_path, '.build/src'),
             fp_dst,
             'plugin_name-1.2')
@@ -230,26 +243,29 @@ class TestBaseBuildV2(BaseBuild):
         spec_src = os.path.abspath(join_path(
             os.path.dirname(__file__), '..',
             self.builder.rpm_spec_src_path))
-        utils_mock.render_to_file.assert_called_once_with(
+        load_template_and_render_to_file_m.assert_called_once_with(
             spec_src,
             join_path(plugin_path, '.build/rpm/plugin_rpm.spec'),
-            {'vendor': 'author1, author2',
-             'description': 'Description',
-             'license': 'Apache and BSD',
-             'summary': 'Plugin title',
-             'version': '1.2.3',
-             'homepage': 'url',
-             'name': 'plugin_name-1.2',
-             'year': '2014'})
+            {
+                'vendor': 'author1, author2',
+                'description': 'Description',
+                'license': 'Apache and BSD',
+                'summary': 'Plugin title',
+                'version': '1.2.3',
+                'homepage': 'url',
+                'name': 'plugin_name-1.2',
+                'year': '2016'
+            }
+        )
 
-        utils_mock.exec_cmd.assert_called_once_with(
+        exec_cmd_m.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
             '{1}'.format(
                 self.path_from_plugin(plugin_path, '.build/rpm'),
                 self.path_from_plugin(plugin_path,
                                       '.build/rpm/plugin_rpm.spec')))
 
-        utils_mock.copy_files_in_dir.assert_called_once_with(
+        copy_files_in_dir_m.assert_called_once_with(
             self.path_from_plugin(plugin_path,
                                   '.build/rpm/RPMS/noarch/*.rpm'),
             plugin_path
@@ -259,13 +275,13 @@ class TestBaseBuildV2(BaseBuild):
         self.check_make_package(self.builder, self.plugin_path)
 
     def test_make_package_with_non_ascii_chars_in_path(self):
-        plugin_path = '/tmp/тест/' + self.plugins_name
+        plugin_path = '/tmp/тест/fuel_plugin'
 
-        builder = self.create_builder(plugin_path)
+        builder = self._create_builder(plugin_path)
 
         self.check_make_package(builder, plugin_path)
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils.which',
+    @mock.patch('fuel_plugin_builder.utils.which',
                 return_value=False)
     def test_check_requirements_raises_error(self, _):
         self.assertRaisesRegexp(
@@ -274,29 +290,46 @@ class TestBaseBuildV2(BaseBuild):
             'dpkg-scanpackages", install required commands and try again',
             self.builder._check_requirements)
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_build_ubuntu_repos(self, utils_mock):
+    @mock.patch('fuel_plugin_builder.utils.exec_piped_cmds')
+    @mock.patch('fuel_plugin_builder.utils.load_template_and_render_to_file')
+    def test_build_ubuntu_repos(
+            self, load_template_and_render_to_file_m, exec_piped_cmds_m):
         path = '/repo/path'
         self.builder.build_ubuntu_repos([path])
-        utils_mock.exec_piped_cmds.assert_called_once_with(
-            ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
-            cwd=path)
-        release_src = os.path.abspath(join_path(
-            os.path.dirname(__file__), '..',
-            self.builder.release_tmpl_src_path))
-        utils_mock.render_to_file.assert_called_once_with(
+        exec_piped_cmds_m.assert_called_once_with(
+            [
+                'dpkg-scanpackages .',
+                'gzip -c9 > Packages.gz'
+            ],
+            cwd=path
+        )
+        # self.
+        release_src = os.path.abspath(
+            join_path(
+                os.path.dirname(__file__),
+                '..',
+                self.builder.release_tmpl_src_path
+            )
+        )
+
+        # print "RS", release_src
+        load_template_and_render_to_file_m.assert_called_once_with(
             release_src,
             '/repo/path/Release',
-            {'major_version': '1.2',
-             'plugin_name': 'plugin_name'})
+            {
+                'major_version': '1.2',
+                'plugin_name': 'plugin_name'
+            }
+        )
 
 
-class TestBaseBuildV3(BaseBuild):
-
+class TestBaseBuildV3(BaseBuildTestCase):
     __test__ = True
-    builder_class = BuildPluginV3
-    meta = {
-        'releases': BaseBuild.releases,
+    BuilderClass = BuildPluginV3
+    plugin_path = os.path.abspath('./templates/v3/plugin_data')
+
+    fake_metadata = {
+        'releases': BaseBuildTestCase.releases,
         'version': '1.2.3',
         'name': 'plugin_name',
         'title': 'Plugin title',
@@ -309,17 +342,27 @@ class TestBaseBuildV3(BaseBuild):
     def path_from_plugin(self, path):
         return join_path(self.plugin_path, path)
 
-    @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_make_package(self, utils_mock):
-        utils_mock.get_current_year.return_value = '2014'
-        utils_mock.read_if_exist.side_effect = ['echo uninst', 'echo preinst',
+    # fixme(ikutukov): investigate better approach to utils mocking
+    @mock.patch('fuel_plugin_builder.utils.get_current_year')
+    @mock.patch('fuel_plugin_builder.utils.create_dir')
+    @mock.patch('fuel_plugin_builder.utils.make_tar_gz')
+    @mock.patch('fuel_plugin_builder.utils.load_template_and_render_to_file')
+    @mock.patch('fuel_plugin_builder.utils.exec_cmd')
+    @mock.patch('fuel_plugin_builder.utils.copy_files_in_dir')
+    @mock.patch('fuel_plugin_builder.utils.read_if_exist')
+    def check_make_package(self, builder, plugin_path, read_if_exist_m,
+                           copy_files_in_dir_m, exec_cmd_m,
+                           load_template_and_render_to_file_m, make_tar_gz_m,
+                           create_dir_m, get_current_year_m):
+        get_current_year_m.return_value = '2014'
+        read_if_exist_m.side_effect = ['echo uninst', 'echo preinst',
                                                 'echo postinst']
         self.builder.make_package()
         rpm_src_path = self.path_from_plugin('.build/rpm/SOURCES')
-        utils_mock.create_dir.assert_called_once_with(rpm_src_path)
+        create_dir_m.assert_called_once_with(rpm_src_path)
 
         fp_dst = self.path_from_plugin('.build/rpm/SOURCES/plugin_name-1.2.fp')
-        utils_mock.make_tar_gz.assert_called_once_with(
+        make_tar_gz_m.assert_called_once_with(
             self.path_from_plugin('.build/src'),
             fp_dst,
             'plugin_name-1.2')
@@ -327,32 +370,35 @@ class TestBaseBuildV3(BaseBuild):
         spec_src = os.path.abspath(join_path(
             os.path.dirname(__file__), '..',
             self.builder.rpm_spec_src_path))
-        utils_mock.render_to_file.assert_called_once_with(
+        load_template_and_render_to_file_m.assert_called_once_with(
             spec_src,
             join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
-            {'vendor': 'author1, author2',
-             'description': 'Description',
-             'license': 'Apache and BSD',
-             'summary': 'Plugin title',
-             'version': '1.2.3',
-             'homepage': 'url',
-             'name': 'plugin_name-1.2',
-             'year': '2014',
-             'preinstall_hook': 'echo preinst',
-             'postinstall_hook': 'echo postinst',
-             'uninstall_hook': 'echo uninst'})
+            {
+                'vendor': 'author1, author2',
+                'description': 'Description',
+                'license': 'Apache and BSD',
+                'summary': 'Plugin title',
+                'version': '1.2.3',
+                'homepage': 'url',
+                'name': 'plugin_name-1.2',
+                'year': '2014',
+                'preinstall_hook': 'echo preinst',
+                'postinstall_hook': 'echo postinst',
+                'uninstall_hook': 'echo uninst'
+            }
+        )
 
-        utils_mock.exec_cmd.assert_called_once_with(
+        exec_cmd_m.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
             '{1}'.format(
                 self.path_from_plugin('.build/rpm'),
                 self.path_from_plugin('.build/rpm/plugin_rpm.spec')))
 
-        utils_mock.copy_files_in_dir.assert_called_once_with(
+        copy_files_in_dir_m.assert_called_once_with(
             self.path_from_plugin('.build/rpm/RPMS/noarch/*.rpm'),
             self.plugin_path)
 
-        utils_mock.read_if_exist.assert_has_calls([
+        read_if_exist_m.assert_has_calls([
             mock.call(self.path_from_plugin('uninstall.sh')),
             mock.call(self.path_from_plugin('pre_install.sh')),
             mock.call(self.path_from_plugin('post_install.sh'))])
