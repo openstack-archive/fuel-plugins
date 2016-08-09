@@ -14,69 +14,120 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
+
 import mock
 
-from fuel_plugin_builder import errors
-from fuel_plugin_builder.tests.base import LegacyBaseValidatorTestCase
-from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
-from fuel_plugin_builder.validators.validator_v1 import ValidatorV1
+import loaders
+from tests.test_validator_base import BaseValidatorTestCase
+import utils
+import validators
 
 
-class TestValidatorV1(LegacyBaseValidatorTestCase):
+class TestValidatorV1(BaseValidatorTestCase):
+    plugin_path = os.path.abspath('./templates/v1')
+    validator_class = validators.ValidatorV1
+    loader_class = loaders.PluginLoaderV1
 
     __test__ = True
-    validator_class = ValidatorV1
-    schema_class = SchemaV1
 
-    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')
-    def test_check_tasks(self, utils_mock):
-        mocked_methods = [
-            'validate_schema'
-        ]
-        self.mock_methods(self.validator, mocked_methods)
-        utils_mock.parse_yaml.return_value = [
-            {'type': 'puppet', 'parameters': 'param1'},
-            {'type': 'shell', 'parameters': 'param2'}]
+    @mock.patch('fuel_plugin_builder.validators.validator_v1'
+                '.checks.multi_json_schema_is_valid')
+    def test_check_schemas(self, multi_json_schema_is_valid_m):
+        multi_json_schema_is_valid_m.return_value = \
+            utils.ReportNode('Schema checked')
+        report = self.validator.validate(self.data_tree)
+        self.assertEqual(1, multi_json_schema_is_valid_m.call_count)
+        self.assertIn('metadata', report.render())
+        self.assertIn('tasks', report.render())
+        self.assertIn('attributes', report.render())
 
-        self.validator.check_tasks()
+    def test_check_env_config_attrs_checks_metadata(self):
+        self.data_tree['environment_config'] = {
+            'attributes': {'metadata': []}
+        }
+        report = self.validator.validate(self.data_tree)
+        self.assertTrue(report.is_failed())
+        self.assertIn("[] is not of type 'object'", report.render())
 
-        self.assertEqual(
-            [mock.call('param1', self.schema_class().puppet_parameters,
-                       self.validator.tasks_path,
-                       value_path=[0, 'parameters']),
-             mock.call('param2', self.schema_class().shell_parameters,
-                       self.validator.tasks_path,
-                       value_path=[1, 'parameters'])],
-            self.validator.validate_schema.call_args_list)
+    def test_check_env_config_attrs_do_not_fail_if_empty(self):
+        self.data_tree['environment_config'] = {}
+        report = self.validator.validate(self.data_tree)
+        self.assertFalse(report.is_failed())
 
-    @mock.patch('fuel_plugin_builder.validators.validator_v1.utils')
-    def test_check_tasks_no_parameters_not_failed(self, utils_mock):
-        mocked_methods = [
-            'validate_schema'
-        ]
-        self.mock_methods(self.validator, mocked_methods)
-        utils_mock.parse_yaml.return_value = [
-            {'type': 'puppet'},
-        ]
+    def test_check_env_config_attrs_fail_if_none(self):
+        self.data_tree['environment_config'] = {
+            'attributes': None
+        }
+        report = self.validator.validate(self.data_tree)
+        self.assertTrue(report.is_failed())
+        self.assertIn("None is not of type 'object'", report.render())
 
-        self.validator.check_tasks()
+    def test_check_env_config_attrs_checks_attrs(self):
+        self.data_tree['environment_config'] = {
+            'attributes': {
+                'key1': {
+                    'type': True,
+                    'label': 'text',
+                    'value': 'text',
+                    'weight': 1}}}
 
-        self.assertEqual(
-            [mock.call(None, self.schema_class().puppet_parameters,
-                       self.validator.tasks_path,
-                       value_path=[0, 'parameters'])],
-            self.validator.validate_schema.call_args_list)
+        report = self.validator.validate(self.data_tree)
+        self.assertTrue(report.is_failed())
+        self.assertIn("True is not of type 'string'", report.render())
 
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_compatibility(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
-            'fuel_version': ['5.1', '6.0', '6.1'],
-            'package_version': '1.0.0'}
+    def test_check_env_config_attrs_generator_value(self):
+        self.data_tree['environment_config'] = {
+            'attributes': {
+                'key1': {
+                    'type': 'hidden',
+                    'label': '',
+                    'value': {'generator': 'password'},
+                    'weight': 1}}}
+        report = self.validator.validate(self.data_tree)
+        self.assertTrue(report.is_failed())
+        self.assertIn("{'generator': 'password'} is not "
+                      "of type 'string', 'boolean'", report.render())
 
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                'Current plugin format 1.0.0 is not compatible with 5.1 Fuel'
-                ' release. Fuel version must be 6.0 or higher.'
-                ' Please remove 5.1 version from metadata.yaml file or'
-                ' downgrade package_version.'):
-            self.validator.check_compatibility()
+    def test_check_env_config_attrs_restriction_fails(self):
+        self.data_tree['environment_config'] = {
+            'attributes': {
+                'key1': {
+                    'type': 'text',
+                    'label': 'test',
+                    'value': 'test',
+                    'weight': 1,
+                    'restrictions': [
+                        {
+                            'condition': 'false',
+                            'action': 'disable'
+                        },
+                        {
+                            'condition': True,
+                            'action': 'hide'
+                        }
+                    ]
+                }
+            }
+        }
+        report = self.validator.validate(self.data_tree)
+        self.assertTrue(report.is_failed())
+        self.assertIn("True is not of type 'string'", report.render())
+
+    def test_check_validate(self):
+        self.mock_methods(self.validator, ['validate'])
+        self.validator.validate(self.data_tree)
+        self.validator.validate.assert_called_once_with(self.data_tree)
+
+    def test_check_tasks(self):
+        report = self.validator.validate(self.data_tree)
+        self.assertFalse(report.is_failed())
+
+    def test_check_tasks_with_no_parameters_failed(self):
+        self.data_tree['tasks'] = [{'type': 'puppet'}]
+
+        report = self.validator.validate(self.data_tree)
+        self.assertTrue(report.is_failed())
+        self.assertIn("'parameters' is a required property", report.render())
+        self.assertIn("'stage' is a required property", report.render())
+        self.assertIn("'role' is a required property", report.render())

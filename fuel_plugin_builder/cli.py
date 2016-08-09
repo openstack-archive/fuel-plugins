@@ -22,7 +22,7 @@ import sys
 from fuel_plugin_builder import actions
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import messages
-from fuel_plugin_builder.validators import ValidatorManager
+from fuel_plugin_builder import version_mapping
 
 from fuel_plugin_builder.logger import configure_logger
 
@@ -106,7 +106,7 @@ def perform_action(args):
         actions.make_builder(args.build).run()
         print('Plugin is built')
     elif args.check:
-        ValidatorManager(args.check).get_validator().validate()
+        version_mapping.get_validator(args.check).validate()
         print('Plugin is valid')
 
 
