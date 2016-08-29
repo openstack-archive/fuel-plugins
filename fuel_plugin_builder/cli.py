@@ -65,7 +65,7 @@ def parse_args():
         description='fpb is a fuel plugin builder which '
         'helps you create plugin for Fuel')
 
-    #TODO(vsharshov): we should move to subcommands instead of
+    # TODO(vsharshov): we should move to subcommands instead of
     # exclusive group, because in this case we could not
     # support such behavior [-a xxx | [-b yyy -c zzz]]
     group = parser.add_mutually_exclusive_group(required=True)
