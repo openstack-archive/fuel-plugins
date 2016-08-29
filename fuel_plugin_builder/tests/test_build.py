@@ -46,10 +46,11 @@ class BaseBuild(BaseTestCase):
         self.plugin_path = '/tmp/{0}'.format(self.plugins_name)
         self.builder = self.create_builder(self.plugin_path)
 
-    def create_builder(self, plugin_path):
+    def create_builder(self, plugin_path, meta=None):
+        meta = meta or self.meta
         with mock.patch(
                 'fuel_plugin_builder.actions.build.utils.parse_yaml',
-                return_value=self.meta):
+                return_value=meta):
             return self.builder_class(plugin_path)
 
     def test_run(self):
@@ -310,7 +311,7 @@ class TestBaseBuildV3(BaseBuild):
         return join_path(self.plugin_path, path)
 
     @mock.patch('fuel_plugin_builder.actions.build.utils')
-    def test_make_package(self, utils_mock):
+    def _test_make_package(self, utils_mock):
         utils_mock.get_current_year.return_value = '2014'
         utils_mock.read_if_exist.side_effect = ['echo uninst', 'echo preinst',
                                                 'echo postinst']
@@ -323,24 +324,6 @@ class TestBaseBuildV3(BaseBuild):
             self.path_from_plugin('.build/src'),
             fp_dst,
             'plugin_name-1.2')
-
-        spec_src = os.path.abspath(join_path(
-            os.path.dirname(__file__), '..',
-            self.builder.rpm_spec_src_path))
-        utils_mock.render_to_file.assert_called_once_with(
-            spec_src,
-            join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
-            {'vendor': 'author1, author2',
-             'description': 'Description',
-             'license': 'Apache and BSD',
-             'summary': 'Plugin title',
-             'version': '1.2.3',
-             'homepage': 'url',
-             'name': 'plugin_name-1.2',
-             'year': '2014',
-             'preinstall_hook': 'echo preinst',
-             'postinstall_hook': 'echo postinst',
-             'uninstall_hook': 'echo uninst'})
 
         utils_mock.exec_cmd.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
@@ -356,3 +339,63 @@ class TestBaseBuildV3(BaseBuild):
             mock.call(self.path_from_plugin('uninstall.sh')),
             mock.call(self.path_from_plugin('pre_install.sh')),
             mock.call(self.path_from_plugin('post_install.sh'))])
+        return utils_mock
+
+    def test_make_package(self):
+        utils_mock = self._test_make_package()
+        spec_src = os.path.abspath(join_path(
+            os.path.dirname(__file__), '..',
+            self.builder.rpm_spec_src_path))
+
+        utils_mock.render_to_file.assert_called_once_with(
+            spec_src,
+            join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
+            {'vendor': 'author1, author2',
+             'description': 'Description',
+             'license': 'Apache and BSD',
+             'summary': 'Plugin title',
+             'version': '1.2.3',
+             'homepage': 'url',
+             'name': 'plugin_name-1.2',
+             'year': '2014',
+             'preinstall_hook': 'echo preinst',
+             'postinstall_hook': 'echo postinst',
+             'uninstall_hook': 'echo uninst',
+             'build_version': '1'})
+
+    def test_make_package_with_release(self):
+
+        meta = {
+            'releases': BaseBuild.releases,
+            'version': '1.2.3',
+            'name': 'plugin_name',
+            'title': 'Plugin title',
+            'description': 'Description',
+            'licenses': ['Apache', 'BSD'],
+            'authors': ['author1', 'author2'],
+            'homepage': 'url',
+            'build_version': '34'
+        }
+
+        self.builder = self.create_builder(self.plugin_path, meta=meta)
+        utils_mock = self._test_make_package()
+
+        spec_src = os.path.abspath(join_path(
+            os.path.dirname(__file__), '..',
+            self.builder.rpm_spec_src_path))
+
+        utils_mock.render_to_file.assert_called_once_with(
+            spec_src,
+            join_path(self.plugin_path, '.build/rpm/plugin_rpm.spec'),
+            {'vendor': 'author1, author2',
+             'description': 'Description',
+             'license': 'Apache and BSD',
+             'summary': 'Plugin title',
+             'version': '1.2.3',
+             'homepage': 'url',
+             'name': 'plugin_name-1.2',
+             'year': '2014',
+             'preinstall_hook': 'echo preinst',
+             'postinstall_hook': 'echo postinst',
+             'uninstall_hook': 'echo uninst',
+             'build_version': '34'})
