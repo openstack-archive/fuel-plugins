@@ -303,7 +303,8 @@ class TestBaseBuildV3(BaseBuild):
         'description': 'Description',
         'licenses': ['Apache', 'BSD'],
         'authors': ['author1', 'author2'],
-        'homepage': 'url'
+        'homepage': 'url',
+        'release': '1'
     }
 
     def path_from_plugin(self, path):
@@ -340,7 +341,8 @@ class TestBaseBuildV3(BaseBuild):
              'year': '2014',
              'preinstall_hook': 'echo preinst',
              'postinstall_hook': 'echo postinst',
-             'uninstall_hook': 'echo uninst'})
+             'uninstall_hook': 'echo uninst',
+             'release': '1'})
 
         utils_mock.exec_cmd.assert_called_once_with(
             'rpmbuild -vv --nodeps --define "_topdir {0}" -bb '
