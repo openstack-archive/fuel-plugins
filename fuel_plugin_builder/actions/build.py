@@ -253,10 +253,13 @@ class BuildPluginV3(BuildPluginV2):
         postinst = utils.read_if_exist(
             join_path(self.plugin_path, "post_install.sh"))
 
+        plugin_build_version = str(self.meta.get('build_version', '1'))
+
         data.update(
             {'postinstall_hook': postinst,
              'preinstall_hook': preinst,
-             'uninstall_hook': uninst}
+             'uninstall_hook': uninst,
+             'build_version': plugin_build_version}
         )
 
         return data
