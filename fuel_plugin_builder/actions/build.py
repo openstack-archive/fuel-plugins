@@ -102,7 +102,7 @@ class BaseBuildPlugin(BaseAction):
     def build_ubuntu_repos(cls, releases_paths):
         for repo_path in releases_paths:
             utils.exec_piped_cmds(
-                ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
+                ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
 
     @classmethod
@@ -226,7 +226,7 @@ class BuildPluginV2(BaseBuildPlugin):
     def build_ubuntu_repos(self, releases_paths):
         for repo_path in releases_paths:
             utils.exec_piped_cmds(
-                ['dpkg-scanpackages .', 'gzip -c9 > Packages.gz'],
+                ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
             release_path = join_path(repo_path, 'Release')
             utils.render_to_file(
