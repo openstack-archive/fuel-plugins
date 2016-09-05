@@ -149,6 +149,21 @@ class TestValidatorV4(TestValidatorV3):
         )
 
     @mock.patch('fuel_plugin_builder.validators.base.utils')
+    def test_environment_config_type_attrs(self, utils_mock):
+        mock_data = {
+            'attributes': {
+                'server-name': {
+                    'value': [],
+                    'label': 'test',
+                    'weight': 1,
+                    'type': 'text_list',
+                }
+            }
+        }
+        utils_mock.parse_yaml.return_value = mock_data
+        self.assertEqual(None, self.validator.check_env_config_attrs())
+
+    @mock.patch('fuel_plugin_builder.validators.base.utils')
     def test_check_components_schema_validation_failed(self, utils_mock):
         data_sets = [
             {

@@ -173,7 +173,10 @@ class BaseSchema(object):
                     {'type': 'string'},
                     {'type': 'boolean'},
                     {'type': 'object',
-                     'properties': {'generator': {'type': 'string'}}}
+                     'properties': {'generator': {'type': 'string'}}},
+                    {'type': 'array',
+                     'items': {'anyOf': [{'type': 'string'},
+                                         {'type': 'boolean'}]}},
                 ]},
                 'label': {'type': 'string'},
                 'restrictions': self.restrictions,
