@@ -13,7 +13,7 @@ fi
 
 function install_package {
     if [ $OS_NAME == 'ubuntu' ]; then
-        apt-get install -y fuel-simple-service
+        apt-get install -y --force-yes -o 'APT::Get::AllowUnauthenticated=1' fuel-simple-service
     elif [ $OS_NAME == 'centos' ]; then
         yum install -y fuel-simple-service
     fi
