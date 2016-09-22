@@ -14,73 +14,84 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
-
-from fuel_plugin_builder import errors
-from fuel_plugin_builder.tests.base import LegacyBaseValidatorTestCase
-from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
-from fuel_plugin_builder.validators.validator_v2 import ValidatorV2
+from fuel_plugin_builder import loaders
+from fuel_plugin_builder.tests.base import FakeFSTest
+from fuel_plugin_builder import validators
 
 
-class TestValidatorV2(LegacyBaseValidatorTestCase):
-
+class TestValidatorV2(FakeFSTest):
     __test__ = True
-    validator_class = ValidatorV2
-    schema_class = SchemaV2
+    validator_class = validators.ValidatorV2
+    loader_class = loaders.PluginLoaderV1
+    package_version = '2.0.0'
 
-    @mock.patch('fuel_plugin_builder.validators.validator_v2.utils')
-    def test_check_tasks(self, utils_mock):
+    def test_check_compatibility_failed(self):
+        self.data_tree['fuel_version'] = ['6.0', '6.1']
+        self.data_tree['package_version'] = '2.0.0'
+
+        err_msg = 'Current plugin format 2.0.0 is not compatible with 6.0 ' \
+                  'Fuel release. Fuel version must be 6.1 or higher. ' \
+                  'Please remove 6.0 version from metadata.yaml file or ' \
+                  'downgrade package_version.'
+        report = self.validator.validate(self.data_tree)
+        self.assertTrue(report.is_failed())
+        self.assertIn(err_msg, report.render())
+
+    def test_check_tasks_not_failed(self):
+        self.data_tree['tasks'] = [
+            {
+                'type': 'puppet',
+                'role': '*',
+                'stage': 'pre_deployment',
+                'parameters': {
+                    'timeout': 42,
+                    'puppet_manifest': '/my/manifest',
+                    'puppet_modules': '/my/modules'
+                }
+            },
+            {
+                'type': 'shell',
+                'role': '*',
+                'stage': 'pre_deployment',
+                'parameters': {
+                    'cmd': 'echo all > /tmp/plugin.all',
+                    'timeout': 42
+                }
+            },
+            {
+                'type': 'reboot',
+                'role': '*',
+                'stage': 'pre_deployment',
+                'parameters': {'timeout': 42}
+            },
+            # {
+            #     'type': 'reboot',
+            #     'role': '*',
+            #     'stage': 'pre_deployment/+100.1',
+            #     'parameters': {'timeout': 42}
+            # },
+            # {
+            #     'type': 'reboot',
+            #     'role': '*',
+            #     'stage': 'pre_deployment/-100',
+            #     'parameters': {'timeout': 42}
+            # }
+        ]
+
+        report = self.validator.validate(self.data_tree)
+        self.assertFalse(report.is_failed())
+
+    def test_check_tasks_empty_parameters_not_failed(self):
         mocked_methods = [
             'validate_schema'
         ]
         self.mock_methods(self.validator, mocked_methods)
-        utils_mock.parse_yaml.return_value = [
-            {'type': 'puppet', 'parameters': 'param1'},
-            {'type': 'shell', 'parameters': 'param2'},
-            {'type': 'reboot', 'parameters': 'param3'}]
-
-        self.validator.check_tasks()
-
-        self.assertEqual(
-            [mock.call('param1', self.schema_class().puppet_parameters,
-                       self.validator.tasks_path,
-                       value_path=[0, 'parameters']),
-             mock.call('param2', self.schema_class().shell_parameters,
-                       self.validator.tasks_path,
-                       value_path=[1, 'parameters']),
-             mock.call('param3', self.schema_class().reboot_parameters,
-                       self.validator.tasks_path,
-                       value_path=[2, 'parameters'])],
-            self.validator.validate_schema.call_args_list)
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_compatibility(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
-            'fuel_version': ['6.0', '6.1'],
-            'package_version': '2.0.0'}
-
-        with self.assertRaisesRegexp(
-                errors.ValidationError,
-                'Current plugin format 2.0.0 is not compatible with 6.0 Fuel'
-                ' release. Fuel version must be 6.1 or higher.'
-                ' Please remove 6.0 version from metadata.yaml file or'
-                ' downgrade package_version.'):
-            self.validator.check_compatibility()
-
-    @mock.patch('fuel_plugin_builder.validators.validator_v2.utils')
-    def test_check_tasks_no_parameters_not_failed(self, utils_mock):
-        mocked_methods = [
-            'validate_schema'
+        self.data_tree['tasks'] = [
+            {
+                'type': 'reboot',
+                'role': '*',
+                'stage': 'pre_deployment'
+            }
         ]
-        self.mock_methods(self.validator, mocked_methods)
-        utils_mock.parse_yaml.return_value = [
-            {'type': 'puppet'},
-        ]
-
-        self.validator.check_tasks()
-
-        self.assertEqual(
-            [mock.call(None, self.schema_class().puppet_parameters,
-                       self.validator.tasks_path,
-                       value_path=[0, 'parameters'])],
-            self.validator.validate_schema.call_args_list)
+        report = self.validator.validate(self.data_tree)
+        self.assertFalse(report.is_failed())
