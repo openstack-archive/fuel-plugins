@@ -15,52 +15,31 @@
 #    under the License.
 
 import logging
-from os.path import join as join_path
 
-from fuel_plugin_builder import utils
-from fuel_plugin_builder.validators.base import LegacyBaseValidator
-from fuel_plugin_builder.validators.schemas import SchemaV1
-
+from fuel_plugin_builder import schemas
+from fuel_plugin_builder.validators.validator_base import ValidatorBase
 
 logger = logging.getLogger(__name__)
 
 
-class ValidatorV1(LegacyBaseValidator):
+class ValidatorV1(ValidatorBase):
+    package_version = '1.0.0'
+    minimal_fuel_version = '6.0'
 
-    schema = SchemaV1()
-
-    @property
-    def basic_version(self):
-        return '6.0'
-
-    def __init__(self, *args, **kwargs):
-        super(ValidatorV1, self).__init__(*args, **kwargs)
-        self.meta_path = join_path(self.plugin_path, 'metadata.yaml')
-        self.tasks_path = join_path(self.plugin_path, 'tasks.yaml')
-        self.env_conf_path = join_path(
-            self.plugin_path, 'environment_config.yaml')
-
-    def validate(self):
-        self.check_schemas()
-        self.check_tasks()
-        self.check_releases_paths()
-        self.check_compatibility()
-
-    def check_tasks(self):
-        """Json schema doesn't have any conditions, so we have
-        to make sure here, that puppet task is really puppet
-        and shell task is correct too
-        """
-        logger.debug('Start tasks checking "%s"', self.tasks_path)
-        tasks = utils.parse_yaml(self.tasks_path)
-
-        schemas = {
-            'puppet': self.schema.puppet_parameters,
-            'shell': self.schema.shell_parameters}
-
-        for idx, task in enumerate(tasks):
-            self.validate_schema(
-                task.get('parameters'),
-                schemas[task['type']],
-                self.tasks_path,
-                value_path=[idx, 'parameters'])
+    _data_tree_schemas = {
+        '': schemas.metadata_v6_0.schema,
+        'tasks': schemas.task_v0_0_2.tasks
+    }
+    _data_tree_multi_schemas = {
+        'tasks': {
+            'puppet': schemas.task_v0_0_0.puppet_task,
+            'shell': schemas.task_v0_0_0.shell_task
+        }
+    }
+    _data_tree_env_attributes = {
+        'environment_config': [
+            schemas.attributes_v6_1.attr_root,
+            schemas.attributes_v6_1.attr_element,
+            schemas.attributes_v6_1.attr_meta
+        ]
+    }

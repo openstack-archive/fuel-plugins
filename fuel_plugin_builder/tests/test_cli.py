@@ -32,8 +32,12 @@ class TestCli(BaseTestCase):
         perform_action(args)
 
         actions_mock.CreatePlugin.assert_called_once_with(
-            'plugin_path',
-            '2.0.0')
+            plugin_path='plugin_path',
+            package_version='2.0.0',
+            fuel_import=mock.ANY,
+            nailgun_path=mock.ANY,
+            library_path=mock.ANY
+        )
         creatre_obj.run.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.cli.actions')
@@ -44,7 +48,13 @@ class TestCli(BaseTestCase):
 
         perform_action(args)
 
-        actions_mock.CreatePlugin.assert_called_once_with('plugin_path', None)
+        actions_mock.CreatePlugin.assert_called_once_with(
+            plugin_path='plugin_path',
+            package_version=None,
+            fuel_import=mock.ANY,
+            nailgun_path=mock.ANY,
+            library_path=mock.ANY
+        )
         creatre_obj.run.assert_called_once_with()
 
     @mock.patch('fuel_plugin_builder.cli.actions.make_builder')
@@ -60,7 +70,7 @@ class TestCli(BaseTestCase):
         builder_mock.assert_called_once_with('plugin_path')
         build_obj.run.assert_called_once_with()
 
-    @mock.patch('fuel_plugin_builder.cli.ValidatorManager')
+    @mock.patch('fuel_plugin_builder.cli.version_mapping.get_validator')
     def test_perform_check(self, validator_mock):
         args = mock.MagicMock(
             create=None,
