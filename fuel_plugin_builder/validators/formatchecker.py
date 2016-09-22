@@ -20,7 +20,7 @@ from sre_constants import error as sre_error
 import jsonschema
 import six
 
-from fuel_plugin_builder import errors
+import errors
 
 
 class FormatChecker(jsonschema.FormatChecker):
