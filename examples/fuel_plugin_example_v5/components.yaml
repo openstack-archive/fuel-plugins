@@ -1,0 +1,17 @@
+# This file contains wizard components descriptions that are pretty similar to
+# the `environment_config.yaml`.
+# Please, take a look at following link for the details:
+# - https://blueprints.launchpad.net/fuel/+spec/component-registry
+# - https://specs.openstack.org/openstack/fuel-specs/specs/8.0/component-registry.html
+
+- name: additional_service:service_plugin_v4_component
+  label: "Title for service_plugin_v4_component component."
+  description: "Description for service_plugin_v4_component component."
+  compatible:
+    - name: "hypervisor:xxx"
+  requires:
+    - name: "hypervisor:xxx"
+      message: "service_plugin_v4_component requires XXX compute."
+  incompatible:
+    - name: "network:neutron:*"
+      message: "service_plugin_v4_component incompatible with Neutron network."

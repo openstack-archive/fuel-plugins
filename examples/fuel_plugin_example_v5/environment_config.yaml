@@ -1,0 +1,15 @@
+# This file describes additional attributes that will appear on the Settings
+# tab of the Fuel web UI. When the environment is deployed, these attributes
+# are passed to the task executor so that the data is available
+# in the /etc/astute.yaml file on each target node and can be accessed from
+# your bash or puppet scripts.
+
+attributes:
+  metadata:
+    group: 'other'
+  fuel_plugin_example_v4_text:
+    value: 'Set default value'
+    label: 'Text field'
+    description: 'Description for text field'
+    weight: 25
+    type: "text"
