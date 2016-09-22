@@ -14,439 +14,666 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+# import mock
+#
+# from fuel_plugin_builder import errors
+# from fuel_plugin_builder.tests.test_validator_v4 import TestValidatorV4
+# from fuel_plugin_builder.validators.validator_v5 import ValidatorV5
+#
+#
+# class TestValidatorV5(TestValidatorV4):
+#
+#     __test__ = True
+#     validator_class = ValidatorV5
+#     # schema_class = SchemaV5
+#     package_version = '5.0.0'
+#
+#     def setUp(self):
+#         super(TestValidatorV5, self).setUp()
+#
+#     def test_check_schemas(self):
+#         mocked_methods = [
+#             'check_metadata_schema',
+#             'check_env_config_attrs',
+#             'check_tasks_schema',
+#             'check_deployment_tasks_schema',
+#             'check_network_roles_schema',
+#             'check_node_roles_schema',
+#             'check_volumes_schema',
+#             'check_components_schema',
+#             'check_node_attributes_schema'
+#         ]
+#         self.mock_methods(self.validator, mocked_methods)
+#         self.mock_methods(
+#             self.validator,
+#             ['validate_file_by_schema', 'check_interface_attributes_schema']
+#         )
+#         self.validator.check_schemas()
+#
+#         self.assertEqual(
+#             [mock.call(self.validator.bond_config_path),
+#              mock.call(self.validator.nic_config_path)],
+#             self.validator.check_interface_attributes_schema.call_args_list)
+#         for method in mocked_methods:
+#             getattr(self.validator, method).assert_called_once_with()
+#
+#     @mock.patch('fuel_plugin_builder.validators.base.utils')
+#     def test_check_compatibility_failed(self, utils_mock):
+#         fuel_version_checks = (
+#             (['8.0', '9.0', '10.0']),
+#             (['6.1', '7.0', '8.0']),
+#             (['6.0', '6.1', '7.0']),
+#             (['6.1', '7.0']),
+#         )
+#
+#         for fuel_version in fuel_version_checks:
+#             mock_data = {
+#                 'fuel_version': fuel_version,
+#                 'package_version': '5.0.0'}
+#             err_msg = 'Current plugin format 5.0.0 is not compatible with ' \
+#                       '{0} Fuel release. Fuel version must be 9.0 or higher.' \
+#                       ' Please remove {0} version from metadata.yaml file or' \
+#                       ' downgrade package_version.'.format(fuel_version[0])
+#
+#             self.check_raised_exception(
+#                 utils_mock, mock_data,
+#                 err_msg, self.validator.check_compatibility)
+#
+#     @mock.patch('fuel_plugin_builder.validators.base.utils')
+#     def test_check_compatibility_passed(self, utils_mock):
+#         utils_mock.parse_yaml.return_value = {
+#             'fuel_version': ['9.0', '9.1', '9.2', '10.0'],
+#             'package_version': '5.0.0'}
+#         self.validator.check_compatibility()
+#
+#     @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
+#     def test_check_interface_attributes_schema_validation_no_file(self,
+#                                                                   exists_mock):
+#         mocked_methods = ['validate_schema']
+#         self.mock_methods(self.validator, mocked_methods)
+#         exists_mock.return_value = False
+#         self.validator.check_interface_attributes_schema(mock.ANY)
+#         self.assertFalse(self.validator.validate_schema.called)
+#
+#     @mock.patch('fuel_plugin_builder.validators.base.utils')
+#     def test_check_interface_attributes_schema_validation_failed(self,
+#                                                                  utils_mock):
+#         data_sets = [
+#             {
+#                 '123': {
+#                     'label': 'Attribute without type',
+#                     'description': 'Attribute without type',
+#                     'value': ''
+#                 }
+#             },
+#             {
+#                 'attribute_without_label': {
+#                     'description': 'Attribute without label',
+#                     'type': 'text',
+#                     'value': 'attribute_value'
+#                 }
+#             }, {
+#                 'attribute_without_value': {
+#                     'label': 'Attribute without value',
+#                     'description': 'Attribute without value',
+#                     'type': 'text',
+#                 }
+#             },
+#             {
+#                 'attribute-1': {
+#                     'description': 'Attribute with wrong label type',
+#                     'label': 123,
+#                     'type': 'checkbox',
+#                 }
+#             },
+#             {
+#                 'attribute-2': {
+#                     'label': 'Attribute with wrong type type',
+#                     'type': [],
+#                 }
+#             },
+#             {
+#                 'attribute-3': {
+#                     'label': 'Attribute with wrong description type',
+#                     'type': 'text',
+#                     'description': False
+#                 }
+#             },
+#             {
+#                 'attribute-4': {
+#                     'label': 'Attribute with wrong restrictions type',
+#                     'type': 'text',
+#                     'restrictions': {}
+#                 }
+#             },
+#             {
+#                 'label': 'Missed attribute name. Wrong level nesting.',
+#                 'type': 'text',
+#                 'value': ''
+#             },
+#             {
+#                 'extra_level': {
+#                     'attribute_name': {
+#                         'label': 'Attribute with extra nesting level',
+#                         'type': 'text',
+#                         'value': ''
+#                     }
+#                 }
+#             },
+#             {
+#                 'uns@pported_letters=!n_attr_name*': {
+#                     'label': 'Attribute with wrong name',
+#                     'type': 'text',
+#                     'value': ''
+#                 }
+#             },
+#             ['wrong interface attributes object type']
+#         ]
+#
+#         for data in data_sets:
+#             utils_mock.parse_yaml.return_value = data
+#             self.assertRaises(errors.ValidationError,
+#                               self.validator.check_interface_attributes_schema,
+#                               mock.ANY)
+#
+#     @mock.patch('fuel_plugin_builder.validators.base.utils')
+#     def test_check_interface_attributes_schema_validation_passed(self,
+#                                                                  utils_mock):
+#         data_sets = [
+#             {
+#                 '123': {
+#                     'label': 'Attribute with min required fields',
+#                     'type': 'text',
+#                     'value': ''
+#                 }
+#             },
+#             {
+#                 'Attribute_1': {
+#                     'label': 'Attribute with restrictions & complex value',
+#                     'description': 'Some attribute description',
+#                     'type': 'text',
+#                     'value': {'key1': ['val_1', 'val_2']},
+#                     'restrictions': [
+#                         {
+#                             'condition': 'false',
+#                             'action': 'disable'
+#                         }
+#                     ]
+#                 },
+#                 'attribute-2': {
+#                     'label': 'Attribute with additional fields',
+#                     'type': 'number',
+#                     'description': 'Some attribute description',
+#                     'value': 10,
+#                     'min': 0
+#                 },
+#                 'metadata': {
+#                     'label': 'Some metadata'
+#                 }
+#             }
+#         ]
+#
+#         for data in data_sets:
+#             utils_mock.parse_yaml.return_value = data
+#             self.validator.check_interface_attributes_schema('nic_config_path')
+#
+#     @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
+#     def test_check_node_attributes_schema_validation_no_file(self,
+#                                                              exists_mock):
+#         mocked_methods = ['validate_schema']
+#         self.mock_methods(self.validator, mocked_methods)
+#         exists_mock.return_value = False
+#         self.validator.check_node_attributes_schema()
+#         self.assertFalse(self.validator.validate_schema.called)
+#
+#     @mock.patch('fuel_plugin_builder.validators.base.utils')
+#     def test_check_node_attributes_schema_validation_failed(self, utils_mock):
+#         data_sets = [
+#             {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     '123': {
+#                         'label': 'Attribute without type',
+#                         'description': 'Attribute without type',
+#                         'value': ''
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     'attribute_without_label': {
+#                         'description': 'Attribute without label',
+#                         'type': 'text',
+#                         'value': 'attribute_value'
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     'attribute_without_value': {
+#                         'label': 'Attribute without value',
+#                         'description': 'Attribute without value',
+#                         'type': 'text',
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     'attribute-1': {
+#                         'description': 'Attribute with wrong label type',
+#                         'label': 123,
+#                         'type': 'checkbox',
+#                         'value': ''
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     'attribute-2': {
+#                         'label': 'Attribute with wrong type type',
+#                         'type': [],
+#                         'value': ''
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     'attribute-3': {
+#                         'label': 'Attribute with wrong description type',
+#                         'type': 'text',
+#                         'value': '',
+#                         'description': False
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     'attribute-4': {
+#                         'label': 'Attribute with wrong restrictions type',
+#                         'type': 'text',
+#                         'value': '',
+#                         'restrictions': {}
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'group': 'Metadata without label'
+#                     },
+#                     'attribute_a': {
+#                         'label': 'Some label',
+#                         'type': 'text',
+#                         'value': '',
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': None,
+#                         'group': 'Metadata with wrong label type'
+#                     },
+#                     'attribute_a': {
+#                         'label': 'Some label',
+#                         'type': 'text',
+#                         'value': '',
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': None,
+#                         'group': 'Metadata with wrong restriction type',
+#                         'restrictions': 'restrictions'
+#                     },
+#                     'attribute_a': {
+#                         'label': 'Some label',
+#                         'type': 'text',
+#                         'value': '',
+#                     }
+#                 }
+#             }, {
+#                 'metadata': {
+#                     'label': 'Some label'
+#                 },
+#                 'attribute': {
+#                     'label': 'Missed plugin section. Wrong level nesting.',
+#                     'type': 'text',
+#                     'value': ''
+#                 }
+#             }, {
+#                 'extra_level': {
+#                     'plugin_section': {
+#                         'metadata': {
+#                             'label': 'Some label'
+#                         },
+#                         'attribute-4': {
+#                             'label': 'Attribute with extra nesting level',
+#                             'type': 'text',
+#                             'value': ''
+#                         }
+#                     }
+#                 }
+#             }, {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     'uns@pported_letters=!n_attr_name*': {
+#                         'label': 'Attribute with wrong name',
+#                         'type': 'text',
+#                         'value': ''
+#                     }
+#                 }
+#             }, {
+#                 'uns@pported_letters=!n_section_name': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     'attribute': {
+#                         'label': 'Attribute with wrong name',
+#                         'type': 'text',
+#                         'value': ''
+#                     }
+#                 }
+#             },
+#             ['wrong interface attributes object type']
+#         ]
+#
+#         for data in data_sets:
+#             utils_mock.parse_yaml.return_value = data
+#             self.assertRaises(errors.ValidationError,
+#                               self.validator.check_node_attributes_schema)
+#
+#     @mock.patch('fuel_plugin_builder.validators.base.utils')
+#     def test_check_node_attributes_schema_validation_passed(self, utils_mock):
+#         data_sets = [
+#             {
+#                 'plugin_section': {
+#                     'metadata': {
+#                         'label': 'Some label'
+#                     },
+#                     '123': {
+#                         'label': 'Attribute with min required fields',
+#                         'type': 'text',
+#                         'value': ''
+#                     }
+#                 },
+#                 'plugin_section123': {
+#                     'Attribute_1': {
+#                         'label': 'Attribute with restrictions & complex value',
+#                         'description': 'Some attribute description',
+#                         'type': 'text',
+#                         'value': {'key1': ['val_1', 'val_2']},
+#                         'restrictions': [
+#                             {
+#                                 'condition': 'false',
+#                                 'action': 'disable'
+#                             }
+#                         ]
+#                     },
+#                     'attribute-2': {
+#                         'label': 'Attribute with additional fields',
+#                         'type': 'number',
+#                         'description': 'Some attribute description',
+#                         'value': 10,
+#                         'min': 0
+#                     },
+#                     'metadata': {
+#                         'label': 'Metadata with extra field & restrictions',
+#                         'restrictions': [
+#                             {
+#                                 'condition': 'false',
+#                                 'action': 'disable'
+#                             }
+#                         ],
+#                         'group': 'group A'
+#                     }
+#                 }
+#             }
+#         ]
+#
+#         for data in data_sets:
+#             utils_mock.parse_yaml.return_value = data
+#             self.validator.check_node_attributes_schema()
 
-from fuel_plugin_builder import errors
-from fuel_plugin_builder.tests.test_validator_v4 import TestValidatorV4
-from fuel_plugin_builder.validators.schemas import SchemaV5
-from fuel_plugin_builder.validators.validator_v5 import ValidatorV5
+# new tests
+from fuel_plugin_builder import loaders
+from fuel_plugin_builder.tests.base import FakeFSTest
+from fuel_plugin_builder import validators
 
 
-class TestValidatorV5(TestValidatorV4):
-
-    __test__ = True
-    validator_class = ValidatorV5
-    schema_class = SchemaV5
+class TestValidatorV5(FakeFSTest):
+    validator_class = validators.ValidatorV5
+    loader_class = loaders.PluginLoaderV5
     package_version = '5.0.0'
 
-    def setUp(self):
-        super(TestValidatorV5, self).setUp()
+    __test__ = True
 
-    def test_check_schemas(self):
-        mocked_methods = [
-            'check_metadata_schema',
-            'check_env_config_attrs',
-            'check_tasks_schema',
-            'check_deployment_tasks_schema',
-            'check_network_roles_schema',
-            'check_node_roles_schema',
-            'check_volumes_schema',
-            'check_components_schema',
-            'check_node_attributes_schema'
-        ]
-        self.mock_methods(self.validator, mocked_methods)
-        self.mock_methods(
-            self.validator,
-            ['validate_file_by_schema', 'check_interface_attributes_schema']
+    def test_validate(self):
+        report = self.validator.validate(self.data_tree)
+        self.assertIn(u'Success!', report.render())
+
+    def test_fuel_version_legacy_warning(self):
+        self.data_tree.update(
+            self._make_fake_metadata_data(fuel_version=['9.1'])
         )
-        self.validator.check_schemas()
+        report = self.validator.validate(self.data_tree)
+        self.assertIn(u'WARNING: "fuel_version" field in metadata.yaml is '
+                      u'deprecated and will be removed in further Fuel '
+                      u'releases.', report.render())
+        self.assertFalse(report.is_failed())
 
-        self.assertEqual(
-            [mock.call(self.validator.bond_config_path),
-             mock.call(self.validator.nic_config_path)],
-            self.validator.check_interface_attributes_schema.call_args_list)
-        for method in mocked_methods:
-            getattr(self.validator, method).assert_called_once_with()
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_compatibility_failed(self, utils_mock):
-        fuel_version_checks = (
-            (['8.0', '9.0', '10.0']),
-            (['6.1', '7.0', '8.0']),
-            (['6.0', '6.1', '7.0']),
-            (['6.1', '7.0']),
-        )
-
-        for fuel_version in fuel_version_checks:
-            mock_data = {
-                'fuel_version': fuel_version,
-                'package_version': '5.0.0'}
-            err_msg = 'Current plugin format 5.0.0 is not compatible with ' \
-                      '{0} Fuel release. Fuel version must be 9.0 or higher.' \
-                      ' Please remove {0} version from metadata.yaml file or' \
-                      ' downgrade package_version.'.format(fuel_version[0])
-
-            self.check_raised_exception(
-                utils_mock, mock_data,
-                err_msg, self.validator.check_compatibility)
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_compatibility_passed(self, utils_mock):
-        utils_mock.parse_yaml.return_value = {
-            'fuel_version': ['9.0', '9.1', '9.2', '10.0'],
-            'package_version': '5.0.0'}
-        self.validator.check_compatibility()
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
-    def test_check_interface_attributes_schema_validation_no_file(self,
-                                                                  exists_mock):
-        mocked_methods = ['validate_schema']
-        self.mock_methods(self.validator, mocked_methods)
-        exists_mock.return_value = False
-        self.validator.check_interface_attributes_schema(mock.ANY)
-        self.assertFalse(self.validator.validate_schema.called)
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_interface_attributes_schema_validation_failed(self,
-                                                                 utils_mock):
-        data_sets = [
+    def test_check_tasks_schema_validation_failed(self):
+        bad_tasks_data = [
             {
-                '123': {
-                    'label': 'Attribute without type',
-                    'description': 'Attribute without type',
-                    'value': ''
-                }
-            },
-            {
-                'attribute_without_label': {
-                    'description': 'Attribute without label',
-                    'type': 'text',
-                    'value': 'attribute_value'
-                }
-            }, {
-                'attribute_without_value': {
-                    'label': 'Attribute without value',
-                    'description': 'Attribute without value',
-                    'type': 'text',
-                }
-            },
-            {
-                'attribute-1': {
-                    'description': 'Attribute with wrong label type',
-                    'label': 123,
-                    'type': 'checkbox',
-                }
-            },
-            {
-                'attribute-2': {
-                    'label': 'Attribute with wrong type type',
-                    'type': [],
-                }
-            },
-            {
-                'attribute-3': {
-                    'label': 'Attribute with wrong description type',
-                    'type': 'text',
-                    'description': False
-                }
-            },
-            {
-                'attribute-4': {
-                    'label': 'Attribute with wrong restrictions type',
-                    'type': 'text',
-                    'restrictions': {}
-                }
-            },
-            {
-                'label': 'Missed attribute name. Wrong level nesting.',
-                'type': 'text',
-                'value': ''
-            },
-            {
-                'extra_level': {
-                    'attribute_name': {
-                        'label': 'Attribute with extra nesting level',
-                        'type': 'text',
-                        'value': ''
-                    }
-                }
-            },
-            {
-                'uns@pported_letters=!n_attr_name*': {
-                    'label': 'Attribute with wrong name',
-                    'type': 'text',
-                    'value': ''
-                }
-            },
-            ['wrong interface attributes object type']
-        ]
-
-        for data in data_sets:
-            utils_mock.parse_yaml.return_value = data
-            self.assertRaises(errors.ValidationError,
-                              self.validator.check_interface_attributes_schema,
-                              mock.ANY)
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_interface_attributes_schema_validation_passed(self,
-                                                                 utils_mock):
-        data_sets = [
-            {
-                '123': {
-                    'label': 'Attribute with min required fields',
-                    'type': 'text',
-                    'value': ''
-                }
-            },
-            {
-                'Attribute_1': {
-                    'label': 'Attribute with restrictions & complex value',
-                    'description': 'Some attribute description',
-                    'type': 'text',
-                    'value': {'key1': ['val_1', 'val_2']},
-                    'restrictions': [
-                        {
-                            'condition': 'false',
-                            'action': 'disable'
-                        }
-                    ]
+                'type': 'shell',
+                'parameters': {
+                    'timeout': 3
                 },
-                'attribute-2': {
-                    'label': 'Attribute with additional fields',
-                    'type': 'number',
-                    'description': 'Some attribute description',
-                    'value': 10,
-                    'min': 0
+                'stage': 'post_deployment',
+                'role': '*'
+            },
+            {
+                'type': 'puppet',
+                'parameters': {
+                    'timeout': 3
                 },
-                'metadata': {
-                    'label': 'Some metadata'
-                }
+                'stage': 'post_deployment',
+                'role': '*'
+            },
+            {
+                'parameters': {
+                    'timeout': 3,
+                    'cmd': 'xx'
+                },
+                'stage': 'post_deployment',
+                'role': '*'
+            },
+            {
+                'type': 'shell',
+                'parameters': {
+                    'timeout': 3,
+                    'puppet_manifest': 'xx',
+                    'puppet_modules': 'yy',
+                },
+                'stage': 'post_deployment',
+                'role': '*'
+            },
+            {
+                'type': 'puppet',
+                'parameters': {
+                    'timeout': 3,
+                    'puppet_manifest': 'xx',
+                    'puppet_modules': 'yy',
+                    'retries': 'asd',
+                },
+                'stage': 'post_deployment',
+                'role': '*'
+            },
+            {
+                'type': 'puppet',
+                'parameters': {
+                    'timeout': 3,
+                    'puppet_manifest': 'xx',
+                    'puppet_modules': '',
+                    'retries': 1,
+                },
+                'stage': 'pre_deployment',
+                'role': '*'
+            },
+            {
+                'type': 'puppet',
+                'parameters': {
+                    'timeout': 3,
+                    'puppet_manifest': '',
+                    'puppet_modules': 'yy',
+                    'retries': 1,
+                },
+                'stage': 'pre_deployment',
+                'role': '*'
             }
         ]
+        self.data_tree['releases'][0]['graphs'][0]['tasks'] = \
+            bad_tasks_data
+        report = self.validator.validate(self.data_tree)
+        self.assertEqual(report.count_failures(), 7 + 1)
+        self.assertIn('Failure!', report.render())
 
-        for data in data_sets:
-            utils_mock.parse_yaml.return_value = data
-            self.validator.check_interface_attributes_schema('nic_config_path')
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils.exists')
-    def test_check_node_attributes_schema_validation_no_file(self,
-                                                             exists_mock):
-        mocked_methods = ['validate_schema']
-        self.mock_methods(self.validator, mocked_methods)
-        exists_mock.return_value = False
-        self.validator.check_node_attributes_schema()
-        self.assertFalse(self.validator.validate_schema.called)
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_node_attributes_schema_validation_failed(self, utils_mock):
+    def test_check_tasks_schema_validation_passed(self):
         data_sets = [
-            {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
+            [
+                {
+                    'id': 'test1',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'xx'
                     },
-                    '123': {
-                        'label': 'Attribute without type',
-                        'description': 'Attribute without type',
-                        'value': ''
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
-                    },
-                    'attribute_without_label': {
-                        'description': 'Attribute without label',
-                        'type': 'text',
-                        'value': 'attribute_value'
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
-                    },
-                    'attribute_without_value': {
-                        'label': 'Attribute without value',
-                        'description': 'Attribute without value',
-                        'type': 'text',
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
-                    },
-                    'attribute-1': {
-                        'description': 'Attribute with wrong label type',
-                        'label': 123,
-                        'type': 'checkbox',
-                        'value': ''
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
-                    },
-                    'attribute-2': {
-                        'label': 'Attribute with wrong type type',
-                        'type': [],
-                        'value': ''
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
-                    },
-                    'attribute-3': {
-                        'label': 'Attribute with wrong description type',
-                        'type': 'text',
-                        'value': '',
-                        'description': False
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
-                    },
-                    'attribute-4': {
-                        'label': 'Attribute with wrong restrictions type',
-                        'type': 'text',
-                        'value': '',
-                        'restrictions': {}
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'group': 'Metadata without label'
-                    },
-                    'attribute_a': {
-                        'label': 'Some label',
-                        'type': 'text',
-                        'value': '',
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': None,
-                        'group': 'Metadata with wrong label type'
-                    },
-                    'attribute_a': {
-                        'label': 'Some label',
-                        'type': 'text',
-                        'value': '',
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': None,
-                        'group': 'Metadata with wrong restriction type',
-                        'restrictions': 'restrictions'
-                    },
-                    'attribute_a': {
-                        'label': 'Some label',
-                        'type': 'text',
-                        'value': '',
-                    }
-                }
-            }, {
-                'metadata': {
-                    'label': 'Some label'
+                    'stage': 'post_deployment',
+                    'role': '*'
                 },
-                'attribute': {
-                    'label': 'Missed plugin section. Wrong level nesting.',
-                    'type': 'text',
-                    'value': ''
-                }
-            }, {
-                'extra_level': {
-                    'plugin_section': {
-                        'metadata': {
-                            'label': 'Some label'
-                        },
-                        'attribute-4': {
-                            'label': 'Attribute with extra nesting level',
-                            'type': 'text',
-                            'value': ''
-                        }
-                    }
-                }
-            }, {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
+            ],
+            [
+                {
+                    'id': 'test1',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'xx'
                     },
-                    'uns@pported_letters=!n_attr_name*': {
-                        'label': 'Attribute with wrong name',
-                        'type': 'text',
-                        'value': ''
-                    }
-                }
-            }, {
-                'uns@pported_letters=!n_section_name': {
-                    'metadata': {
-                        'label': 'Some label'
-                    },
-                    'attribute': {
-                        'label': 'Attribute with wrong name',
-                        'type': 'text',
-                        'value': ''
-                    }
-                }
-            },
-            ['wrong interface attributes object type']
-        ]
-
-        for data in data_sets:
-            utils_mock.parse_yaml.return_value = data
-            self.assertRaises(errors.ValidationError,
-                              self.validator.check_node_attributes_schema)
-
-    @mock.patch('fuel_plugin_builder.validators.base.utils')
-    def test_check_node_attributes_schema_validation_passed(self, utils_mock):
-        data_sets = [
-            {
-                'plugin_section': {
-                    'metadata': {
-                        'label': 'Some label'
-                    },
-                    '123': {
-                        'label': 'Attribute with min required fields',
-                        'type': 'text',
-                        'value': ''
-                    }
+                    'stage': 'post_deployment',
+                    'role': '*'
                 },
-                'plugin_section123': {
-                    'Attribute_1': {
-                        'label': 'Attribute with restrictions & complex value',
-                        'description': 'Some attribute description',
-                        'type': 'text',
-                        'value': {'key1': ['val_1', 'val_2']},
-                        'restrictions': [
-                            {
-                                'condition': 'false',
-                                'action': 'disable'
-                            }
-                        ]
+                {
+                    'id': 'test2',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
                     },
-                    'attribute-2': {
-                        'label': 'Attribute with additional fields',
-                        'type': 'number',
-                        'description': 'Some attribute description',
-                        'value': 10,
-                        'min': 0
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+            ],
+            [
+                {
+                    'id': 'test3',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'reboot'
                     },
-                    'metadata': {
-                        'label': 'Metadata with extra field & restrictions',
-                        'restrictions': [
-                            {
-                                'condition': 'false',
-                                'action': 'disable'
-                            }
-                        ],
-                        'group': 'group A'
-                    }
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'test4',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'xx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'test5',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
                 }
-            }
+            ],
+            [
+                {
+                    'id': 'test1',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'cmd': 'reboot'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'test2',
+                    'type': 'shell',
+                    'parameters': {
+                        'timeout': 3,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'yy',
+                        'cmd': 'reboot'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'test3',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'retries': 10,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': '*'
+                },
+                {
+                    'id': 'test4',
+                    'type': 'puppet',
+                    'parameters': {
+                        'timeout': 3,
+                        'retries': 10,
+                        'puppet_manifest': 'xx',
+                        'puppet_modules': 'xxx'
+                    },
+                    'stage': 'post_deployment',
+                    'role': 'master'
+                },
+            ]
         ]
-
         for data in data_sets:
-            utils_mock.parse_yaml.return_value = data
-            self.validator.check_node_attributes_schema()
+            self.data_tree['releases'][0]['graphs'][0]['tasks'] = data
+            report = self.validator.validate(self.data_tree)
+            self.assertFalse(report.is_failed())
+            self.assertIn('Success!', report.render())
