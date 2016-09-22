@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-#    Copyright 2014 Mirantis, Inc.
+#
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,20 +14,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from fuel_plugin_builder.loaders.loader_base import PluginLoaderBase
 
-HEADER = '=' * 50
-INSTALL_REQUIRED_PACKAGES = """
-Was not able to find required packages.
 
-If you use Ubuntu, run:
+class PluginLoaderV4(PluginLoaderBase):
 
-    # sudo apt-get install createrepo rpm dpkg-dev
+    paths_to_fields = {
+        'attributes_metadata': 'environment_config.yaml',
+        'tasks': 'tasks.yaml',
 
-If you use CentOS, run:
+        'deployment_tasks': 'deployment_tasks.yaml',
 
-    # yum install createrepo dpkg-devel dpkg-dev rpm rpm-build
+        'network_roles_metadata': 'network_roles.yaml',
+        'roles_metadata': 'node_roles.yaml',
+        'volumes_metadata': 'volumes.yaml',
 
-"""
-PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE = ("Plugin name is invalid, use only "
-                                       "lower case letters, numbers, '_', '-' "
-                                       "symbols")
+        'components_metadata': 'components.yaml'
+    }

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#    Copyright 2015 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -14,10 +14,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from task import task_v2_2_0
 
-from fuel_plugin_builder.validators.schemas.base import BaseSchema
-from fuel_plugin_builder.validators.schemas.v1 import SchemaV1
-from fuel_plugin_builder.validators.schemas.v2 import SchemaV2
-from fuel_plugin_builder.validators.schemas.v3 import SchemaV3
-from fuel_plugin_builder.validators.schemas.v4 import SchemaV4
-from fuel_plugin_builder.validators.schemas.v5 import SchemaV5
+
+class SchemaGraphV9_1(object):
+    @property
+    def graph(self):
+        return {
+            '$schema': 'http://json-schema.org/draft-04/schema#',
+            'type': 'object',
+            'additionalProperties': False,
+            'properties': {
+                'name': {'type': 'string'},
+                'type': {'type': 'string'},
+                'tasks': task_v2_2_0.tasks,
+                'metadata': {'type': 'object'}
+            }
+        }
+
+
+graph_v9_1 = SchemaGraphV9_1()
