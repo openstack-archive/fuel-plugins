@@ -27,6 +27,7 @@ class TestValidatorV4(TestValidatorV3):
     __test__ = True
     validator_class = ValidatorV4
     schema_class = SchemaV4
+    package_version = '4.0.0'
 
     def setUp(self):
         super(TestValidatorV4, self).setUp()
@@ -34,7 +35,7 @@ class TestValidatorV4(TestValidatorV3):
             'name': 'plugin_name-12',
             'title': 'plugin_name-12',
             'version': '1.2.3',
-            'package_version': '4.0.0',
+            'package_version': self.package_version,
             'description': 'Description',
             'fuel_version': ['8.0.0'],
             'licenses': ['Apache', 'BSD'],
@@ -106,7 +107,7 @@ class TestValidatorV4(TestValidatorV3):
             'name': 'plugin_name-12',
             'title': 'plugin_name-12',
             'version': '1.2.3',
-            'package_version': '4.0.0',
+            'package_version': self.package_version,
             'description': 'Description',
             'fuel_version': ['8.0.0'],
             'licenses': ['Apache', 'BSD'],

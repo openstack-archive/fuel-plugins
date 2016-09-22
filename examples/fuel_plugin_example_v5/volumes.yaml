@@ -1,0 +1,6 @@
+# Set here new volumes for your role
+volumes: []
+volumes_roles_mapping:
+  fuel_plugin_example_v4_role:
+    # Default role mapping
+    - {allocate_size: "min", id: "os"}
