@@ -84,10 +84,3 @@
     puppet_modules: "."
     timeout: 3600
     retries: 2
-
-- id: fuel_plugin_example_v3-legacy-6
-  role: '*'
-  stage: pre_deployment
-  type: reboot
-  parameters:
-    timeout: 600
