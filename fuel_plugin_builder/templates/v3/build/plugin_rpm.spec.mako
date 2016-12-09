@@ -37,8 +37,6 @@ tar -vxf %{SOURCE0} -C %{name}-%{version}
 cd %{name}-%{version}
 mkdir -p %{buildroot}/var/www/nailgun/plugins/
 cp -r ${ name } %{buildroot}/var/www/nailgun/plugins/
-mkdir -p %{buildroot}/etc/fuel/plugins
-ln -s ../../../var/www/nailgun/plugins/${ name }/deployment_scripts %{buildroot}/etc/fuel/plugins/${ name }
 
 %%clean
 rm -rf %{buildroot}
@@ -64,4 +62,3 @@ fi
 
 %%files
 /var/www/nailgun/plugins/${ name }
-/etc/fuel/plugins/${ name }
