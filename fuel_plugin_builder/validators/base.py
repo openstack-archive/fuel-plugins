@@ -135,7 +135,7 @@ class LegacyBaseValidator(object):
             self.env_conf_path)
 
         attrs = config.get('attributes', {})
-        for attr_id, attr in six.iteritems(attrs):
+        for attr_id, attr in attrs.items():
             schema = self.schema.attr_element_schema
             # Metadata object is totally different
             # from the others, we have to set different
