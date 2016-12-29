@@ -99,11 +99,17 @@ class BaseBuildPlugin(BaseAction):
         self.build_ubuntu_repos(releases_paths.get('ubuntu', []))
         self.build_centos_repos(releases_paths.get('centos', []))
 
-    def build_ubuntu_repos(cls, releases_paths):
+    def build_ubuntu_repos(self, releases_paths):
         for repo_path in releases_paths:
             utils.exec_piped_cmds(
                 ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
+            release_path = join_path(repo_path, 'Release')
+            utils.render_to_file(
+                self.release_tmpl_src,
+                release_path,
+                {'plugin_name': self.meta['name'],
+                 'major_version': self.plugin_version})
 
     @classmethod
     def build_centos_repos(cls, releases_paths):
@@ -222,18 +228,6 @@ class BuildPluginV2(BaseBuildPlugin):
             'homepage': self.meta.get('homepage'),
             'vendor': ', '.join(self.meta.get('authors', [])),
             'year': utils.get_current_year()}
-
-    def build_ubuntu_repos(self, releases_paths):
-        for repo_path in releases_paths:
-            utils.exec_piped_cmds(
-                ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
-                cwd=repo_path)
-            release_path = join_path(repo_path, 'Release')
-            utils.render_to_file(
-                self.release_tmpl_src,
-                release_path,
-                {'plugin_name': self.meta['name'],
-                 'major_version': self.plugin_version})
 
 
 class BuildPluginV3(BuildPluginV2):
