@@ -34,6 +34,8 @@ logger = logging.getLogger(__name__)
 
 class BaseBuildPlugin(BaseAction):
 
+    release_tmpl_src_path = 'templates/base/build/Release.mako'
+
     @abc.abstractproperty
     def requires(self):
         """Should return a list of commands which
@@ -61,6 +63,10 @@ class BaseBuildPlugin(BaseAction):
         self.build_src_dir = join_path(self.build_dir, 'src')
         self.checksums_path = join_path(self.build_src_dir, 'checksums.sha1')
         self.name = self.meta['name']
+
+        fpb_dir = join_path(os.path.dirname(__file__), '..')
+        self.release_tmpl_src = os.path.abspath(join_path(
+            fpb_dir, self.release_tmpl_src_path))
 
     def run(self):
         logger.debug('Start plugin building "%s"', self.plugin_path)
@@ -99,11 +105,17 @@ class BaseBuildPlugin(BaseAction):
         self.build_ubuntu_repos(releases_paths.get('ubuntu', []))
         self.build_centos_repos(releases_paths.get('centos', []))
 
-    def build_ubuntu_repos(cls, releases_paths):
+    def build_ubuntu_repos(self, releases_paths):
         for repo_path in releases_paths:
             utils.exec_piped_cmds(
                 ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
+            release_path = join_path(repo_path, 'Release')
+            utils.render_to_file(
+                self.release_tmpl_src,
+                release_path,
+                {'plugin_name': self.meta['name'],
+                 'major_version': self.plugin_version})
 
     @classmethod
     def build_centos_repos(cls, releases_paths):
@@ -156,7 +168,6 @@ class BuildPluginV2(BaseBuildPlugin):
     requires = ['rpmbuild', 'rpm', 'createrepo', 'dpkg-scanpackages']
 
     rpm_spec_src_path = 'templates/v2/build/plugin_rpm.spec.mako'
-    release_tmpl_src_path = 'templates/v2/build/Release.mako'
 
     def __init__(self, *args, **kwargs):
         super(BuildPluginV2, self).__init__(*args, **kwargs)
@@ -178,9 +189,6 @@ class BuildPluginV2(BaseBuildPlugin):
 
         self.spec_src = os.path.abspath(join_path(
             fpb_dir, self.rpm_spec_src_path))
-
-        self.release_tmpl_src = os.path.abspath(join_path(
-            fpb_dir, self.release_tmpl_src_path))
 
         self.spec_dst = join_path(self.rpm_path, 'plugin_rpm.spec')
 
@@ -222,18 +230,6 @@ class BuildPluginV2(BaseBuildPlugin):
             'homepage': self.meta.get('homepage'),
             'vendor': ', '.join(self.meta.get('authors', [])),
             'year': utils.get_current_year()}
-
-    def build_ubuntu_repos(self, releases_paths):
-        for repo_path in releases_paths:
-            utils.exec_piped_cmds(
-                ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
-                cwd=repo_path)
-            release_path = join_path(repo_path, 'Release')
-            utils.render_to_file(
-                self.release_tmpl_src,
-                release_path,
-                {'plugin_name': self.meta['name'],
-                 'major_version': self.plugin_version})
 
 
 class BuildPluginV3(BuildPluginV2):
