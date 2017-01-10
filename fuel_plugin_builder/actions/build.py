@@ -34,8 +34,6 @@ logger = logging.getLogger(__name__)
 
 class BaseBuildPlugin(BaseAction):
 
-    release_tmpl_src_path = 'templates/base/build/Release.mako'
-
     @abc.abstractproperty
     def requires(self):
         """Should return a list of commands which
@@ -150,6 +148,7 @@ class BaseBuildPlugin(BaseAction):
 class BuildPluginV1(BaseBuildPlugin):
 
     requires = ['rpm', 'createrepo', 'dpkg-scanpackages']
+    release_tmpl_src_path = 'templates/v1/build/Release.mako'
 
     @property
     def result_package_mask(self):
@@ -166,7 +165,7 @@ class BuildPluginV1(BaseBuildPlugin):
         utils.make_tar_gz(self.build_src_dir, tar_path, full_name)
 
 
-class BuildPluginV2(BaseBuildPlugin):
+class BuildPluginV2(BuildPluginV1):
 
     requires = ['rpmbuild', 'rpm', 'createrepo', 'dpkg-scanpackages']
 
@@ -235,7 +234,6 @@ class BuildPluginV2(BaseBuildPlugin):
 class BuildPluginV3(BuildPluginV2):
 
     rpm_spec_src_path = 'templates/v3/build/plugin_rpm.spec.mako'
-    release_tmpl_src_path = 'templates/v3/build/Release.mako'
 
     def _make_data_for_template(self):
         data = super(BuildPluginV3, self)._make_data_for_template()
