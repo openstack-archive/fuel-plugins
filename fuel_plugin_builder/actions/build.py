@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 class BaseBuildPlugin(BaseAction):
 
-    release_tmpl_src_path = 'templates/base/build/Release.mako'
+    release_tmpl_src = None
 
     @abc.abstractproperty
     def requires(self):
@@ -66,10 +66,6 @@ class BaseBuildPlugin(BaseAction):
 
         self.plugin_version, self.full_version = utils.version_split_name_rpm(
             self.meta['version'])
-
-        fpb_dir = join_path(os.path.dirname(__file__), '..')
-        self.release_tmpl_src = os.path.abspath(join_path(
-            fpb_dir, self.release_tmpl_src_path))
 
     def run(self):
         logger.debug('Start plugin building "%s"', self.plugin_path)
@@ -113,12 +109,13 @@ class BaseBuildPlugin(BaseAction):
             utils.exec_piped_cmds(
                 ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
-            release_path = join_path(repo_path, 'Release')
-            utils.render_to_file(
-                self.release_tmpl_src,
-                release_path,
-                {'plugin_name': self.meta['name'],
-                 'major_version': self.plugin_version})
+            if self.release_tmpl_src:
+                release_path = join_path(repo_path, 'Release')
+                utils.render_to_file(
+                    self.release_tmpl_src,
+                    release_path,
+                    {'plugin_name': self.meta['name'],
+                     'major_version': self.plugin_version})
 
     @classmethod
     def build_centos_repos(cls, releases_paths):
@@ -150,6 +147,10 @@ class BaseBuildPlugin(BaseAction):
 class BuildPluginV1(BaseBuildPlugin):
 
     requires = ['rpm', 'createrepo', 'dpkg-scanpackages']
+    release_tmpl_src = os.path.abspath(join_path(
+        os.path.dirname(__file__),
+        '..',
+        'templates/v1/build/Release.mako'))
 
     @property
     def result_package_mask(self):
@@ -166,7 +167,7 @@ class BuildPluginV1(BaseBuildPlugin):
         utils.make_tar_gz(self.build_src_dir, tar_path, full_name)
 
 
-class BuildPluginV2(BaseBuildPlugin):
+class BuildPluginV2(BuildPluginV1):
 
     requires = ['rpmbuild', 'rpm', 'createrepo', 'dpkg-scanpackages']
 
@@ -235,7 +236,6 @@ class BuildPluginV2(BaseBuildPlugin):
 class BuildPluginV3(BuildPluginV2):
 
     rpm_spec_src_path = 'templates/v3/build/plugin_rpm.spec.mako'
-    release_tmpl_src_path = 'templates/v3/build/Release.mako'
 
     def _make_data_for_template(self):
         data = super(BuildPluginV3, self)._make_data_for_template()
