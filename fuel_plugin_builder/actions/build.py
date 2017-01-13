@@ -32,9 +32,14 @@ from fuel_plugin_builder import version_mapping
 logger = logging.getLogger(__name__)
 
 
+def get_template_path(file_name):
+    return os.path.abspath(join_path(
+        os.path.dirname(__file__), '..', 'templates', file_name))
+
+
 class BaseBuildPlugin(BaseAction):
 
-    release_tmpl_src_path = None
+    release_tmpl_src_path = get_template_path('base/build/Release.mako')
 
     @abc.abstractproperty
     def requires(self):
@@ -109,13 +114,12 @@ class BaseBuildPlugin(BaseAction):
             utils.exec_piped_cmds(
                 ['dpkg-scanpackages -m .', 'gzip -c9 > Packages.gz'],
                 cwd=repo_path)
-            if self.release_tmpl_src_path:
-                release_path = join_path(repo_path, 'Release')
-                utils.render_to_file(
-                    self.release_tmpl_src_path,
-                    release_path,
-                    {'plugin_name': self.meta['name'],
-                     'major_version': self.plugin_version})
+            release_path = join_path(repo_path, 'Release')
+            utils.render_to_file(
+                self.release_tmpl_src_path,
+                release_path,
+                {'plugin_name': self.meta['name'],
+                    'major_version': self.plugin_version})
 
     @classmethod
     def build_centos_repos(cls, releases_paths):
@@ -147,10 +151,6 @@ class BaseBuildPlugin(BaseAction):
 class BuildPluginV1(BaseBuildPlugin):
 
     requires = ['rpm', 'createrepo', 'dpkg-scanpackages']
-    release_tmpl_src_path = os.path.abspath(join_path(
-        os.path.dirname(__file__),
-        '..',
-        'templates/v1/build/Release.mako'))
 
     @property
     def result_package_mask(self):
@@ -171,7 +171,7 @@ class BuildPluginV2(BuildPluginV1):
 
     requires = ['rpmbuild', 'rpm', 'createrepo', 'dpkg-scanpackages']
 
-    rpm_spec_src_path = 'templates/v2/build/plugin_rpm.spec.mako'
+    rpm_spec_src_path = get_template_path('v2/build/plugin_rpm.spec.mako')
 
     def __init__(self, *args, **kwargs):
         super(BuildPluginV2, self).__init__(*args, **kwargs)
@@ -185,11 +185,6 @@ class BuildPluginV2(BuildPluginV1):
 
         tar_name = '{0}.fp'.format(self.full_name)
         self.tar_path = join_path(self.rpm_src_path, tar_name)
-
-        fpb_dir = join_path(os.path.dirname(__file__), '..')
-
-        self.spec_src = os.path.abspath(join_path(
-            fpb_dir, self.rpm_spec_src_path))
 
         self.spec_dst = join_path(self.rpm_path, 'plugin_rpm.spec')
 
@@ -208,7 +203,7 @@ class BuildPluginV2(BuildPluginV1):
 
         utils.make_tar_gz(self.build_src_dir, self.tar_path, self.full_name)
         utils.render_to_file(
-            self.spec_src,
+            self.rpm_spec_src_path,
             self.spec_dst,
             self._make_data_for_template())
 
@@ -235,7 +230,7 @@ class BuildPluginV2(BuildPluginV1):
 
 class BuildPluginV3(BuildPluginV2):
 
-    rpm_spec_src_path = 'templates/v3/build/plugin_rpm.spec.mako'
+    rpm_spec_src_path = get_template_path('v3/build/plugin_rpm.spec.mako')
 
     def _make_data_for_template(self):
         data = super(BuildPluginV3, self)._make_data_for_template()
