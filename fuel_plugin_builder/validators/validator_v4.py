@@ -14,8 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 from os.path import join as join_path
+
+from oslo_log import log as logging
 
 from fuel_plugin_builder import errors
 from fuel_plugin_builder import utils

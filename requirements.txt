@@ -7,3 +7,4 @@ six>=1.5.2
 Mako==0.9.1
 PyYAML==3.10
 jsonschema==2.4.0
+oslo.log>=3.11.0 # Apache-2.0

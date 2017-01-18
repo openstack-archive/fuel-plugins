@@ -17,7 +17,6 @@
 import datetime
 import hashlib
 import io
-import logging
 import os
 import shutil
 import subprocess
@@ -27,6 +26,7 @@ import yaml
 from distutils import dir_util
 from distutils.version import StrictVersion
 from glob import glob
+from oslo_log import log as logging
 
 from mako.template import Template
 
