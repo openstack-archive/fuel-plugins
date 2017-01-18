@@ -17,10 +17,10 @@
 from __future__ import unicode_literals
 
 import abc
-import logging
 import os
 
 from os.path import join as join_path
+from oslo_log import log as logging
 
 from fuel_plugin_builder.actions import BaseAction
 from fuel_plugin_builder import errors

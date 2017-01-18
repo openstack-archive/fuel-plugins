@@ -15,9 +15,9 @@
 #    under the License.
 
 import abc
-import logging
 
 import jsonschema
+from oslo_log import log as logging
 import six
 
 from distutils.version import StrictVersion

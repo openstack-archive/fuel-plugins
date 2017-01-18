@@ -15,9 +15,10 @@
 #    under the License.
 
 import argparse
-import logging
 import six
 import sys
+
+from oslo_log import log as logging
 
 from fuel_plugin_builder import actions
 from fuel_plugin_builder import errors
