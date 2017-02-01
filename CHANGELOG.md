@@ -1,5 +1,39 @@
 # Changelog
 
+## 4.2.0 (2017-01-02)
+
+New package version "4.2.0" includes the following features:
+
+- Added new plugin version with node & nic attributes support
+
+Bugfixes:
+
+- Move Release.mako into v1 template dir
+  [LP1655289](https://bugs.launchpad.net/fuel/+bug/1655289)
+- Make ubuntu repo similar for all plugin versions
+  [LP1650551](https://bugs.launchpad.net/fuel/+bug/1650551)
+- Show team and repo badges on `README`
+- Remove reboot task from plugin example version "3.0.0"
+  [LP1625244](https://bugs.launchpad.net/fuel/+bug/1625244)
+- Files with no code must be left completely empty
+- Legacy deployment tasks are turned back for plugin example version "3.0.0"
+  [LP1625244](https://bugs.launchpad.net/fuel/+bug/1625244)
+- `tasks.yaml` was commented for plugin example version "3.0.0"
+  [LP1625244](https://bugs.launchpad.net/fuel/+bug/1625244)
+- Allow unauthenticated packages in the deployment scripts
+  [LP1622506](https://bugs.launchpad.net/fuel/+bug/1622506)
+- Allow arrays in 'value' in environment_config.yaml
+  [LP1616466](https://bugs.launchpad.net/fuel/+bug/1616466)
+- Old `tasks.yaml` content is commented for plugins packages version "4.0.0"
+  [LP1619255](https://bugs.launchpad.net/fuel/+bug/1619255)
+- Allow possibility to provide rpm `Release` version
+  [LP1616929](https://bugs.launchpad.net/fuel/+bug/1616929)
+- Rename existing BaseValidator to LegacyBaseValidator
+  [LP1534126](https://bugs.launchpad.net/fuel/+bug/1534126)
+- Fix a word spell error in `README.rst`
+- Support multi versions of package in fuel plugin
+  [LP1599896](https://bugs.launchpad.net/fuel/+bug/1599896)
+
 ## 4.1.0 (2016-06-29)
 
 Bugfixes:
