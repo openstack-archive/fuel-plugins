@@ -31,7 +31,7 @@ class TestVersionMapping(BaseTestCase):
         self.assertEqual(result['version'], '1.0.0')
         self.assertEqual(
             result['templates'],
-            ['templates/base', 'templates/v1/'])
+            ['templates/base/plugin_data', 'templates/v1/plugin_data/'])
         self.assertEqual(result['validator'], ValidatorV1)
 
     def test_get_plugin_for_version_2(self):
@@ -39,7 +39,7 @@ class TestVersionMapping(BaseTestCase):
         self.assertEqual(result['version'], '2.0.0')
         self.assertEqual(
             result['templates'],
-            ['templates/base', 'templates/v2/plugin_data/'])
+            ['templates/base/plugin_data', 'templates/v2/plugin_data/'])
         self.assertEqual(result['validator'], ValidatorV2)
 
     def test_get_plugin_for_version_3(self):
@@ -47,7 +47,7 @@ class TestVersionMapping(BaseTestCase):
         self.assertEqual(result['version'], '3.0.0')
         self.assertEqual(
             result['templates'],
-            ['templates/base', 'templates/v3/plugin_data/'])
+            ['templates/base/plugin_data', 'templates/v3/plugin_data/'])
         self.assertEqual(result['validator'], ValidatorV3)
 
     def test_get_plugin_for_version_4(self):
@@ -56,7 +56,7 @@ class TestVersionMapping(BaseTestCase):
         self.assertEqual(
             result['templates'],
             [
-                'templates/base',
+                'templates/base/plugin_data',
                 'templates/v3/plugin_data/',
                 'templates/v4/plugin_data/'])
         self.assertEqual(result['validator'], ValidatorV4)
@@ -67,7 +67,7 @@ class TestVersionMapping(BaseTestCase):
         self.assertEqual(
             result['templates'],
             [
-                'templates/base',
+                'templates/base/plugin_data',
                 'templates/v3/plugin_data/',
                 'templates/v4/plugin_data/',
                 'templates/v5/plugin_data/'])
