@@ -74,6 +74,6 @@ class TestVersionMapping(BaseTestCase):
         self.assertEqual(result['validator'], ValidatorV5)
 
     def test_get_plugin_for_version_raises_error(self):
-        with self.assertRaisesRegexp(errors.WrongPackageVersionError,
-                                     'Wrong package version "2999"'):
+        with self.assertRaisesRegex(errors.WrongPackageVersionError,
+                                    'Wrong package version "2999"'):
             get_plugin_for_version('2999')

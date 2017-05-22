@@ -59,7 +59,7 @@ class TestValidatorV2(LegacyBaseValidatorTestCase):
             'fuel_version': ['6.0', '6.1'],
             'package_version': '2.0.0'}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 'Current plugin format 2.0.0 is not compatible with 6.0 Fuel'
                 ' release. Fuel version must be 6.1 or higher.'

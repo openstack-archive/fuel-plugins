@@ -61,7 +61,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
         schema = self.make_schema(['key'], {'key': {'type': 'string'}})
         data = {}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 "File 'file_path', 'key' is a required property"):
             self.validator.validate_schema(data, schema, 'file_path')
@@ -74,7 +74,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
 
         expected_error = ("File 'file_path', 0 is not of type "
                           "'string', value path 'key -> 2'")
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 expected_error):
             self.validator.validate_schema(data, schema, 'file_path')
@@ -83,7 +83,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
         schema = self.make_schema(['key'], {'key': {'type': 'string'}})
         data = {}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 "File 'file_path', 'key' is a required property, "
                 "value path '0 -> path2'"):
@@ -95,7 +95,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
         '.LegacyBaseValidator.validate_schema')
     def test_validate_file_by_schema_failed(self, utils_mock):
         utils_mock.parse_yaml.return_value = self.data
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.FileDoesNotExist,
                 "File '/tmp/plugin_path' does not exist"):
             self.validator.validate_file_by_schema(
@@ -166,7 +166,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
 
         schema = self.make_schema(['key'], schema_object)
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 "File 'file_path', True is not of type 'string', "
                 "value path '0 -> path1 -> key -> 0'"):
@@ -174,7 +174,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
             self.validator.validate_schema(
                 data, schema, 'file_path', value_path=[0, 'path1'])
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 "File 'file_path', True is not of type 'string', "
                 "value path '0 -> path1 -> key -> 0 -> inner_key_1'"):

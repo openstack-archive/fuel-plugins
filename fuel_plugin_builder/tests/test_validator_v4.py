@@ -619,7 +619,7 @@ class TestValidatorV4(TestValidatorV3):
 
         for check in checks:
             utils_mock.parse_yaml.return_value = [check['data']]
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 errors.ValidationError,
                 check['errorTextContains'],
                 self.validator.check_deployment_tasks)

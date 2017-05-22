@@ -80,7 +80,7 @@ class TestUtils(BaseTestCase):
 
         process_mock = self.make_process_mock(return_code=return_code)
         with patch.object(subprocess, 'Popen', return_value=process_mock):
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 errors.ExecutedErrorNonZeroExitCode,
                 'Shell command executed with "{0}" '
                 'exit code: {1} '.format(return_code, cmd),
@@ -92,7 +92,7 @@ class TestUtils(BaseTestCase):
 
         process_mock = self.make_process_mock(return_code=return_code)
         with patch.object(subprocess, 'Popen', return_value=process_mock):
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 errors.ExecutedErrorNonZeroExitCode,
                 'Shell command executed with "{0}" '
                 'exit code: {1} '.format(return_code, " | ".join(cmds)),

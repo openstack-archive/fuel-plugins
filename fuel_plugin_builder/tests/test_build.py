@@ -185,7 +185,7 @@ class TestBaseBuildV1(BaseBuild):
     @mock.patch('fuel_plugin_builder.actions.build.utils.which',
                 return_value=False)
     def test_check_requirements_raises_error(self, _):
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             errors.FuelCannotFindCommandError,
             'Cannot find commands "rpm, createrepo, dpkg-scanpackages", '
             'install required commands and try again',
@@ -269,7 +269,7 @@ class TestBaseBuildV2(BaseBuild):
     @mock.patch('fuel_plugin_builder.actions.build.utils.which',
                 return_value=False)
     def test_check_requirements_raises_error(self, _):
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             errors.FuelCannotFindCommandError,
             'Cannot find commands "rpmbuild, rpm, createrepo, '
             'dpkg-scanpackages", install required commands and try again',

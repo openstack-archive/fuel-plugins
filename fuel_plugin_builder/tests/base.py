@@ -141,7 +141,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
                 'repository_path': '/tmp/repository_path'}]}
 
         utils_mock.exists.return_value = False
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ReleasesDirectoriesError,
                 'Cannot find directories /tmp/deployment_scripts_path'
                 ', /tmp/repository_path for release '):
@@ -153,7 +153,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
 
     def test_check_env_config_attrs_fail_if_none(self, utils_mock):
         utils_mock.parse_yaml.return_value = {'attributes': None}
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 "File '/tmp/plugin_path/environment_config.yaml', None "
                 "is not of type 'object', value path 'attributes'"):
@@ -163,7 +163,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
         utils_mock.parse_yaml.return_value = {
             'attributes': {'metadata': []}}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 "File '/tmp/plugin_path/environment_config.yaml', \[\] is "
                 "not of type 'object', value path 'attributes -> metadata'"):
@@ -178,7 +178,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
                     'value': 'text',
                     'weight': 1}}}
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 "File '/tmp/plugin_path/environment_config.yaml', True is not "
                 "of type 'string', value path 'attributes -> key1 -> type'"):
@@ -217,7 +217,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
             }
         }
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 errors.ValidationError,
                 "File '/tmp/plugin_path/environment_config.yaml', True is not "
                 "of type 'string', value path "
@@ -237,7 +237,7 @@ class LegacyBaseValidatorTestCase(BaseTestCase):
         """
         utils_mock.parse_yaml.return_value = mock_data
 
-        with self.assertRaisesRegexp(err_type, err_msg):
+        with self.assertRaisesRegex(err_type, err_msg):
             executed_method()
 
     def check_validate(self, mocked_methods=[]):

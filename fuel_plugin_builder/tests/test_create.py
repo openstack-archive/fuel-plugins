@@ -40,7 +40,7 @@ class TestCreate(BaseTestCase):
     @mock.patch('fuel_plugin_builder.actions.create.utils.exists',
                 return_value=True)
     def test_check_when_plugin_exists_with_same_name(self, exists_mock):
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             errors.PluginDirectoryExistsError,
             'Plugins directory {0} already exists, '
             'choose another name'.format(self.plugin_path),
@@ -51,7 +51,7 @@ class TestCreate(BaseTestCase):
                 return_value=False)
     def test_check_with_invalid_name(self, exists_mock):
         self.creator.plugin_name = 'Test_plugin'
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             errors.ValidationError,
             messages.PLUGIN_WRONG_NAME_EXCEPTION_MESSAGE,
             self.creator.check)
