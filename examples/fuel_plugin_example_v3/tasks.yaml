@@ -1,7 +1,0 @@
-# WARNING: `tasks.yaml` will be deprecated in further releases.
-# Please, use `deployment_tasks.yaml` to describe tasks instead.
-
-# This file is left only as an example of what you could
-# meet during plugins development and support.
-
-[]
